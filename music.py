@@ -47,6 +47,10 @@ class Music(commands.Cog):
         self.load_roles()
 
     def save_tokens(self):
+        """
+        YOUTUBE_APIを保存
+        :return:
+        """
         with open("./TOKEN.json") as F:
             tokens = json.load(F)
         tokens["API_INDEX"] = self.API_INDEX
@@ -55,27 +59,47 @@ class Music(commands.Cog):
             json.dump(tokens, F, indent=2)
 
     def check_url(self, url):
+        """
+        URLまたは曲名を認識
+        :param url: 対称の文字列
+        :return: [コード, 結果]
+                0...間違ったURL
+                1...動画idを検出, 動画id
+                2...プレイリストidを検出, プレイリストid
+                3...曲名を検出, 曲名
+        """
         if url.startswith("https://youtu.be/") or url.startswith("https://youtube.com/") or url.startswith(
-                "https://m.youtube.com/") or url.startswith("https://www.youtube.com/"):
+                "https://m.youtube.com/") or url.startswith("https://www.youtube.com/") or url.startswith(
+                "http://youtu.be/") or url.startswith("http://youtube.com/") or url.startswith(
+                "http://m.youtube.com/") or url.startswith("http://www.youtube.com/"):
             match = re.search(self.list, url)
             if match is None:
                 vid_id = re.search(self.vid, url)
                 if vid_id is None:
                     return [0, 0]  # 間違ったURL
                 else:
-                    return [1, vid_id.group()] # 動画 - 動画id
+                    return [1, vid_id.group()]  # 動画 - 動画id
             else:
                 return [2, match.group()] # プレイリスト - プレイリストid
         elif url.startswith("http://") or url.startswith("https://"):
             return [0, 1]  # サポートされていないURL
         else:
-            return [3, url] # 曲名 - 曲名
+            return [3, url]  # 曲名 - 曲名
 
     def get_day(self, txt):
+        """
+        日付を変換
+        :param txt: 日付
+        :return: 変形された日付
+        """
         txt_day = txt.split("T")
         return txt_day[0].replace("-", "/")
 
     def load_roles(self):
+        """
+        役職,権限を更新
+        :return:
+        """
         with open("./ROLE.json") as F:
             roles = json.load(F)
         self.ADMIN = roles["ADMIN"]
@@ -83,6 +107,11 @@ class Music(commands.Cog):
         self.BAN = roles["BAN"]
 
     def return_duration(self, item):
+        """
+        YouTubeデータから動画の時間に変換
+        :param item: YouTubeデータ
+        :return: 動画の時間
+        """
         if item['snippet']['liveBroadcastContent'] == "live":
             return "LIVE"
         else:
@@ -98,6 +127,11 @@ class Music(commands.Cog):
                  3...ボイスチャンネルにすでに接続済
                  4...処理拒否
         """
+        # 処理中でないか確認する
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return 4
+
         # BOTがVCに接続していない場合 .. .接続
         if ctx.voice_client is None:
             self.playlist[ctx.guild.id] = []
@@ -413,6 +447,11 @@ class Music(commands.Cog):
                 await ctx.send(":warning:`曲の再生中に問題が発生しました.他の物を試すか,{}autoを使用して再生してください.\n曲名:{}`".format(self.info["PREFIX"], arg1))
             else:
                 await ctx.send(":warning:`Something went wrong when playing music.Please try another one or use {}auto to play.\nMusicName:{}`".format(self.info["PREFIX"], arg1))
+        elif code == "OPERATION_DENIED":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`曲の再生準備中にコマンドが実行されたため、操作が拒否されました.再生準備が完了したあとに再度試してください.\n( muffinが入力中... となっている場合は曲の再生準備中です.)`")
+            else:
+                await ctx.send(":warning:`The operation was rejected because a command was executed while preparing next song. Please try again after the song is ready to play.\n( muffin is typing... If so, the song is preparing.)`")
 
     async def report_error(self, ctx, name, message):
         """
@@ -428,6 +467,12 @@ class Music(commands.Cog):
         await channel.send(embed=embed)
 
     async def get_request(self, url, ctx):
+        """
+        APIから情報を取得してデータを返す
+        :param url: APIのURL
+        :param ctx: Context
+        :return: レスポンスデータ
+        """
         async with aiohttp.ClientSession() as session:
             async with session.get(url + self.YOUTUBE_API[str(self.API_INDEX)]) as r:
                 response = await r.json()
@@ -453,8 +498,77 @@ class Music(commands.Cog):
                 else:
                     return [0, r.status, response]
 
-    async def play_right_away(self, ctx):
+    async def play_after(self, ctx):
+        """
+        曲の再生が終わった後の処理
+        :param ctx: Context
+        :return:
+        """
         try:
+            # 処理中の場合
+            if ctx.guild.id in self.status:
+                if self.status[ctx.guild.id]["status"] != 3:
+                    self.status[ctx.guild.id]["status"] = 3
+                else:
+                    await self.report_error(ctx, "play_after", "play_after開始時にすでに処理中になっている事案が発生しました.現在この場合も処理を実行することになっていますが、必要に応じてはじくように設定してください.")
+            else:
+                return
+            if ctx.guild.id in self.disconnected:  # 切断の場合 - 次の曲の再生を防ぐ
+                return self.disconnected.remove(ctx.guild.id)
+            elif ctx.guild.id in self.music_skiped:  # スキップの場合 - 強制的に0番目の曲を削除
+                self.music_skiped.remove(ctx.guild.id)
+                if not self.status[ctx.guild.id]["auto"]:
+                    self.playlist[ctx.guild.id].pop(0)
+            else:
+                if self.playlist[ctx.guild.id] == []:
+                    await self.initialize_data(ctx)
+                    await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
+                    return await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
+                        pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
+                    ))
+                elif "time" not in self.playlist[ctx.guild.id][0] or "msg_obj" not in self.playlist[ctx.guild.id][0]:
+                    await self.initialize_data(ctx)
+                    await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
+                    return await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
+                        pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
+                    ))
+                played_time = time.time() - self.playlist[ctx.guild.id][0]["time"]
+                if played_time < 5:  # 再生時間が5秒以内だった場合
+                    msg_obj = self.playlist[ctx.guild.id][0]["msg_obj"]
+                    await msg_obj.delete()
+                    await self.send_text(ctx, "SOMETHING_WENT_WRONG_WITH_TITLE", self.playlist[ctx.guild.id][0]["title"])
+                if not self.status[ctx.guild.id]["auto"]:
+                    if self.status[ctx.guild.id]["repeat"]:
+                        pass
+                    elif self.status[ctx.guild.id]["loop"]:
+                        dt0 = self.playlist[ctx.guild.id].pop(0)
+                        self.playlist[ctx.guild.id].append(dt0)
+                    else:
+                        self.playlist[ctx.guild.id].pop(0)
+            if self.status[ctx.guild.id]["auto"]:
+                await self.play_related_music(ctx)
+            elif self.playlist[ctx.guild.id] != []:
+                await self.play_right_away(ctx)
+            else:
+                self.status[ctx.guild.id]["status"] = 0
+        except:
+            await self.send_text(ctx, "UNKNOWN_ERROR")
+            await self.report_error(ctx, "play_right_away", traceback2.format_exc())
+            self.status[ctx.guild.id]["status"] = 0
+
+    async def play_right_away(self, ctx):
+        """
+        プレイリストの次にある曲を再生
+        :param ctx: Context
+        :return:
+        """
+        try:
+            # 処理中の場合
+            if ctx.guild.id in self.status:
+                if self.status[ctx.guild.id]["status"] != 3:
+                    self.status[ctx.guild.id]["status"] = 3
+            else:
+                return
             async with ctx.typing():
                 info = self.playlist[ctx.guild.id][0]
                 try:
@@ -481,54 +595,25 @@ class Music(commands.Cog):
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
                                                                                                self.bot.loop).result())
                 ctx.voice_client.source.volume = self.status[ctx.guild.id]["volume"] / 100
+                self.status[ctx.guild.id]["status"] = 1
         except:
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "play_right_away", traceback2.format_exc())
-
-    async def play_after(self, ctx):
-        try:
-            if ctx.guild.id in self.disconnected:  # 切断の場合 - 次の曲の再生を防ぐ
-                return self.disconnected.remove(ctx.guild.id)
-            elif ctx.guild.id in self.music_skiped:  # スキップの場合 - 強制的に0番目の曲を削除
-                self.music_skiped.remove(ctx.guild.id)
-                if not self.status[ctx.guild.id]["auto"]:
-                    self.playlist[ctx.guild.id].pop(0)
-            else:
-                if self.playlist[ctx.guild.id] == []:
-                    await self.initialize_data(ctx)
-                    await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
-                    await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
-                        pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
-                    ))
-                elif "time" not in self.playlist[ctx.guild.id][0] or "msg_obj" not in self.playlist[ctx.guild.id][0]:
-                    await self.initialize_data(ctx)
-                    await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
-                    await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
-                        pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
-                    ))
-                played_time = time.time() - self.playlist[ctx.guild.id][0]["time"]
-                if played_time < 5:  # 再生時間が5秒以内だった場合
-                    msg_obj = self.playlist[ctx.guild.id][0]["msg_obj"]
-                    await msg_obj.delete()
-                    await self.send_text(ctx, "SOMETHING_WENT_WRONG_WITH_TITLE", self.playlist[ctx.guild.id][0]["title"])
-                if not self.status[ctx.guild.id]["auto"]:
-                    if self.status[ctx.guild.id]["repeat"]:
-                        pass
-                    elif self.status[ctx.guild.id]["loop"]:
-                        dt0 = self.playlist[ctx.guild.id].pop(0)
-                        self.playlist[ctx.guild.id].append(dt0)
-                    else:
-                        self.playlist[ctx.guild.id].pop(0)
-            if self.status[ctx.guild.id]["auto"]:
-                await self.play_related_music(ctx)
-            elif self.playlist[ctx.guild.id] != []:
-                await self.play_right_away(ctx)
-        except:
-            await self.send_text(ctx, "UNKNOWN_ERROR")
-            await self.report_error(ctx, "play_right_away", traceback2.format_exc())
+            self.status[ctx.guild.id]["status"] = 0
 
     async def play_related_music(self, ctx):
+        """
+        関連した曲を再生
+        :param ctx: Context
+        :return:
+        """
         try:
+            # 処理中の場合
+            if ctx.guild.id in self.status:
+                if self.status[ctx.guild.id]["status"] != 3:
+                    self.status[ctx.guild.id]["status"] = 3
+            else:
+                return
             async with ctx.typing():
                 dt0 = self.playlist[ctx.guild.id].pop(0)
                 r = await self.get_request(
@@ -580,11 +665,20 @@ class Music(commands.Cog):
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
                                                                                                self.bot.loop).result())
                 ctx.voice_client.source.volume = self.status[ctx.guild.id]["volume"] / 100
+                self.status[ctx.guild.id]["status"] = 1
         except:
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "play_after", traceback2.format_exc())
+            self.status[ctx.guild.id]["status"] = 0
 
     async def get_duration(self, txt, ctx, playlist=False):
+        """
+        動画時間をAPIから取得
+        :param txt: APIURL
+        :param ctx: Context
+        :param playlist: プレイリストかどうか
+        :return: 整形後の動画時間
+        """
         r = await self.get_request(
             "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={}&key=".format(txt), ctx)
         if r[0] == 0:  # リクエスト処理中にエラーが発生
@@ -601,6 +695,11 @@ class Music(commands.Cog):
                 return [1, self.return_duration(r[1]['items'][0])]
 
     async def get_index(self, ctx):
+        """
+        Searchの番号を取得
+        :param ctx: Context
+        :return:
+        """
         ch = ctx.message.channel
         ah = ctx.message.author
 
@@ -623,6 +722,11 @@ class Music(commands.Cog):
             return [0]
 
     async def cog_before_invoke(self, ctx):
+        """
+        全コマンドの前に実行
+        :param ctx: Context
+        :return:
+        """
         self.load_roles()
         if ctx.author.id in self.BAN:
             await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
@@ -632,6 +736,12 @@ class Music(commands.Cog):
             raise commands.CommandError("JOIN_VC_BEFORE_PLAY")
 
     async def cog_command_error(self, ctx, error):
+        """
+        エラーが発生した時
+        :param ctx: Context
+        :param error: Error
+        :return:
+        """
         if isinstance(error, commands.MissingRequiredArgument):
             await self.send_text(ctx, "WRONG_COMMAND")
         elif isinstance(error, commands.errors.CommandNotFound):
@@ -644,6 +754,14 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+        """
+        ユーザーのボイスステータスが変更された時
+        → 自動でボイスチャンネルを退出
+        :param member: ユーザー
+        :param before: 変更前のボイスステータス
+        :param after: 変更後のボイスステータス
+        :return:
+        """
         if before.channel is not None:
             mem = before.channel.members
             if len(mem) == 1 and mem[0].id == self.bot.user.id:
@@ -658,6 +776,11 @@ class Music(commands.Cog):
 
     @commands.command(aliases=["j"])
     async def join(self, ctx):
+        """
+        ボイスチャンネルに接続
+        :param ctx: Context
+        :return:
+        """
         code = await self.initialize_data(ctx)
         if code == 1:  # 接続に成功した場合
             await self.send_text(ctx, "CONNECTED_TO_VC")
@@ -665,9 +788,20 @@ class Music(commands.Cog):
             await self.send_text(ctx, "MOVED_VC")
         elif code == 3:  # 既に接続していた場合
             await self.send_text(ctx, "ALREADY_CONNECTED")
+        elif code == 4:  # 処理拒否
+            await self.send_text(ctx, "OPERATION_DENIED")
 
     @commands.command(aliases=['dc', 'dis'])
     async def disconnect(self, ctx):
+        """
+        VCから切断
+        :param ctx: Context
+        :return:
+        """
+        # 処理中の場合
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return await self.send_text(ctx, "OPERATION_DENIED")
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         else:
@@ -690,6 +824,11 @@ class Music(commands.Cog):
 
     @commands.command(aliases=['q', 'np', 'nowplaying'])
     async def queue(self, ctx):
+        """
+        キューを表示
+        :param ctx: Context
+        :return:
+        """
         if ctx.guild.id not in self.playlist:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         if str(ctx.guild.region) == "japan":
@@ -752,11 +891,19 @@ class Music(commands.Cog):
 
     @commands.command(aliases=["p"])
     async def play(self, ctx, *, url):
+        """
+        音楽を再生
+        :param ctx: Context
+        :param url: 曲名,URL等
+        :return:
+        """
         try:
             # 初期化
             code = await self.initialize_data(ctx)
             if code == 0:  # VC接続に失敗した場合
                 return
+            elif code == 4:  # 操作拒否
+                return await self.send_text(ctx, "OPERATION_DENIED")
             if self.status[ctx.guild.id]["auto"]:
                 return await self.send_text(ctx, "AUTO_MODE_ON")
             user = ctx.author.display_name
@@ -853,16 +1000,26 @@ class Music(commands.Cog):
                     self.playlist[ctx.guild.id].append(info)
                     await self.send_text(ctx, "MUSIC_ADDED", info)
             # 再生
-            if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
+            # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
+            if self.status[ctx.guild.id]["status"] == 0:
                 await self.play_right_away(ctx)
+
         except:
             await ctx.send(traceback2.format_exc())
 
     @commands.command(aliases=["se"])
     async def search(self, ctx, *, url):
+        """
+        曲を検索
+        :param ctx: Context
+        :param url: 曲名
+        :return:
+        """
         code = await self.initialize_data(ctx)
         if code == 0:  # VC接続に失敗した場合
             return
+        elif code == 4:  # 操作拒否
+            return await self.send_text(ctx, "OPERATION_DENIED")
         if self.status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         r = await self.get_request(
@@ -907,14 +1064,23 @@ class Music(commands.Cog):
                 }
         self.playlist[ctx.guild.id].append(info)
         await self.send_text(ctx, "MUSIC_ADDED", info)
-        if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
+        # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
+        if self.status[ctx.guild.id]["status"] == 0:
             await self.play_right_away(ctx)
 
     @commands.command(aliases=["a"])
     async def auto(self, ctx, *, url):
+        """
+        自動再生モードで曲を再生
+        :param ctx: Context
+        :param url: 曲名
+        :return:
+        """
         code = await self.initialize_data(ctx)
         if code == 0:  # VC接続に失敗した場合
             return
+        elif code == 4:  # 操作拒否
+            return await self.send_text(ctx, "OPERATION_DENIED")
         if url == "off":
             if not self.status[ctx.guild.id]["auto"]:
                 await self.send_text(ctx, "AUTO_ALREADY_OFF")
@@ -956,14 +1122,25 @@ class Music(commands.Cog):
                 "duration": res_d[1]
                 }
         self.playlist[ctx.guild.id].append(info)
-        if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
+        # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
+        if self.status[ctx.guild.id]["status"] == 0:
             await self.play_right_away(ctx)
 
     @commands.command(aliases=['s'])
     async def skip(self, ctx):
+        """
+        曲をスキップ
+        :param ctx: Context
+        :return:
+        """
+        # 処理中の場合
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return await self.send_text(ctx, "OPERATION_DENIED")
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif (not ctx.voice_client.is_playing()) and (ctx.voice_client.is_paused()):
+        # elif (not ctx.voice_client.is_playing()) and (ctx.voice_client.is_paused()):
+        elif self.status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         else:
             self.music_skiped.append(ctx.guild.id)
@@ -975,32 +1152,68 @@ class Music(commands.Cog):
 
     @commands.command(aliases=['ps'])
     async def pause(self, ctx):
-
+        """
+        曲を停止
+        :param ctx: Context
+        :return:
+        """
+        # 処理中の場合
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return await self.send_text(ctx, "OPERATION_DENIED")
+        else:
+            return
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif ctx.voice_client.is_paused():
+        elif self.status[ctx.guild.id]["status"] == 0:
+            await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+        # elif ctx.voice_client.is_paused():
+        elif self.status[ctx.guild.id]["status"] == 2:
             await self.send_text(ctx, "ALREADY_PAUSED")
-        elif ctx.voice_client.is_playing():
+        # elif ctx.voice_client.is_playing():
+        elif self.status[ctx.guild.id]["status"] == 1:
             ctx.voice_client.pause()
+            self.status[ctx.guild.id]["status"] = 2
             await self.send_text(ctx, "PAUSED_MUSIC")
         else:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+            await self.report_error(ctx, "pause", "どの例にも当てはまらない状況が発生しました.\nstatus:{}".format(self.status[ctx.guild.id]["status"]))
 
     @commands.command(aliases=['re', 'res'])
     async def resume(self, ctx):
-
+        """
+        曲を再開
+        :param ctx: Context
+        :return:
+        """
+        # 処理中の場合
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return await self.send_text(ctx, "OPERATION_DENIED")
+        else:
+            return
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif ctx.voice_client.is_playing():
+        elif self.status[ctx.guild.id]["status"] == 0:
+            await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+        # elif ctx.voice_client.is_playing():
+        elif self.status[ctx.guild.id]["status"] == 1:
             await self.send_text(ctx, "ALREADY_RESUMED")
-        elif ctx.voice_client.is_paused():
+        # elif ctx.voice_client.is_paused():
+        elif self.status[ctx.guild.id]["status"] == 2:
             ctx.voice_client.resume()
+            self.status[ctx.guild.id]["status"] = 1
             await self.send_text(ctx, "RESUMED_MUSIC")
         else:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
 
     @commands.command(aliases=['l'])
     async def loop(self, ctx):
+        """
+        ループモードで設定
+        :param ctx:
+        :return:
+        """
         if self.status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.voice_client is None:
@@ -1016,6 +1229,11 @@ class Music(commands.Cog):
 
     @commands.command(aliases=['rep'])
     async def repeat(self, ctx):
+        """
+        リピートモードを設定
+        :param ctx: Context
+        :return:
+        """
         if self.status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.voice_client is None:
@@ -1031,16 +1249,40 @@ class Music(commands.Cog):
 
     @commands.command(aliases=['v'])
     async def volume(self, ctx, volume: int):
-
+        """
+        音量を変更
+        :param ctx: Context
+        :param volume: 音量
+        :return:
+        """
+        # 処理中の場合
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return await self.send_text(ctx, "OPERATION_DENIED")
+        else:
+            return
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        if ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
+        elif self.status[ctx.guild.id]["status"] == 0:
+            await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+        # if ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
+        elif self.status[ctx.guild.id]["status"] == 1 or self.status[ctx.guild.id]["status"] == 2:
             ctx.voice_client.source.volume = volume / 100
-        self.status[ctx.guild.id]["volume"] = volume
-        await self.send_text(ctx, "VOLUME_CHANGED", volume)
+            self.status[ctx.guild.id]["volume"] = volume
+            await self.send_text(ctx, "VOLUME_CHANGED", volume)
 
     @commands.command(aliases=['rm'])
     async def remove(self, ctx, index: int):
+        """
+        曲を削除
+        :param ctx: Context
+        :param index: 曲の番号
+        :return:
+        """
+        # 処理中の場合
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return await self.send_text(ctx, "OPERATION_DENIED")
         if self.status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.guild.id not in self.playlist:
@@ -1059,6 +1301,15 @@ class Music(commands.Cog):
 
     @commands.command(aliases=['cl'])
     async def clear(self, ctx):
+        """
+        曲をクリア
+        :param ctx: Context
+        :return:
+        """
+        # 処理中の場合
+        if ctx.guild.id in self.status:
+            if self.status[ctx.guild.id]["status"] == 3:
+                return await self.send_text(ctx, "OPERATION_DENIED")
         if self.status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.guild.id not in self.playlist:
