@@ -168,6 +168,36 @@ class Music(commands.Cog):
         else:
             return 3
 
+    async def clean_all(self, ctx, report=False):
+        try:
+            self.disconnected.append(ctx.guild.id)
+            if ctx.voice_client is None:
+                pass
+            elif ctx.voice_client.source is not None:
+                ctx.voice_client.source.cleanup()
+                await ctx.voice_client.disconnect()
+            else:
+                await ctx.voice_client.disconnect()
+            if ctx.guild.id in self.disconnected:
+                self.disconnected.remove(ctx.guild.id)
+            self.playlist[ctx.guild.id] = []
+            self.status[ctx.guild.id] = {
+                "loop": False,
+                "repeat": False,
+                "auto": False,
+                "volume": 100,
+                "channel": ctx.channel.id,
+                "status": 0
+            }
+            if report:
+                await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
+                return await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
+                    pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
+                ))
+        except:
+            await self.send_text(ctx, "UNKNOWN_ERROR")
+            await self.report_error(ctx, "clean_all", traceback2.format_exc())
+
     async def send_text(self, ctx, code, arg1=None, arg2=None):
         """
         言語問題を自動的に解決してメッセージを送信
@@ -511,8 +541,10 @@ class Music(commands.Cog):
                     self.status[ctx.guild.id]["status"] = 3
                 else:
                     await self.report_error(ctx, "play_after", "play_after開始時にすでに処理中になっている事案が発生しました.現在この場合も処理を実行することになっていますが、必要に応じてはじくように設定してください.")
+            elif self.playlist[ctx.guild.id] == []:
+                return await self.clean_all(ctx, report=True)
             else:
-                return
+                return await self.clean_all(ctx, report=True)
             if ctx.guild.id in self.disconnected:  # 切断の場合 - 次の曲の再生を防ぐ
                 return self.disconnected.remove(ctx.guild.id)
             elif ctx.guild.id in self.music_skiped:  # スキップの場合 - 強制的に0番目の曲を削除
@@ -521,17 +553,9 @@ class Music(commands.Cog):
                     self.playlist[ctx.guild.id].pop(0)
             else:
                 if self.playlist[ctx.guild.id] == []:
-                    await self.initialize_data(ctx)
-                    await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
-                    return await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
-                        pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
-                    ))
+                    return await self.clean_all(ctx, report=True)
                 elif "time" not in self.playlist[ctx.guild.id][0] or "msg_obj" not in self.playlist[ctx.guild.id][0]:
-                    await self.initialize_data(ctx)
-                    await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
-                    return await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
-                        pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
-                    ))
+                    return await self.clean_all(ctx, report=True)
                 played_time = time.time() - self.playlist[ctx.guild.id][0]["time"]
                 if played_time < 5:  # 再生時間が5秒以内だった場合
                     msg_obj = self.playlist[ctx.guild.id][0]["msg_obj"]
@@ -568,7 +592,7 @@ class Music(commands.Cog):
                 if self.status[ctx.guild.id]["status"] != 3:
                     self.status[ctx.guild.id]["status"] = 3
             else:
-                return
+                return await self.clean_all(ctx, report=True)
             async with ctx.typing():
                 info = self.playlist[ctx.guild.id][0]
                 try:
@@ -583,15 +607,9 @@ class Music(commands.Cog):
                     self.playlist[ctx.guild.id][0]["msg_obj"] = msg_obj
                     self.playlist[ctx.guild.id][0]["time"] = time.time()
                 except:
-                    if str(ctx.guild.region) == "japan":
-                        await ctx.send(
-                            ":warning:`[応急処置]危険な状況を検知しました。このバグはメッセージ無限連呼を引き起こす可能性があるため現在応急処置がとられています。BOT管理者の試験終了次第修正される予定です。ご迷惑をおかけして申し訳ありません。一度+dcしてからご使用ください.`")
-                    else:
-                        await ctx.send(
-                            "⚠️`[First Aid] A dangerous situation has been detected. This bug is currently being taken as it may cause an infinite number of messages to be ringed. Fixed as soon as the BOT admin has finished testing. We apologize for the inconvenience. Please use +dc once before using it.`")
-                    return await self.disconnect()
+                    return await self.clean_all(ctx, report=True)
                 if ctx.voice_client is None:
-                    return
+                    return await self.clean_all(ctx, report=True)
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
                                                                                                self.bot.loop).result())
                 ctx.voice_client.source.volume = self.status[ctx.guild.id]["volume"] / 100
@@ -613,7 +631,7 @@ class Music(commands.Cog):
                 if self.status[ctx.guild.id]["status"] != 3:
                     self.status[ctx.guild.id]["status"] = 3
             else:
-                return
+                return await self.clean_all(ctx, report=True)
             async with ctx.typing():
                 dt0 = self.playlist[ctx.guild.id].pop(0)
                 r = await self.get_request(
@@ -652,16 +670,10 @@ class Music(commands.Cog):
                     self.playlist[ctx.guild.id][0]["msg_obj"] = msg_obj
                     self.playlist[ctx.guild.id][0]["time"] = time.time()
                 except:
-                    if str(ctx.guild.region) == "japan":
-                        await ctx.send(
-                            ":warning:`[応急処置]危険な状況を検知しました。このバグはメッセージ無限連呼を引き起こす可能性があるため現在応急処置がとられています。BOT管理者の試験終了次第修正される予定です。ご迷惑をおかけして申し訳ありません。一度+dcしてからご使用ください.`")
-                    else:
-                        await ctx.send(
-                            "⚠️`[First Aid] A dangerous situation has been detected. This bug is currently being taken as it may cause an infinite number of messages to be ringed. Fixed as soon as the BOT admin has finished testing. We apologize for the inconvenience. Please use +dc once before using it.`")
-                    return await self.disconnect()
+                    return await self.clean_all(ctx, report=True)
 
                 if ctx.voice_client is None:
-                    return
+                    return await self.clean_all(ctx, report=True)
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
                                                                                                self.bot.loop).result())
                 ctx.voice_client.source.volume = self.status[ctx.guild.id]["volume"] / 100
@@ -766,13 +778,8 @@ class Music(commands.Cog):
             mem = before.channel.members
             if len(mem) == 1 and mem[0].id == self.bot.user.id:
                 ctx = self.bot.get_channel(self.status[before.channel.guild.id]["channel"])
+                await self.clean_all(ctx)
                 await self.send_text(ctx, "DISCONNECTED_BECAUSE_ALL_USERS_LEFT")
-                self.disconnected.append(before.channel.guild.id)
-                if before.channel.guild.voice_client.source is not None:
-                    before.channel.guild.voice_client.source.cleanup()
-                await before.channel.guild.voice_client.disconnect()
-                if before.channel.guild.id in self.disconnected:
-                    self.disconnected.remove(before.channel.guild.id)
 
     @commands.command(aliases=["j"])
     async def join(self, ctx):
@@ -781,7 +788,10 @@ class Music(commands.Cog):
         :param ctx: Context
         :return:
         """
-        code = await self.initialize_data(ctx)
+        try:
+            code = await self.initialize_data(ctx)
+        except:
+            await ctx.send(traceback2.format_exc())
         if code == 1:  # 接続に成功した場合
             await self.send_text(ctx, "CONNECTED_TO_VC")
         elif code == 2:  # 移動した場合
@@ -802,24 +812,12 @@ class Music(commands.Cog):
         if ctx.guild.id in self.status:
             if self.status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
+        else:
+            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         else:
-            self.disconnected.append(ctx.guild.id)
-            if ctx.voice_client.source is not None:
-                ctx.voice_client.source.cleanup()
-            await ctx.voice_client.disconnect()
-            if ctx.guild.id in self.disconnected:
-                self.disconnected.remove(ctx.guild.id)
-            self.playlist[ctx.guild.id] = []
-            self.status[ctx.guild.id] = {
-                "loop": False,
-                "repeat": False,
-                "auto": False,
-                "volume": 100,
-                "channel": ctx.channel.id,
-                "status": 0
-            }
+            await self.clean_all(ctx)
             await self.send_text(ctx, "DISCONNECTED_FROM_VC")
 
     @commands.command(aliases=['q', 'np', 'nowplaying'])
@@ -1137,6 +1135,8 @@ class Music(commands.Cog):
         if ctx.guild.id in self.status:
             if self.status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
+        else:
+            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         # elif (not ctx.voice_client.is_playing()) and (ctx.voice_client.is_paused()):
@@ -1162,7 +1162,7 @@ class Music(commands.Cog):
             if self.status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
-            return
+            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.status[ctx.guild.id]["status"] == 0:
@@ -1191,7 +1191,7 @@ class Music(commands.Cog):
             if self.status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
-            return
+            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.status[ctx.guild.id]["status"] == 0:
@@ -1260,7 +1260,7 @@ class Music(commands.Cog):
             if self.status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
-            return
+            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.status[ctx.guild.id]["status"] == 0:
@@ -1310,6 +1310,8 @@ class Music(commands.Cog):
         if ctx.guild.id in self.status:
             if self.status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
+        else:
+            return await self.clean_all(ctx, report=True)
         if self.status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.guild.id not in self.playlist:

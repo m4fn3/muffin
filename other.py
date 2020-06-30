@@ -37,15 +37,15 @@ class Other(commands.Cog):
                 if str(ctx.guild.region) == "japan":
                     embed = discord.Embed(title="使い方", color=0xffff99, url=self.info["WEB_COMMAND_URL_JA"])
                     embed.add_field(name="公式サイトで詳しいコマンドの説明を確認してください!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_JA"]), inline=False)
-                    embed.add_field(name="各種類のコマンドの一覧を表示するには:", value="```yaml\n{0}help music ... 音楽コマンド一覧\n{0}help game ... ゲームコマンド一覧\n{0}help other ... その他のコマンド一覧```".format(self.info["PREFIX"]), inline=False)
-                    embed.add_field(name="さらにmuffinについて知るには:", value="```diff\n{0}invite ... BOTの招待URLを送信します.\n{0}info ... BOTの情報を表示します.```".format(self.info["PREFIX"]), inline=False)
+                    embed.add_field(name="各種類のコマンドの一覧を表示するには:", value="```yaml\n{0}help music ... 音楽コマンド一覧\n{0}help game ... ゲームコマンド一覧\n{0}help other ... その他のコマンド一覧\n```".format(self.info["PREFIX"]), inline=False)
+                    embed.add_field(name="さらにmuffinについて知るには:", value="```fix\n{0}invite ... BOTの招待URLを送信します.\n{0}info ... BOTの情報を表示します.\n```".format(self.info["PREFIX"]), inline=False)
                     embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]))
                     await ctx.send(embed=embed)
                 else:
                     embed = discord.Embed(title="Usage", color=0xffff99, url=self.info["WEB_COMMAND_URL"])
                     embed.add_field(name="Please check commands details on Official WebSite!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL"]), inline=False)
-                    embed.add_field(name="To see each type of Commands:", value="```yaml\n{0}help music ... MusicCommands\n{0}help game ... GameCommands\n{0}help other ... OtherCommands```".format(self.info["PREFIX"]), inline=False)
-                    embed.add_field(name="Know more about muffin:", value="```diff\n{0}invite ... Send Invitation link.\n{0}info ... Show BOT information.```".format(self.info["PREFIX"]), inline=False)
+                    embed.add_field(name="To see each type of Commands:", value="```yaml\n{0}help music ... MusicCommands\n{0}help game ... GameCommands\n{0}help other ... OtherCommands\n```".format(self.info["PREFIX"]), inline=False)
+                    embed.add_field(name="Know more about muffin:", value="```fix\n{0}invite ... Send Invitation link.\n{0}info ... Show BOT information.\n```".format(self.info["PREFIX"]), inline=False)
                     embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]), inline=False)
                     await ctx.send(embed=embed)
             elif len(cmd) == 2:
