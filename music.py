@@ -89,6 +89,16 @@ class Music(commands.Cog):
             return str(isodate.parse_duration(item['contentDetails']['duration']))
 
     async def initialize_data(self, ctx):
+        """
+        playlist, statusの初期化 & ボイスチャンネルへの接続,移動
+        :param ctx: Context
+        :return: 0...ボイスチャンネル接続に失敗
+                 1...ボイスチャンネル接続に成功
+                 2...ボイスチャンネル移動
+                 3...ボイスチャンネルにすでに接続済
+                 4...処理拒否
+        """
+        # BOTがVCに接続していない場合 .. .接続
         if ctx.voice_client is None:
             self.playlist[ctx.guild.id] = []
             self.status[ctx.guild.id] = {
@@ -96,26 +106,43 @@ class Music(commands.Cog):
                 "repeat": False,
                 "auto": False,
                 "volume": 100,
-                "channel": ctx.channel.id
+                "channel": ctx.channel.id,
+                "status": 0
             }
             try:
                 await ctx.author.voice.channel.connect(timeout=10.0)
                 return 1
-            except: # 接続に失敗
+            except:  # 接続に失敗
                 await self.send_text(ctx, "FAILED_CONNECT")
                 return 0
-        #if ctx.guild.id not in self.playlist:
-        self.playlist[ctx.guild.id] = []
-        #if ctx.guild.id not in self.status:
-        self.status[ctx.guild.id] = {
-                "loop": False,
-                "repeat": False,
-                "auto": False,
-                "volume": 100,
-                "channel": ctx.channel.id
-            }
+
+        # 送信者がVCに接続していない場合
+        elif ctx.author.voice is None:
+            await self.send_text(ctx, "JOIN_VC_BEFORE_PLAY")
+            return 0
+
+        # BOTと送信者のVCが異なる場合 ... 移動
+        elif ctx.author.voice.channel != ctx.voice_client.channel:
+            try:
+                await ctx.voice_client.move_to(ctx.author.voice.channel)
+                return 2
+            except:  # 接続に失敗
+                await self.send_text(ctx, "FAILED_CONNECT")
+                return 0
+
+        # BOTと送信者のVCが同じの場合
+        else:
+            return 3
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
+        """
+        言語問題を自動的に解決してメッセージを送信
+        :param ctx: Context
+        :param code: テキストコード
+        :param arg1: 引数1(引数が必要な場合のみ)
+        :param arg2: 引数2(引数が必要な場合のみ)
+        :return: msg_obj(必要な場合のみ)
+        """
         if code == "AUTO_MODE_ON":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(
@@ -154,6 +181,11 @@ class Music(commands.Cog):
                 return await ctx.send(":warning:`ボイスチャンネルに接続できませんでした.権限等を確認してください.`")
             else:
                 return await ctx.send(":warning:`Connecting failed.Please check permission etc.`")
+        elif code == "ALREADY_CONNECTED":
+            if str(ctx.guild.region) == "japan":
+                return await ctx.send(":warning:`すでにボイスチャンネルに接続しています.`")
+            else:
+                return await ctx.send(":warning:`Already connected to VC.`")
         elif code == "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`動画の読み込み中にエラーが発生しました.`")
@@ -197,6 +229,11 @@ class Music(commands.Cog):
                 await ctx.send(":white_check_mark:`ボイスチャンネルに接続しました`")
             else:
                 await ctx.send(":white_check_mark:`Connected to voice channel`")
+        elif code == "MOVED_VC":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":white_check_mark:`ボイスチャンネルを移動しました`")
+            else:
+                await ctx.send(":white_check_mark:`Moved to voice channel`")
         elif code == "NOT_PLAYING_MUSIC":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`BOTは音楽を再生していません`")
@@ -378,6 +415,13 @@ class Music(commands.Cog):
                 await ctx.send(":warning:`Something went wrong when playing music.Please try another one or use {}auto to play.\nMusicName:{}`".format(self.info["PREFIX"], arg1))
 
     async def report_error(self, ctx, name, message):
+        """
+        エラーをログチャンネルに送信
+        :param ctx: Context
+        :param name: 関数名
+        :param message: エラーメッセージ
+        :return:
+        """
         channel = self.bot.get_channel(self.info["ERROR_CHANNEL"])
         embed = discord.Embed(title=name, description=message)
         embed.set_author(name="Error Reporter")
@@ -615,8 +659,12 @@ class Music(commands.Cog):
     @commands.command(aliases=["j"])
     async def join(self, ctx):
         code = await self.initialize_data(ctx)
-        if code == 1:
+        if code == 1:  # 接続に成功した場合
             await self.send_text(ctx, "CONNECTED_TO_VC")
+        elif code == 2:  # 移動した場合
+            await self.send_text(ctx, "MOVED_VC")
+        elif code == 3:  # 既に接続していた場合
+            await self.send_text(ctx, "ALREADY_CONNECTED")
 
     @commands.command(aliases=['dc', 'dis'])
     async def disconnect(self, ctx):
@@ -634,7 +682,9 @@ class Music(commands.Cog):
                 "loop": False,
                 "repeat": False,
                 "auto": False,
-                "volume": 100
+                "volume": 100,
+                "channel": ctx.channel.id,
+                "status": 0
             }
             await self.send_text(ctx, "DISCONNECTED_FROM_VC")
 
@@ -705,7 +755,7 @@ class Music(commands.Cog):
         try:
             # 初期化
             code = await self.initialize_data(ctx)
-            if code == 0:
+            if code == 0:  # VC接続に失敗した場合
                 return
             if self.status[ctx.guild.id]["auto"]:
                 return await self.send_text(ctx, "AUTO_MODE_ON")
@@ -811,7 +861,7 @@ class Music(commands.Cog):
     @commands.command(aliases=["se"])
     async def search(self, ctx, *, url):
         code = await self.initialize_data(ctx)
-        if code == 0:
+        if code == 0:  # VC接続に失敗した場合
             return
         if self.status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
@@ -863,7 +913,7 @@ class Music(commands.Cog):
     @commands.command(aliases=["a"])
     async def auto(self, ctx, *, url):
         code = await self.initialize_data(ctx)
-        if code == 0:
+        if code == 0:  # VC接続に失敗した場合
             return
         if url == "off":
             if not self.status[ctx.guild.id]["auto"]:
