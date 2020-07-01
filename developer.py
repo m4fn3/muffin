@@ -264,7 +264,7 @@ class Dev(commands.Cog):
                 self.bot.unload_extension(text)
                 self.bot.load_extension(text)
             except:
-                await ctx.send("{}の再読み込みに失敗しました\n{}.".format(text,traceback2.format_exc()))
+                await ctx.send("{}の再読み込みに失敗しました\n{}.".format(text, traceback2.format_exc()))
             else:
                 await ctx.send("{}の再読み込みに成功しました.".format(text))
         else:

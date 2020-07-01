@@ -567,13 +567,14 @@ class Music(commands.Cog):
             else:
                 return await self.clean_all(ctx, report=True)
             if ctx.guild.id in self.disconnected:  # 切断の場合 - 次の曲の再生を防ぐ
-                return self.disconnected.remove(ctx.guild.id)
+                return
             elif ctx.guild.id in self.music_skiped:  # スキップの場合 - 強制的に0番目の曲を削除
                 self.music_skiped.remove(ctx.guild.id)
                 if not self.status[ctx.guild.id]["auto"]:
                     self.playlist[ctx.guild.id].pop(0)
             else:
                 if self.playlist[ctx.guild.id] == []:
+                    await ctx.send("3")
                     return await self.clean_all(ctx, report=True)
                 elif "time" not in self.playlist[ctx.guild.id][0] or "msg_obj" not in self.playlist[ctx.guild.id][0]:
                     return await self.clean_all(ctx, report=True)
@@ -621,6 +622,7 @@ class Music(commands.Cog):
                     self.status[ctx.guild.id]["status"] = 3
             else:
                 return await self.clean_all(ctx, report=True)
+
             async with ctx.typing():
                 info = self.playlist[ctx.guild.id][0]
                 try:
@@ -1126,15 +1128,17 @@ class Music(commands.Cog):
             res = r[1]
             if len(res["items"]) == 0:
                 return await self.send_text(ctx, "NO_APPROPRIATE")
-        self.status[ctx.guild.id]["auto"] = True
-        self.playlist[ctx.guild.id] = []
-        self.status[ctx.guild.id]["loop"] = False
-        self.status[ctx.guild.id]["repeat"] = False
+        await ctx.send("koko")
         self.disconnected.append(ctx.guild.id)
         if ctx.voice_client.source is not None:
             ctx.voice_client.source.cleanup()
         if ctx.guild.id in self.disconnected:
             self.disconnected.remove(ctx.guild.id)
+        await ctx.send("owata")
+        self.status[ctx.guild.id]["auto"] = True
+        self.playlist[ctx.guild.id] = []
+        self.status[ctx.guild.id]["loop"] = False
+        self.status[ctx.guild.id]["repeat"] = False
         await self.send_text(ctx, "AUTO_ENABLED", url)
         res_d = await self.get_duration(res['items'][0]['id']['videoId'], ctx)
         if res_d[0] == 0: return
@@ -1355,6 +1359,17 @@ class Music(commands.Cog):
     @commands.command()
     async def show(self, ctx):
         await ctx.send(pprint.pformat(self.status))
+
+    @commands.command()
+    async def leave_all(self, ctx):
+        if ctx.author.id in self.ADMIN:
+            for vc in self.bot.voice_clients:
+                self.disconnected.append(vc.guild.id)
+                await vc.disconnect()
+                channel = self.status[vc.guild.id]["channel"]
+                await self.bot.get_channel(channel).send(":warning:`更新のためにBOT管理者が強制的に切断しました.`")
+
+
 
 def setup(bot):
     bot.add_cog(Music(bot))
