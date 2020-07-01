@@ -261,6 +261,9 @@ class Dev(commands.Cog):
         EXTENSION_LIST = ["developer", "music", "game", "other"]
         if text in EXTENSION_LIST:
             try:
+                if text == "music":
+                    music = self.bot.get_cog("Music")
+                    await music.leave_all(ctx)
                 self.bot.unload_extension(text)
                 self.bot.load_extension(text)
             except:
@@ -288,6 +291,8 @@ class Dev(commands.Cog):
         EXTENSION_LIST = ["developer", "music", "game", "other"]
         if text in EXTENSION_LIST:
             try:
+                music = self.bot.get_cog("Music")
+                await music.leave_all(ctx)
                 self.bot.unload_extension(text)
             except:
                 await ctx.send("{}の切り離しに失敗しました\n{}.".format(text,traceback2.format_exc()))
@@ -298,6 +303,8 @@ class Dev(commands.Cog):
 
     @system.command(aliases=["re"])
     async def restart(self, ctx):
+        music = self.bot.get_cog("Music")
+        await music.leave_all(ctx)
         self.save_roles()
         await ctx.send(":closed_lock_with_key:BOTを再起動します.")
         python = sys.executable
@@ -305,6 +312,8 @@ class Dev(commands.Cog):
 
     @system.command(aliases=["q"])
     async def quit(self, ctx):
+        music = self.bot.get_cog("Music")
+        await music.leave_all(ctx)
         self.save_roles()
         await ctx.send(":closed_lock_with_key:BOTを停止します.")
         sys.exit()
