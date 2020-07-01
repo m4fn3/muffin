@@ -585,7 +585,7 @@ class Music(commands.Cog):
                     code = self.count_load_error(ctx.guild.id)
                     if code == 0:
                         await self.clean_all(ctx)
-                        await self.send_text(ctx, "TOO_MANY_LOAD_ERRORS")
+                        return await self.send_text(ctx, "TOO_MANY_LOAD_ERRORS")
                     error = 1
                 if not self.status[ctx.guild.id]["auto"]:
                     if self.status[ctx.guild.id]["repeat"]:
