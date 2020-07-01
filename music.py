@@ -501,6 +501,11 @@ class Music(commands.Cog):
                 await ctx.send(":warning:`5回以上曲の再生に失敗したため,情報をクリアしました.他の曲を試してください.それでも解決しない場合はBOT管理者までご連絡ください.`")
             else:
                 await ctx.send(":warning:️`The information cleared because it failed to play the song more than 5 times. Please try another song. If that doesn't work, please contact the BOT creator.`")
+        elif code == "FORCE_DISCONNECTED":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`更新のためにBOT管理者が強制的に切断しました.`")
+            else:
+                await ctx.send(":warning:️`BOT admin forcibly disconnected for update.`")
 
     async def report_error(self, ctx, name, message):
         """
@@ -771,7 +776,7 @@ class Music(commands.Cog):
                 self.disconnected.append(vc.guild.id)
                 await vc.disconnect()
                 channel = self.status[vc.guild.id]["channel"]
-                await self.bot.get_channel(channel).send(":warning:`更新のためにBOT管理者が強制的に切断しました.`")
+                await self.send_text(ctx, "FORCE_DISCONNECTED")
 
     async def cog_before_invoke(self, ctx):
         """
