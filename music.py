@@ -117,6 +117,19 @@ class Music(commands.Cog):
         else:
             return str(isodate.parse_duration(item['contentDetails']['duration']))
 
+    def count_load_error(self, guild_id):
+        """
+        再生エラーの回数をカウント
+        :param guild_id: サーバーID
+        :return: 0...制限到達
+                 1...カウント
+        """
+        if self.status[guild_id]["load_error"] < 4:
+            self.status[guild_id]["load_error"] += 1
+            return 1
+        else:
+            return 0
+
     async def initialize_data(self, ctx):
         """
         playlist, statusの初期化 & ボイスチャンネルへの接続,移動
@@ -141,7 +154,8 @@ class Music(commands.Cog):
                 "auto": False,
                 "volume": 100,
                 "channel": ctx.channel.id,
-                "status": 0
+                "status": 0,
+                "load_error": 0
             }
             try:
                 await ctx.author.voice.channel.connect(timeout=10.0)
@@ -187,7 +201,8 @@ class Music(commands.Cog):
                 "auto": False,
                 "volume": 100,
                 "channel": ctx.channel.id,
-                "status": 0
+                "status": 0,
+                "load_error": 0,
             }
             if report:
                 await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
@@ -482,6 +497,11 @@ class Music(commands.Cog):
                 await ctx.send(":warning:`曲の再生準備中にコマンドが実行されたため、操作が拒否されました.再生準備が完了したあとに再度試してください.\n( muffinが入力中... となっている場合は曲の再生準備中です.)`")
             else:
                 await ctx.send(":warning:`The operation was rejected because a command was executed while preparing next song. Please try again after the song is ready to play.\n( muffin is typing... If so, the song is preparing.)`")
+        elif code == "TOO_MANY_LOAD_ERRORS":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`5回以上曲の再生に失敗したため,情報をクリアしました.他の曲を試してください.それでも解決しない場合はBOT管理者までご連絡ください.`")
+            else:
+                await ctx.send(":warning:️`The information cleared because it failed to play the song more than 5 times. Please try another song. If that doesn't work, please contact the BOT creator.`")
 
     async def report_error(self, ctx, name, message):
         """
@@ -535,6 +555,7 @@ class Music(commands.Cog):
         :return:
         """
         try:
+            error = 0
             # 処理中の場合
             if ctx.guild.id in self.status:
                 if self.status[ctx.guild.id]["status"] != 3:
@@ -561,6 +582,11 @@ class Music(commands.Cog):
                     msg_obj = self.playlist[ctx.guild.id][0]["msg_obj"]
                     await msg_obj.delete()
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WITH_TITLE", self.playlist[ctx.guild.id][0]["title"])
+                    code = self.count_load_error(ctx.guild.id)
+                    if code == 0:
+                        await self.clean_all(ctx)
+                        await self.send_text(ctx, "TOO_MANY_LOAD_ERRORS")
+                    error = 1
                 if not self.status[ctx.guild.id]["auto"]:
                     if self.status[ctx.guild.id]["repeat"]:
                         pass
@@ -569,6 +595,8 @@ class Music(commands.Cog):
                         self.playlist[ctx.guild.id].append(dt0)
                     else:
                         self.playlist[ctx.guild.id].pop(0)
+            if error == 0:
+                self.status[ctx.guild.id]["load_error"] = 0
             if self.status[ctx.guild.id]["auto"]:
                 await self.play_related_music(ctx)
             elif self.playlist[ctx.guild.id] != []:
@@ -1324,6 +1352,9 @@ class Music(commands.Cog):
             self.playlist[ctx.guild.id].append(save)
             await self.send_text(ctx, "CLEARED_MUSIC")
 
+    @commands.command()
+    async def show(self, ctx):
+        await ctx.send(pprint.pformat(self.status))
 
 def setup(bot):
     bot.add_cog(Music(bot))
