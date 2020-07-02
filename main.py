@@ -1,10 +1,6 @@
 # import
 from discord.ext import commands
-import json, logging
-from developer import Dev
-from music import Music
-from game import Game
-from other import Other
+import datetime, json, logging
 
 # define
 with open("./INFO.json") as F:
@@ -17,16 +13,26 @@ bot = commands.Bot(command_prefix=(info["PREFIX"]))
 bot.remove_command('help')
 logging.basicConfig(level=logging.INFO)
 
-bot.load_extension("developer")
-bot.load_extension("music")
-bot.load_extension("game")
-bot.load_extension("other")
 
-# Load
-@bot.event
-async def on_ready():
-    print("Logged in to {}".format(bot.user))
-    await bot.get_channel(info["ERROR_CHANNEL"]).send("on_ready()が呼び出されました.")
+class Muffin(commands.Bot):
 
-# run
-bot.run(tokens["TOKEN"])
+    def __init__(self, command_prefix):
+        super().__init__(command_prefix)
+
+        self.remove_command("help")
+
+        self.load_extension("developer")
+        self.load_extension("music")
+        self.load_extension("game")
+        self.load_extension("other")
+
+        self.uptime = datetime.datetime.utcnow()
+
+    async def on_ready(self):
+        print("Logged in to {}".format(bot.user))
+        await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
+
+
+if __name__ == '__main__':
+    bot = Muffin(command_prefix=(info["PREFIX"]))
+    bot.run(tokens["TOKEN"])
