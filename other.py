@@ -154,15 +154,26 @@ class Other(commands.Cog):
 
     @commands.command(aliases=['i'])
     async def info(self, ctx):
+        guilds = len(self.bot.guilds)
+        users = len(self.bot.users)
+        text_channels = 0
+        voice_channels = 0
+        for channel in self.bot.get_all_channels():
+            if isinstance(channel, discord.TextChannel):
+                text_channels += 1
+            elif isinstance(channel, discord.VoiceChannel):
+                voice_channels += 1
         if str(ctx.guild.region) == "japan":
-            embed=discord.Embed(title="情報", color=0x86f9c5, url=self.info["WEB_URL_JA"])
+            embed = discord.Embed(title="情報", color=0x86f9c5, url=self.info["WEB_URL_JA"])
             embed.set_thumbnail(url=self.bot.user.avatar_url)
-            embed.add_field(name="BOTに関する情報:", value="```fix\nBOTの管理&開発:\n  {}\nPrefix:\n  『 {} 』\n開発言語:\n  Python```".format(self.info["AUTHOR"], self.info["PREFIX"]), inline=False)
+            embed.add_field(name="管理者:", value=self.info["AUTHOR"], inline=False)
+            embed.add_field(name="ステータス", value=f"```サーバー数:{guilds}\nテキストチャンネル数:{text_channels}\nボイスチャンネル:{voice_channels}\nユーザー数:{users}```", inline=False)
             embed.add_field(name="URL:", value="[BOTの招待]({}) | [公式鯖]({}) | [公式ウェブサイト]({})".format(self.info["INVITE_URL"],self.info["SERVER_URL"],self.info["WEB_URL_JA"]))
         else:
-            embed=discord.Embed(title="Information", color=0x86f9c5, url=self.info["WEB_URL"])
+            embed = discord.Embed(title="Information", color=0x86f9c5, url=self.info["WEB_URL"])
             embed.set_thumbnail(url=self.bot.user.avatar_url)
-            embed.add_field(name="About BOT:", value="```Developer:\n  {}\nPrefix:\n  『 {} 』\nLanguage:\n  Python```".format(self.info["AUTHOR"], self.info["PREFIX"]), inline=False)
+            embed.add_field(name="Creator:", value=self.info["AUTHOR"], inline=False)
+            embed.add_field(name="Status", value=f"```servers:{guilds}\nTextChannels:{text_channels}\nVoiceChannels:{voice_channels}\nUsers:{users}```", inline=False)
             embed.add_field(name="URL:", value="[invitation]({}) | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["INVITE_URL"],self.info["SERVER_URL"],self.info["WEB_URL"]))
         await ctx.send(embed=embed)
 
