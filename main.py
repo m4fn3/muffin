@@ -8,9 +8,6 @@ with open("./INFO.json") as F:
 with open("./TOKEN.json") as F:
     tokens = json.load(F)
 
-# settings
-bot = commands.Bot(command_prefix=(info["PREFIX"]))
-bot.remove_command('help')
 logging.basicConfig(level=logging.INFO)
 
 
