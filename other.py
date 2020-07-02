@@ -1,6 +1,6 @@
 # import
 from discord.ext import commands
-import aiohttp, asyncio, datetime, discord, json, os, pprint, sys, time, urllib, traceback2
+import aiohttp, asyncio, datetime, discord, json, os, pprint, psutil, sys, time,  urllib, traceback2
 
 
 class Other(commands.Cog):
@@ -163,18 +163,24 @@ class Other(commands.Cog):
                 text_channels += 1
             elif isinstance(channel, discord.VoiceChannel):
                 voice_channels += 1
+        td = datetime.timedelta(seconds=int(time.time() - self.bot.uptime))
+        m, s = divmod(td.seconds, 60)
+        h, m = divmod(m, 60)
+        d = td.days
         if str(ctx.guild.region) == "japan":
             embed = discord.Embed(title="情報", color=0x86f9c5, url=self.info["WEB_URL_JA"])
             embed.set_thumbnail(url=self.bot.user.avatar_url)
             embed.add_field(name="管理者:", value=self.info["AUTHOR"], inline=False)
             embed.add_field(name="ステータス", value=f"```サーバー数:{guilds}\nテキストチャンネル数:{text_channels}\nボイスチャンネル:{voice_channels}\nユーザー数:{users}```", inline=False)
-            embed.add_field(name="URL:", value="[BOTの招待]({}) | [公式鯖]({}) | [公式ウェブサイト]({})".format(self.info["INVITE_URL"],self.info["SERVER_URL"],self.info["WEB_URL_JA"]))
+            embed.add_field(name="稼働時間", value=f"{d}日 {h}時間 {m}分 {s}秒", inline=False)
+            embed.add_field(name="URL:", value="[BOTの招待]({}) | [公式鯖]({}) | [公式ウェブサイト]({}) | [寄付]({})".format(self.info["INVITE_URL"],self.info["SERVER_URL"],self.info["WEB_URL_JA"],self.info["WEB_DONATE_URL_JA"]))
         else:
             embed = discord.Embed(title="Information", color=0x86f9c5, url=self.info["WEB_URL"])
             embed.set_thumbnail(url=self.bot.user.avatar_url)
             embed.add_field(name="Creator:", value=self.info["AUTHOR"], inline=False)
-            embed.add_field(name="Status", value=f"```servers:{guilds}\nTextChannels:{text_channels}\nVoiceChannels:{voice_channels}\nUsers:{users}```", inline=False)
-            embed.add_field(name="URL:", value="[invitation]({}) | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["INVITE_URL"],self.info["SERVER_URL"],self.info["WEB_URL"]))
+            embed.add_field(name="Status", value=f"```Servers:{guilds}\nTextChannels:{text_channels}\nVoiceChannels:{voice_channels}\nUsers:{users}```", inline=False)
+            embed.add_field(name="Uptime", value=f"{d}d {h}h {m}m {s}s", inline=False)
+            embed.add_field(name="URL:", value="[invitation]({}) | [OfficialServer]({}) | [OfficialWebSite]({}) | [Donate]({})".format(self.info["INVITE_URL"],self.info["SERVER_URL"],self.info["WEB_URL"],self.info["WEB_DONATE_URL"]))
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['tr'])
@@ -248,13 +254,14 @@ class Other(commands.Cog):
         embed.add_field(name="お問い合わせID:", value=ctx.message.id)
         embed.set_footer(text=datetime.datetime.now().strftime('%Y年%m月%d日 %H時%M分'))
         msg = await channel.send(embed=embed)
-        try:
+        if str(ctx.guild.region) == "japan":
             await ctx.send(":white_check_mark:お問い合わせが完了しました.\n内容によってはBOT管理者がお返事を公式サーバーにて掲示いたします.\n貴重なご意見ありがとうございました。\nお問い合わせID: {}".format(ctx.message.id))
-        except:
+        else:
             await ctx.send(":white_check_mark: Your inquiry is complete.\nDepending on the content, the BOT administrator will post a reply on the official server.\nThank you for your valuable feedback.\nFeedback ID: {}".format(ctx.message.id))
 
     @commands.command(aliases=["chk"])
     async def check(self, ctx, text):
+        # TODO: check commands
         pass
 
 

@@ -1,6 +1,6 @@
 # import
 from discord.ext import commands
-import datetime, json, logging
+import datetime, time, json, logging
 
 # define
 with open("./INFO.json") as F:
@@ -23,7 +23,7 @@ class Muffin(commands.Bot):
         self.load_extension("game")
         self.load_extension("other")
 
-        self.uptime = datetime.datetime.utcnow()
+        self.uptime = time.time()
 
     async def on_ready(self):
         print("Logged in to {}".format(bot.user))

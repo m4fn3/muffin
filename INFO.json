@@ -14,6 +14,8 @@
   "WEB_COMMAND_URL_GAME_JA": "http://mafu.cf/commands_ja#GameCommand",
   "WEB_COMMAND_URL_OTHER" : "http://mafu.cf/commands#OtherCommand",
   "WEB_COMMAND_URL_OTHER_JA": "http://mafu.cf/commands_ja#OtherCommand",
+  "WEB_DONATE_URL": "http://mafu.cf/donate",
+  "WEB_DONATE_URL_JA": "http://mafu.cf/donate_ja",
   "AUTHOR" : "mafu#7582",
   "LOG_CHANNEL" : 647280151121362949,
   "NOTIFY_CHANNEL" : 713289225143058482,

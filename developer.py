@@ -1,6 +1,6 @@
 # import
 from discord.ext import commands
-import ast, asyncio, discord, json, os, sys, traceback2
+import ast, asyncio, datetime, discord, json, os, psutil, sys, time, traceback2
 
 
 # class
@@ -341,6 +341,38 @@ class Dev(commands.Cog):
         except:
             await ctx.message.add_reaction("🚫")
             await ctx.send("{}".format(traceback2.format_exc()))
+
+    @commands.command(aliases=["pr"])
+    async def process(self, ctx):
+        td = datetime.timedelta(seconds=int(time.time() - self.bot.uptime))
+        m, s = divmod(td.seconds, 60)
+        h, m = divmod(m, 60)
+        d = td.days
+        uptime = f"{d}d {h}h {m}m {s}s"
+        cpu_per = psutil.cpu_percent()
+        mem_total = psutil.virtual_memory().total / 10**9
+        mem_used = psutil.virtual_memory().used / 10**9
+        mem_per = psutil.virtual_memory().percent
+        swap_total = psutil.swap_memory().total / 10**9
+        swap_used = psutil.swap_memory().used / 10**9
+        swap_per = psutil.swap_memory().percent
+        guilds = len(self.bot.guilds)
+        users = len(self.bot.users)
+        vcs = len(self.bot.voice_clients)
+        text_channels = 0
+        voice_channels = 0
+        for channel in self.bot.get_all_channels():
+            if isinstance(channel, discord.TextChannel):
+                text_channels += 1
+            elif isinstance(channel, discord.VoiceChannel):
+                voice_channels += 1
+        latency = self.bot.latency
+        embed = discord.Embed(title="Process")
+        embed.add_field(name="Server", value=f"```yaml\nCPU: [{cpu_per}%]\nMemory:[{mem_per}%] {mem_used:.2f}GiB / {mem_total:.2f}GiB\nSwap: [{swap_per}%] {swap_used:.2f}GiB / {swap_total:.2f}GiB\n```", inline=False)
+        embed.add_field(name="Discord", value=f"```yaml\nServers:{guilds}\nTextChannels:{text_channels}\nVoiceChannels:{voice_channels}\nUsers:{users}\nConnectedVC:{vcs}```", inline=False)
+        embed.add_field(name="Run", value=f"```yaml\nUptime: {uptime}\nLatency: {latency:.2f}[s]\n```")
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Dev(bot))
