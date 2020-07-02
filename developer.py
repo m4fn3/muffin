@@ -11,20 +11,13 @@ class Dev(commands.Cog):
         with open("./INFO.json") as F:
             info = json.load(F)
         self.info = info
-        self.load_roles()
-
-    def load_roles(self):
-        with open("./ROLE.json") as F:
-            roles = json.load(F)
-        self.ADMIN = roles["ADMIN"]
-        self.Contributor = roles["Contributor"]
-        self.BAN = roles["BAN"]
 
     def save_roles(self):
-        roles = {}
-        roles["ADMIN"] = self.ADMIN
-        roles["Contributor"] = self.Contributor
-        roles["BAN"] = self.BAN
+        roles = {
+            "ADMIN": self.bot.ADMIN,
+            "Contributor": self.bot.Contributor,
+            "BAN": self.bot.BAN
+        }
         with open("./ROLE.json", 'w') as F:
             json.dump(roles, F, indent=2)
 
@@ -43,7 +36,7 @@ class Dev(commands.Cog):
         await self.bot.change_presence(status=discord.Status.idle, activity=game)
 
     async def cog_before_invoke(self, ctx):
-        if ctx.author.id not in self.ADMIN:
+        if ctx.author.id not in self.bot.ADMIN:
             raise commands.CommandError("Developer-Admin-Error")
 
     @commands.Cog.listener()
@@ -148,33 +141,30 @@ class Dev(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send("add <@user> | delete <@user> | list ")
 
-    @admin.command()
+    @admin.command(name="add")
     async def add_admin(self, ctx, *, text):
-        self.load_roles()
         for target in ctx.message.mentions:
-            if target.id in self.ADMIN:
+            if target.id in self.bot.ADMIN:
                 await ctx.send("このユーザーは既に管理者です.")
             else:
-                self.ADMIN.append(target.id)
+                self.bot.ADMIN.append(target.id)
                 await ctx.send("<@{}>さんが管理者になりました.".format(target.id))
         self.save_roles()
 
-    @admin.command(aliases=["remove"])
+    @admin.command(name="delete", aliases=["remove"])
     async def delete_admin(self, ctx, *, text):
-        self.load_roles()
         for target in ctx.message.mentions:
-            if target.id not in self.ADMIN:
+            if target.id not in self.bot.ADMIN:
                 await ctx.send("このユーザーは管理者ではありません.")
             else:
-                self.ADMIN.remove(target.id)
+                self.bot.ADMIN.remove(target.id)
                 await ctx.send("<@{}>さんが管理者から削除されました.".format(target.id))
         self.save_roles()
 
     @admin.command(name="list")
     async def list_admin(self, ctx):
-        self.load_roles()
         text = "管理者一覧:"
-        for user in self.ADMIN:
+        for user in self.bot.ADMIN:
             text += "\n{0} ({0.id})".format(self.bot.get_user(user))
         await ctx.send(text)
         self.save_roles()
@@ -186,31 +176,28 @@ class Dev(commands.Cog):
 
     @ban.command(name="add")
     async def add_ban(self, ctx, *, text):
-        self.load_roles()
         for target in ctx.message.mentions:
-            if target.id in self.BAN:
+            if target.id in self.bot.BAN:
                 await ctx.send("このユーザーはすでにBANされています.")
             else:
-                self.BAN.append(target.id)
+                self.bot.BAN.append(target.id)
                 await ctx.send("<@{}>がBANされました.".format(target.id))
         self.save_roles()
 
     @ban.command(name="delete", aliases=["remove"])
     async def delete_ban(self, ctx, *, text):
-        self.load_roles()
         for target in ctx.message.mentions:
-            if target.id not in self.BAN:
+            if target.id not in self.bot.BAN:
                 await ctx.send("このユーザーはBANされていません.")
             else:
-                self.BAN.remove(target.id)
+                self.bot.BAN.remove(target.id)
                 await ctx.send("<@{}>さんがBANを解除されました.".format(target.id))
         self.save_roles()
 
     @ban.command(name="list")
     async def list_ban(self, ctx):
-        self.load_roles()
         text = "BANユーザー一覧:"
-        for user in self.BAN:
+        for user in self.bot.BAN:
             text += "\n{0} ({0.id})".format(self.bot.get_user(user))
         await ctx.send(text)
         self.save_roles()
@@ -222,31 +209,28 @@ class Dev(commands.Cog):
 
     @contributor.command(name="add")
     async def add_con(self, ctx, *, text):
-        self.load_roles()
         for target in ctx.message.mentions:
-            if target.id in self.Contributor:
+            if target.id in self.bot.Contributor:
                 await ctx.send("このユーザーはすでに貢献者されています.")
             else:
-                self.Contributor.append(target.id)
+                self.bot.Contributor.append(target.id)
                 await ctx.send("<@{}>が貢献者になりました.".format(target.id))
         self.save_roles()
 
     @contributor.command(name="delete", aliases=["remove"])
     async def delete_con(self, ctx, *, text):
-        self.load_roles()
         for target in ctx.message.mentions:
-            if target.id not in self.Contributor:
+            if target.id not in self.bot.Contributor:
                 await ctx.send("このユーザーは貢献者ではありません.")
             else:
-                self.Contributor.remove(target.id)
+                self.bot.Contributor.remove(target.id)
                 await ctx.send("<@{}>さんが貢献者ではなくなりました.".format(target.id))
         self.save_roles()
 
     @contributor.command(name="list")
     async def list_con(self, ctx):
-        self.load_roles()
         text = "貢献者一覧:"
-        for user in self.Contributor:
+        for user in self.bot.Contributor:
             text += "\n{0} ({0.id})".format(self.bot.get_user(user))
         await ctx.send(text)
         self.save_roles()

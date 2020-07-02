@@ -24,6 +24,11 @@ class Muffin(commands.Bot):
         self.load_extension("other")
 
         self.uptime = time.time()
+        with open("./ROLE.json") as F:
+            roles = json.load(F)
+        self.ADMIN = roles["ADMIN"]
+        self.Contributor = roles["Contributor"]
+        self.BAN = roles["BAN"]
 
     async def on_ready(self):
         print("Logged in to {}".format(bot.user))

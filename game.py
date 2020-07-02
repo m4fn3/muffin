@@ -13,17 +13,9 @@ class Game(commands.Cog):
         with open("./DATABASE.json") as F:
             database = json.load(F)
         self.database = database
-        self.load_roles()
         with open("./correct.json") as F:
             correct = json.load(F)
         self.correct = correct
-
-    def load_roles(self):
-        with open("./ROLE.json") as F:
-            roles = json.load(F)
-        self.ADMIN = roles["ADMIN"]
-        self.Contributor = roles["Contributor"]
-        self.BAN = roles["BAN"]
 
     def save_database(self):
         with open("./DATABASE.json", 'w') as F:
@@ -43,8 +35,7 @@ class Game(commands.Cog):
         }
 
     async def cog_before_invoke(self, ctx):
-        self.load_roles()
-        if ctx.author.id in self.BAN:
+        if ctx.author.id in self.bot.BAN:
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
                 raise commands.CommandError("Your Account Banned")
@@ -73,13 +64,12 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["st"])
     async def status(self, ctx):
-        self.load_roles()
         if ctx.message.mentions == []:
             embed = discord.Embed(title="ステータス")
             embed.set_thumbnail(url=ctx.author.avatar_url)
-            if ctx.author.id in self.ADMIN:
+            if ctx.author.id in self.bot.ADMIN:
                 embed.add_field(name="ユーザーー情報", value="```yaml\nユーザー:{}\nユーザーID:{}\n[管理者]```".format(ctx.author, ctx.author.id), inline=False)
-            elif ctx.author.id in self.Contributor:
+            elif ctx.author.id in self.bot.Contributor:
                 embed.add_field(name="ユーザーー情報", value="```fix\nユーザー:{}\nユーザーID:{}\n[貢献者]```".format(ctx.author, ctx.author.id), inline=False)
             else:
                 embed.add_field(name="ユーザーー情報", value="```ユーザー:{}\nユーザーID:{}```".format(ctx.author, ctx.author.id), inline=False)
@@ -92,9 +82,9 @@ class Game(commands.Cog):
             target = ctx.message.mentions[0]
             embed = discord.Embed(title="ステータス")
             embed.set_thumbnail(url=target.avatar_url)
-            if target.id in self.ADMIN:
+            if target.id in self.bot.ADMIN:
                 embed.add_field(name="ユーザーー情報", value="```yaml\nユーザー:{}\nユーザーID:{}\n[管理者]```".format(target, target.id), inline=False)
-            elif target.id in self.Contributor:
+            elif target.id in self.bot.Contributor:
                 embed.add_field(name="ユーザーー情報", value="```fix\nユーザー:{}\nユーザーID:{}\n[貢献者]```".format(target, target.id), inline=False)
             else:
                 embed.add_field(name="ユーザーー情報", value="```ユーザー:{}\nユーザーID:{}```".format(target, target.id), inline=False)

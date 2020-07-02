@@ -44,7 +44,6 @@ class Music(commands.Cog):
             tokens = json.load(F)
         self.YOUTUBE_API = tokens["YOUTUBE_API"]
         self.API_INDEX = tokens["API_INDEX"]
-        self.load_roles()
 
     def save_tokens(self):
         """
@@ -94,17 +93,6 @@ class Music(commands.Cog):
         """
         txt_day = txt.split("T")
         return txt_day[0].replace("-", "/")
-
-    def load_roles(self):
-        """
-        役職,権限を更新
-        :return:
-        """
-        with open("./ROLE.json") as F:
-            roles = json.load(F)
-        self.ADMIN = roles["ADMIN"]
-        self.Contributor = roles["Contributor"]
-        self.BAN = roles["BAN"]
 
     def return_duration(self, item):
         """
@@ -386,7 +374,7 @@ class Music(commands.Cog):
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`既に一時停止されています`")
             else:
-                await ctx.sebd(":warning:`Already paused`")
+                await ctx.send(":warning:`Already paused`")
         elif code == "AUTO_ENABLED":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":white_check_mark:`オート再生モードをオンにしました.検索ワード「{}」`".format(arg1))
@@ -771,12 +759,11 @@ class Music(commands.Cog):
             return [0]
 
     async def leave_all(self, ctx):
-        if ctx.author.id in self.ADMIN:
-            for vc in self.bot.voice_clients:
-                self.disconnected.append(vc.guild.id)
-                await vc.disconnect()
-                channel = self.status[vc.guild.id]["channel"]
-                await self.send_text(ctx, "FORCE_DISCONNECTED")
+        for vc in self.bot.voice_clients:
+            self.disconnected.append(vc.guild.id)
+            await vc.disconnect()
+            channel = self.status[vc.guild.id]["channel"]
+            await self.send_text(ctx, "FORCE_DISCONNECTED")
 
     async def cog_before_invoke(self, ctx):
         """
@@ -784,8 +771,7 @@ class Music(commands.Cog):
         :param ctx: Context
         :return:
         """
-        self.load_roles()
-        if ctx.author.id in self.BAN:
+        if ctx.author.id in self.bot.BAN:
             await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
             raise commands.CommandError("YOUR_ACCOUNT_BANNED")
         if ctx.author.voice is None:

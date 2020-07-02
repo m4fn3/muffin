@@ -10,18 +10,9 @@ class Other(commands.Cog):
         with open("./INFO.json") as F:
             info = json.load(F)
         self.info = info
-        self.load_roles()
-
-    def load_roles(self):
-        with open("./ROLE.json") as F:
-            roles = json.load(F)
-        self.ADMIN = roles["ADMIN"]
-        self.Contributor = roles["Contributor"]
-        self.BAN = roles["BAN"]
 
     async def cog_before_invoke(self, ctx):
-        self.load_roles()
-        if ctx.author.id in self.BAN:
+        if ctx.author.id in self.bot.BAN:
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
                 raise commands.CommandError("Your Account Banned")
@@ -246,7 +237,7 @@ class Other(commands.Cog):
             embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["f"])
+    @commands.command(aliases=["f","fb"])
     async def feedback(self, ctx, *, text):
         channel = self.bot.get_channel(self.info["ERROR_CHANNEL"])
         embed = discord.Embed(title="お問い合わせ", description="サーバー:{0.name}({0.id})\nチャンネル:{1.name}({1.id})\nユーザー:{2}({2.id})".format(ctx.guild, ctx.channel ,ctx.author))
