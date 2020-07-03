@@ -30,10 +30,10 @@ class Music(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot  # type: commands.Bot
-        self.playlist = {}
-        self.status = {}
-        self.music_skiped = []
-        self.disconnected = []
+        self.bot.playlist = {}
+        self.bot.voice_status = {}
+        self.bot.music_skipped = []
+        self.bot.voice_disconnected = []
         with open("./INFO.json") as F:
             info = json.load(F)
         self.info = info
@@ -112,8 +112,8 @@ class Music(commands.Cog):
         :return: 0...制限到達
                  1...カウント
         """
-        if self.status[guild_id]["load_error"] < 4:
-            self.status[guild_id]["load_error"] += 1
+        if self.bot.voice_status[guild_id]["load_error"] < 4:
+            self.bot.voice_status[guild_id]["load_error"] += 1
             return 1
         else:
             return 0
@@ -129,14 +129,14 @@ class Music(commands.Cog):
                  4...処理拒否
         """
         # 処理中でないか確認する
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return 4
 
         # BOTがVCに接続していない場合 .. .接続
         if ctx.voice_client is None:
-            self.playlist[ctx.guild.id] = []
-            self.status[ctx.guild.id] = {
+            self.bot.playlist[ctx.guild.id] = []
+            self.bot.voice_status[ctx.guild.id] = {
                 "loop": False,
                 "repeat": False,
                 "auto": False,
@@ -172,7 +172,7 @@ class Music(commands.Cog):
 
     async def clean_all(self, ctx, report=False):
         try:
-            self.disconnected.append(ctx.guild.id)
+            self.bot.voice_disconnected.append(ctx.guild.id)
             if ctx.voice_client is None:
                 pass
             elif ctx.voice_client.source is not None:
@@ -180,9 +180,9 @@ class Music(commands.Cog):
                 await ctx.voice_client.disconnect()
             else:
                 await ctx.voice_client.disconnect()
-            self.disconnected.remove(ctx.guild.id)
-            self.playlist[ctx.guild.id] = []
-            self.status[ctx.guild.id] = {
+            self.bot.voice_disconnected.remove(ctx.guild.id)
+            self.bot.playlist[ctx.guild.id] = []
+            self.bot.voice_status[ctx.guild.id] = {
                 "loop": False,
                 "repeat": False,
                 "auto": False,
@@ -194,7 +194,7 @@ class Music(commands.Cog):
             if report:
                 await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
                 return await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
-                    pprint.pformat(self.playlist[ctx.guild.id]), pprint.pformat(self.status[ctx.guild.id])
+                    pprint.pformat(self.bot.playlist[ctx.guild.id]), pprint.pformat(self.bot.voice_status[ctx.guild.id])
                 ))
         except:
             await self.send_text(ctx, "UNKNOWN_ERROR")
@@ -549,56 +549,58 @@ class Music(commands.Cog):
         try:
             error = 0
             # 処理中の場合
-            if ctx.guild.id in self.disconnected:
+            if ctx.guild.id in self.bot.voice_disconnected:
                 return
-            if ctx.guild.id in self.status:
-                if self.status[ctx.guild.id]["status"] != 3:
-                    self.status[ctx.guild.id]["status"] = 3
+            if ctx.guild.id in self.bot.voice_status:
+                if self.bot.voice_status[ctx.guild.id]["status"] != 3:
+                    self.bot.voice_status[ctx.guild.id]["status"] = 3
                 else:
                     await self.report_error(ctx, "play_after", "play_after開始時にすでに処理中になっている事案が発生しました.現在この場合も処理を実行することになっていますが、必要に応じてはじくように設定してください.")
-            elif self.playlist[ctx.guild.id] == []:
+            elif self.bot.playlist[ctx.guild.id] == []:
                 return await self.clean_all(ctx, report=True)
             else:
                 return await self.clean_all(ctx, report=True)
-            if ctx.guild.id in self.music_skiped:  # スキップの場合 - 強制的に0番目の曲を削除
-                self.music_skiped.remove(ctx.guild.id)
-                if not self.status[ctx.guild.id]["auto"]:
-                    self.playlist[ctx.guild.id].pop(0)
+            if ctx.guild.id in self.bot.music_skipped:  # スキップの場合 - 強制的に0番目の曲を削除
+                self.bot.music_skipped.remove(ctx.guild.id)
+                if not self.bot.voice_status[ctx.guild.id]["auto"]:
+                    self.bot.playlist[ctx.guild.id].pop(0)
             else:
-                if self.playlist[ctx.guild.id] == []:
-                    return #await self.clean_all(ctx, report=True)
-                elif "time" not in self.playlist[ctx.guild.id][0] or "msg_obj" not in self.playlist[ctx.guild.id][0]:
+                if self.bot.playlist[ctx.guild.id] == []:
                     return await self.clean_all(ctx, report=True)
-                played_time = time.time() - self.playlist[ctx.guild.id][0]["time"]
+                elif "time" not in self.bot.playlist[ctx.guild.id][0] or "msg_obj" not in self.bot.playlist[ctx.guild.id][0]:
+                    return await self.clean_all(ctx, report=True)
+                played_time = time.time() - self.bot.playlist[ctx.guild.id][0]["time"]
                 if played_time < 5:  # 再生時間が5秒以内だった場合
-                    msg_obj = self.playlist[ctx.guild.id][0]["msg_obj"]
+                    msg_obj = self.bot.playlist[ctx.guild.id][0]["msg_obj"]
                     await msg_obj.delete()
-                    await self.send_text(ctx, "SOMETHING_WENT_WRONG_WITH_TITLE", self.playlist[ctx.guild.id][0]["title"])
+                    await self.send_text(ctx, "SOMETHING_WENT_WRONG_WITH_TITLE", self.bot.playlist[ctx.guild.id][0]["title"])
                     code = self.count_load_error(ctx.guild.id)
                     if code == 0:
                         await self.clean_all(ctx)
                         return await self.send_text(ctx, "TOO_MANY_LOAD_ERRORS")
                     error = 1
-                if not self.status[ctx.guild.id]["auto"]:
-                    if self.status[ctx.guild.id]["repeat"]:
+                if not self.bot.voice_status[ctx.guild.id]["auto"]:
+                    if error == 1:
+                        self.bot.playlist[ctx.guild.id].pop(0)
+                    elif self.bot.voice_status[ctx.guild.id]["repeat"]:
                         pass
-                    elif self.status[ctx.guild.id]["loop"]:
-                        dt0 = self.playlist[ctx.guild.id].pop(0)
-                        self.playlist[ctx.guild.id].append(dt0)
+                    elif self.bot.voice_status[ctx.guild.id]["loop"]:
+                        dt0 = self.bot.playlist[ctx.guild.id].pop(0)
+                        self.bot.playlist[ctx.guild.id].append(dt0)
                     else:
-                        self.playlist[ctx.guild.id].pop(0)
+                        self.bot.playlist[ctx.guild.id].pop(0)
             if error == 0:
-                self.status[ctx.guild.id]["load_error"] = 0
-            if self.status[ctx.guild.id]["auto"]:
+                self.bot.voice_status[ctx.guild.id]["load_error"] = 0
+            if self.bot.voice_status[ctx.guild.id]["auto"]:
                 await self.play_related_music(ctx)
-            elif self.playlist[ctx.guild.id] != []:
+            elif self.bot.playlist[ctx.guild.id] != []:
                 await self.play_right_away(ctx)
             else:
-                self.status[ctx.guild.id]["status"] = 0
+                self.bot.voice_status[ctx.guild.id]["status"] = 0
         except:
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "play_right_away", traceback2.format_exc())
-            self.status[ctx.guild.id]["status"] = 0
+            self.bot.voice_status[ctx.guild.id]["status"] = 0
 
     async def play_right_away(self, ctx):
         """
@@ -607,40 +609,42 @@ class Music(commands.Cog):
         :return:
         """
         try:
-            if ctx.guild.id in self.disconnected:
+            if ctx.guild.id in self.bot.voice_disconnected:
                 return
             # 処理中の場合
-            if ctx.guild.id in self.status:
-                if self.status[ctx.guild.id]["status"] != 3:
-                    self.status[ctx.guild.id]["status"] = 3
+            if ctx.guild.id in self.bot.voice_status:
+                if self.bot.voice_status[ctx.guild.id]["status"] != 3:
+                    self.bot.voice_status[ctx.guild.id]["status"] = 3
             else:
                 return await self.clean_all(ctx, report=True)
 
             async with ctx.typing():
-                info = self.playlist[ctx.guild.id][0]
+                info = self.bot.playlist[ctx.guild.id][0]
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     await self.report_error(ctx, "play_right_away", traceback2.format_exc())
-                    self.music_skiped.append(ctx.guild.id)
+                    self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
                 msg_obj = await self.send_text(ctx, "MUSIC_PLAY_NOW", info)
                 try:
-                    self.playlist[ctx.guild.id][0]["msg_obj"] = msg_obj
-                    self.playlist[ctx.guild.id][0]["time"] = time.time()
+                    self.bot.playlist[ctx.guild.id][0]["msg_obj"] = msg_obj
+                    self.bot.playlist[ctx.guild.id][0]["time"] = time.time()
                 except:
-                    return await self.clean_all(ctx, report=True)
+                    await msg_obj.delete()
+                    return  #await self.clean_all(ctx, report=True) - 再生準備中に強制切断された場合に発生
                 if ctx.voice_client is None:
-                    return await self.clean_all(ctx, report=True)
+                    await msg_obj.delete()
+                    return  #await self.clean_all(ctx, report=True) - 再生準備中に強制切断された場合に発生
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
                                                                                                self.bot.loop).result())
-                ctx.voice_client.source.volume = self.status[ctx.guild.id]["volume"] / 100
-                self.status[ctx.guild.id]["status"] = 1
+                ctx.voice_client.source.volume = self.bot.voice_status[ctx.guild.id]["volume"] / 100
+                self.bot.voice_status[ctx.guild.id]["status"] = 1
         except:
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "play_right_away", traceback2.format_exc())
-            self.status[ctx.guild.id]["status"] = 0
+            self.bot.voice_status[ctx.guild.id]["status"] = 0
 
     async def play_related_music(self, ctx):
         """
@@ -649,16 +653,16 @@ class Music(commands.Cog):
         :return:
         """
         try:
-            if ctx.guild.id in self.disconnected:
+            if ctx.guild.id in self.bot.voice_disconnected:
                 return
             # 処理中の場合
-            if ctx.guild.id in self.status:
-                if self.status[ctx.guild.id]["status"] != 3:
-                    self.status[ctx.guild.id]["status"] = 3
+            if ctx.guild.id in self.bot.voice_status:
+                if self.bot.voice_status[ctx.guild.id]["status"] != 3:
+                    self.bot.voice_status[ctx.guild.id]["status"] = 3
             else:
                 return await self.clean_all(ctx, report=True)
             async with ctx.typing():
-                dt0 = self.playlist[ctx.guild.id].pop(0)
+                dt0 = self.bot.playlist[ctx.guild.id].pop(0)
                 r = await self.get_request(
                     "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&relatedToVideoId={}&maxResults=10&key=".format(
                         dt0["id"]), ctx)
@@ -682,18 +686,18 @@ class Music(commands.Cog):
                         "user": ctx.author.display_name,
                         "duration": res_d[1]
                         }
-                self.playlist[ctx.guild.id].append(info)
+                self.bot.playlist[ctx.guild.id].append(info)
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     await self.report_error(ctx, "play_related_music", traceback2.format_exc())
-                    self.music_skiped.append(ctx.guild.id)
+                    self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
                 msg_obj = await self.send_text(ctx, "MUSIC_PLAY_NOW", info)
                 try:
-                    self.playlist[ctx.guild.id][0]["msg_obj"] = msg_obj
-                    self.playlist[ctx.guild.id][0]["time"] = time.time()
+                    self.bot.playlist[ctx.guild.id][0]["msg_obj"] = msg_obj
+                    self.bot.playlist[ctx.guild.id][0]["time"] = time.time()
                 except:
                     return await self.clean_all(ctx, report=True)
 
@@ -701,12 +705,12 @@ class Music(commands.Cog):
                     return await self.clean_all(ctx, report=True)
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
                                                                                                self.bot.loop).result())
-                ctx.voice_client.source.volume = self.status[ctx.guild.id]["volume"] / 100
-                self.status[ctx.guild.id]["status"] = 1
+                ctx.voice_client.source.volume = self.bot.voice_status[ctx.guild.id]["volume"] / 100
+                self.bot.voice_status[ctx.guild.id]["status"] = 1
         except:
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "play_after", traceback2.format_exc())
-            self.status[ctx.guild.id]["status"] = 0
+            self.bot.voice_status[ctx.guild.id]["status"] = 0
 
     async def get_duration(self, txt, ctx, playlist=False):
         """
@@ -760,10 +764,10 @@ class Music(commands.Cog):
 
     async def leave_all(self, ctx):
         for vc in self.bot.voice_clients:
-            self.disconnected.append(vc.guild.id)
+            self.bot.voice_disconnected.append(vc.guild.id)
+            channel = self.bot.get_channel(self.bot.voice_status[vc.guild.id]["channel"])
+            await self.send_text(channel, "FORCE_DISCONNECTED")
             await vc.disconnect()
-            channel = self.status[vc.guild.id]["channel"]
-            await self.send_text(ctx, "FORCE_DISCONNECTED")
 
     async def cog_before_invoke(self, ctx):
         """
@@ -808,8 +812,8 @@ class Music(commands.Cog):
         if before.channel is not None:
             mem = before.channel.members
             if len(mem) == 1 and mem[0].id == self.bot.user.id:
-                ch = self.bot.get_channel(self.status[before.channel.guild.id]["channel"])
-                self.disconnected.append(ch.guild.id)
+                ch = self.bot.get_channel(self.bot.voice_status[before.channel.guild.id]["channel"])
+                self.bot.voice_disconnected.append(ch.guild.id)
                 if ch.guild.voice_client is None:
                     pass
                 elif ch.guild.voice_client.source is not None:
@@ -817,9 +821,10 @@ class Music(commands.Cog):
                     await ch.guild.voice_client.disconnect()
                 else:
                     await ch.guild.voice_client.disconnect()
-                self.disconnected.remove(ch.guild.id)
-                self.playlist[ch.guild.id] = []
-                self.status[ch.guild.id] = {
+                await asyncio.sleep(3)
+                self.bot.voice_disconnected.remove(ch.guild.id)
+                self.bot.playlist[ch.guild.id] = []
+                self.bot.voice_status[ch.guild.id] = {
                     "loop": False,
                     "repeat": False,
                     "auto": False,
@@ -858,8 +863,8 @@ class Music(commands.Cog):
         :return:
         """
         # 処理中の場合
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
             return await self.clean_all(ctx, report=True)
@@ -876,63 +881,63 @@ class Music(commands.Cog):
         :param ctx: Context
         :return:
         """
-        if ctx.guild.id not in self.playlist:
+        if ctx.guild.id not in self.bot.playlist:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         if str(ctx.guild.region) == "japan":
             embed = discord.Embed(title="キュー", color=0xff22ff, url=self.info["WEB_URL_JA"])
         else:
             embed = discord.Embed(title="Queue", color=0xff22ff, url=self.info["WEB_URL"])
         count = 0
-        if len(self.playlist[ctx.guild.id]) > 10:
+        if len(self.bot.playlist[ctx.guild.id]) > 10:
             count = 10
         else:
-            count = len(self.playlist[ctx.guild.id])
+            count = len(self.bot.playlist[ctx.guild.id])
         chk = True
         if str(ctx.guild.region) == "japan":
             for i in range(count):
                 if chk:
                     embed.add_field(name="再生中:", value="[{}]({}) | `{}` | `{}からのリクエスト`".format(
-                        self.playlist[ctx.guild.id][i]["title"], self.playlist[ctx.guild.id][i]["url"],
-                        self.playlist[ctx.guild.id][i]["duration"], self.playlist[ctx.guild.id][i]["user"]),
+                        self.bot.playlist[ctx.guild.id][i]["title"], self.bot.playlist[ctx.guild.id][i]["url"],
+                        self.bot.playlist[ctx.guild.id][i]["duration"], self.bot.playlist[ctx.guild.id][i]["user"]),
                                     inline=False)
                 else:
                     embed.add_field(name=str(i) + ":", value="[{}]({}) | `{}` | `{}からのリクエスト`".format(
-                        self.playlist[ctx.guild.id][i]["title"], self.playlist[ctx.guild.id][i]["url"],
-                        self.playlist[ctx.guild.id][i]["duration"], self.playlist[ctx.guild.id][i]["user"]),
+                        self.bot.playlist[ctx.guild.id][i]["title"], self.bot.playlist[ctx.guild.id][i]["url"],
+                        self.bot.playlist[ctx.guild.id][i]["duration"], self.bot.playlist[ctx.guild.id][i]["user"]),
                                     inline=False)
                 chk = False
         else:
             for i in range(count):
                 if chk:
                     embed.add_field(name="Now Playing:", value="[{}]({}) | `{}` | `Requested by {}`".format(
-                        self.playlist[ctx.guild.id][i]["title"], self.playlist[ctx.guild.id][i]["url"],
-                        self.playlist[ctx.guild.id][i]["duration"], self.playlist[ctx.guild.id][i]["user"]),
+                        self.bot.playlist[ctx.guild.id][i]["title"], self.bot.playlist[ctx.guild.id][i]["url"],
+                        self.bot.playlist[ctx.guild.id][i]["duration"], self.bot.playlist[ctx.guild.id][i]["user"]),
                                     inline=False)
                 else:
                     embed.add_field(name=str(i) + ":", value="[{}]({}) | `{}` | `Requested by {}`".format(
-                        self.playlist[ctx.guild.id][i]["title"], self.playlist[ctx.guild.id][i]["url"],
-                        self.playlist[ctx.guild.id][i]["duration"], self.playlist[ctx.guild.id][i]["user"]),
+                        self.bot.playlist[ctx.guild.id][i]["title"], self.bot.playlist[ctx.guild.id][i]["url"],
+                        self.bot.playlist[ctx.guild.id][i]["duration"], self.bot.playlist[ctx.guild.id][i]["user"]),
                                     inline=False)
                 chk = False
         modes = ""
-        if self.status[ctx.guild.id]["auto"]:
+        if self.bot.voice_status[ctx.guild.id]["auto"]:
             modes += "auto: `on` | "
         else:
             modes += "auto: `off` | "
-        if self.status[ctx.guild.id]["loop"]:
+        if self.bot.voice_status[ctx.guild.id]["loop"]:
             modes += "loop: `on` | "
         else:
             modes += "loop: `off` | "
-        if self.status[ctx.guild.id]["repeat"]:
+        if self.bot.voice_status[ctx.guild.id]["repeat"]:
             modes += "repeat: `on`"
         else:
             modes += "repeat: `off`"
         if str(ctx.guild.region) == "japan":
             embed.add_field(name="モード:", value=modes, inline=False)
-            embed.add_field(name="合計:", value="{}曲.".format(str(len(self.playlist[ctx.guild.id]))), inline=False)
+            embed.add_field(name="合計:", value="{}曲.".format(str(len(self.bot.playlist[ctx.guild.id]))), inline=False)
         else:
             embed.add_field(name="Modes:", value=modes, inline=False)
-            embed.add_field(name="Total:", value="{} songs in queue.".format(str(len(self.playlist[ctx.guild.id]))),
+            embed.add_field(name="Total:", value="{} songs in queue.".format(str(len(self.bot.playlist[ctx.guild.id]))),
                             inline=False)
         await ctx.send(embed=embed)
 
@@ -951,7 +956,7 @@ class Music(commands.Cog):
                 return
             elif code == 4:  # 操作拒否
                 return await self.send_text(ctx, "OPERATION_DENIED")
-            if self.status[ctx.guild.id]["auto"]:
+            if self.bot.voice_status[ctx.guild.id]["auto"]:
                 return await self.send_text(ctx, "AUTO_MODE_ON")
             user = ctx.author.display_name
             # url解析
@@ -982,7 +987,7 @@ class Music(commands.Cog):
                         "user": user,
                         "duration": self.return_duration(res['items'][0])
                     }
-                    self.playlist[ctx.guild.id].append(info)
+                    self.bot.playlist[ctx.guild.id].append(info)
                     await self.send_text(ctx, "MUSIC_ADDED", info)
             elif url_code[0] == 2:
                 r = await self.get_request(
@@ -1015,7 +1020,7 @@ class Music(commands.Cog):
                                     "user": user,
                                     "duration": res_d[1][i]
                                     }
-                            self.playlist[ctx.guild.id].append(info)
+                            self.bot.playlist[ctx.guild.id].append(info)
                         except KeyError:
                             pass
                         except IndexError:
@@ -1044,11 +1049,11 @@ class Music(commands.Cog):
                         "user": user,
                         "duration": res_d[1]
                     }
-                    self.playlist[ctx.guild.id].append(info)
+                    self.bot.playlist[ctx.guild.id].append(info)
                     await self.send_text(ctx, "MUSIC_ADDED", info)
             # 再生
             # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
-            if self.status[ctx.guild.id]["status"] == 0:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 0:
                 await self.play_right_away(ctx)
 
         except:
@@ -1067,7 +1072,7 @@ class Music(commands.Cog):
             return
         elif code == 4:  # 操作拒否
             return await self.send_text(ctx, "OPERATION_DENIED")
-        if self.status[ctx.guild.id]["auto"]:
+        if self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         r = await self.get_request(
             "https://www.googleapis.com/youtube/v3/search?part=snippet&q={}&maxResults=10&type=video&key=".format(url),
@@ -1109,10 +1114,10 @@ class Music(commands.Cog):
                 "user": user,
                 "duration": res_d[1]
                 }
-        self.playlist[ctx.guild.id].append(info)
+        self.bot.playlist[ctx.guild.id].append(info)
         await self.send_text(ctx, "MUSIC_ADDED", info)
         # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
-        if self.status[ctx.guild.id]["status"] == 0:
+        if self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.play_right_away(ctx)
 
     @commands.command(aliases=["a"])
@@ -1129,10 +1134,10 @@ class Music(commands.Cog):
         elif code == 4:  # 操作拒否
             return await self.send_text(ctx, "OPERATION_DENIED")
         if url == "off":
-            if not self.status[ctx.guild.id]["auto"]:
+            if not self.bot.voice_status[ctx.guild.id]["auto"]:
                 await self.send_text(ctx, "AUTO_ALREADY_OFF")
             else:
-                self.status[ctx.guild.id]["auto"] = False
+                self.bot.voice_status[ctx.guild.id]["auto"] = False
                 await self.send_text(ctx, "AUTO_OFF")
             return
         user = ctx.author.display_name
@@ -1147,15 +1152,16 @@ class Music(commands.Cog):
             res = r[1]
             if len(res["items"]) == 0:
                 return await self.send_text(ctx, "NO_APPROPRIATE")
-        self.disconnected.append(ctx.guild.id)
+        self.bot.voice_disconnected.append(ctx.guild.id)
         if ctx.voice_client.source is not None:
             ctx.voice_client.source.cleanup()
-        self.disconnected.remove(ctx.guild.id)
-        self.status[ctx.guild.id]["auto"] = True
-        self.playlist[ctx.guild.id] = []
-        self.status[ctx.guild.id]["loop"] = False
-        self.status[ctx.guild.id]["repeat"] = False
-        self.status[ctx.guild.id]["status"] = 0
+        await asyncio.sleep(1)
+        self.bot.voice_disconnected.remove(ctx.guild.id)
+        self.bot.voice_status[ctx.guild.id]["auto"] = True
+        self.bot.playlist[ctx.guild.id] = []
+        self.bot.voice_status[ctx.guild.id]["loop"] = False
+        self.bot.voice_status[ctx.guild.id]["repeat"] = False
+        self.bot.voice_status[ctx.guild.id]["status"] = 0
         await self.send_text(ctx, "AUTO_ENABLED", url)
         res_d = await self.get_duration(res['items'][0]['id']['videoId'], ctx)
         if res_d[0] == 0: return
@@ -1168,9 +1174,9 @@ class Music(commands.Cog):
                 "user": user,
                 "duration": res_d[1]
                 }
-        self.playlist[ctx.guild.id].append(info)
+        self.bot.playlist[ctx.guild.id].append(info)
         # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
-        #if self.status[ctx.guild.id]["status"] == 0:
+        #if self.bot.voice_status[ctx.guild.id]["status"] == 0:
         await self.play_right_away(ctx)
 
     @commands.command(aliases=['s'])
@@ -1181,18 +1187,18 @@ class Music(commands.Cog):
         :return:
         """
         # 処理中の場合
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
             return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         # elif (not ctx.voice_client.is_playing()) and (ctx.voice_client.is_paused()):
-        elif self.status[ctx.guild.id]["status"] == 0:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         else:
-            self.music_skiped.append(ctx.guild.id)
+            self.bot.music_skipped.append(ctx.guild.id)
             if ctx.voice_client.source is not None:
                 ctx.voice_client.source.cleanup()
             else:
@@ -1207,26 +1213,26 @@ class Music(commands.Cog):
         :return:
         """
         # 処理中の場合
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
             return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif self.status[ctx.guild.id]["status"] == 0:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         # elif ctx.voice_client.is_paused():
-        elif self.status[ctx.guild.id]["status"] == 2:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 2:
             await self.send_text(ctx, "ALREADY_PAUSED")
         # elif ctx.voice_client.is_playing():
-        elif self.status[ctx.guild.id]["status"] == 1:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 1:
             ctx.voice_client.pause()
-            self.status[ctx.guild.id]["status"] = 2
+            self.bot.voice_status[ctx.guild.id]["status"] = 2
             await self.send_text(ctx, "PAUSED_MUSIC")
         else:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-            await self.report_error(ctx, "pause", "どの例にも当てはまらない状況が発生しました.\nstatus:{}".format(self.status[ctx.guild.id]["status"]))
+            await self.report_error(ctx, "pause", "どの例にも当てはまらない状況が発生しました.\nstatus:{}".format(self.bot.voice_status[ctx.guild.id]["status"]))
 
     @commands.command(aliases=['re', 'res'])
     async def resume(self, ctx):
@@ -1236,22 +1242,22 @@ class Music(commands.Cog):
         :return:
         """
         # 処理中の場合
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
             return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif self.status[ctx.guild.id]["status"] == 0:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         # elif ctx.voice_client.is_playing():
-        elif self.status[ctx.guild.id]["status"] == 1:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 1:
             await self.send_text(ctx, "ALREADY_RESUMED")
         # elif ctx.voice_client.is_paused():
-        elif self.status[ctx.guild.id]["status"] == 2:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 2:
             ctx.voice_client.resume()
-            self.status[ctx.guild.id]["status"] = 1
+            self.bot.voice_status[ctx.guild.id]["status"] = 1
             await self.send_text(ctx, "RESUMED_MUSIC")
         else:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
@@ -1263,17 +1269,17 @@ class Music(commands.Cog):
         :param ctx:
         :return:
         """
-        if self.status[ctx.guild.id]["auto"]:
+        if self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif ctx.guild.id not in self.status:
+        elif ctx.guild.id not in self.bot.voice_status:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif self.status[ctx.guild.id]['loop']:
-            self.status[ctx.guild.id]['loop'] = False
+        elif self.bot.voice_status[ctx.guild.id]['loop']:
+            self.bot.voice_status[ctx.guild.id]['loop'] = False
             await self.send_text(ctx, "LOOP_OFF")
-        elif not self.status[ctx.guild.id]['loop']:
-            self.status[ctx.guild.id]['loop'] = True
+        elif not self.bot.voice_status[ctx.guild.id]['loop']:
+            self.bot.voice_status[ctx.guild.id]['loop'] = True
             await self.send_text(ctx, "LOOP_ON")
 
     @commands.command(aliases=['rep'])
@@ -1283,17 +1289,17 @@ class Music(commands.Cog):
         :param ctx: Context
         :return:
         """
-        if self.status[ctx.guild.id]["auto"]:
+        if self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif ctx.guild.id not in self.status:
+        elif ctx.guild.id not in self.bot.voice_status:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif self.status[ctx.guild.id]['repeat']:
-            self.status[ctx.guild.id]['repeat'] = False
+        elif self.bot.voice_status[ctx.guild.id]['repeat']:
+            self.bot.voice_status[ctx.guild.id]['repeat'] = False
             await self.send_text(ctx, "REPEAT_OFF")
-        elif not self.status[ctx.guild.id]['repeat']:
-            self.status[ctx.guild.id]['repeat'] = True
+        elif not self.bot.voice_status[ctx.guild.id]['repeat']:
+            self.bot.voice_status[ctx.guild.id]['repeat'] = True
             await self.send_text(ctx, "REPEAT_ON")
 
     @commands.command(aliases=['v'])
@@ -1305,19 +1311,19 @@ class Music(commands.Cog):
         :return:
         """
         # 処理中の場合
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
             return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif self.status[ctx.guild.id]["status"] == 0:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         # if ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
-        elif self.status[ctx.guild.id]["status"] == 1 or self.status[ctx.guild.id]["status"] == 2:
+        elif self.bot.voice_status[ctx.guild.id]["status"] == 1 or self.bot.voice_status[ctx.guild.id]["status"] == 2:
             ctx.voice_client.source.volume = volume / 100
-            self.status[ctx.guild.id]["volume"] = volume
+            self.bot.voice_status[ctx.guild.id]["volume"] = volume
             await self.send_text(ctx, "VOLUME_CHANGED", volume)
 
     @commands.command(aliases=['rm'])
@@ -1329,23 +1335,23 @@ class Music(commands.Cog):
         :return:
         """
         # 処理中の場合
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        if self.status[ctx.guild.id]["auto"]:
+        if self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
-        if ctx.guild.id not in self.playlist:
+        if ctx.guild.id not in self.bot.playlist:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif self.playlist[ctx.guild.id] == []:
+        elif self.bot.playlist[ctx.guild.id] == []:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif index == 0:
             return await self.send_text(ctx, "YOU_CANT_REMOVE_CURRENTLY_MUSIC")
         elif index < 0:
             return await self.send_text(ctx, "VALUE_LESS_THAN_0")
-        elif (len(self.playlist[ctx.guild.id]) - 1) < index:
+        elif (len(self.bot.playlist[ctx.guild.id]) - 1) < index:
             return await self.send_text((ctx, "WRONG_INDEX"))
         else:
-            info = self.playlist[ctx.guild.id].pop(index)
+            info = self.bot.playlist[ctx.guild.id].pop(index)
             await self.send_text(ctx, "MUSIC_REMOVED", info)
 
     @commands.command(aliases=['cl'])
@@ -1356,21 +1362,21 @@ class Music(commands.Cog):
         :return:
         """
         # 処理中の場合
-        if ctx.guild.id in self.status:
-            if self.status[ctx.guild.id]["status"] == 3:
+        if ctx.guild.id in self.bot.voice_status:
+            if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
         else:
             return await self.clean_all(ctx, report=True)
-        if self.status[ctx.guild.id]["auto"]:
+        if self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
-        if ctx.guild.id not in self.playlist:
+        if ctx.guild.id not in self.bot.playlist:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        elif self.playlist[ctx.guild.id] == []:
+        elif self.bot.playlist[ctx.guild.id] == []:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         else:
-            save = self.playlist[ctx.guild.id][0]
-            self.playlist[ctx.guild.id].clear()
-            self.playlist[ctx.guild.id].append(save)
+            save = self.bot.playlist[ctx.guild.id][0]
+            self.bot.playlist[ctx.guild.id].clear()
+            self.bot.playlist[ctx.guild.id].append(save)
             await self.send_text(ctx, "CLEARED_MUSIC")
 
 

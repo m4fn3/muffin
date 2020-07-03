@@ -24,6 +24,10 @@ class Muffin(commands.Bot):
         self.load_extension("other")
 
         self.uptime = time.time()
+        self.playlist = {}
+        self.voice_status = {}
+        self.voice_disconnected = []
+        self.music_skipped = []
         with open("./ROLE.json") as F:
             roles = json.load(F)
         self.ADMIN = roles["ADMIN"]
