@@ -821,7 +821,7 @@ class Music(commands.Cog):
                     await ch.guild.voice_client.disconnect()
                 else:
                     await ch.guild.voice_client.disconnect()
-                await asyncio.sleep(3)
+                await asyncio.sleep(1)
                 self.bot.voice_disconnected.remove(ch.guild.id)
                 self.bot.playlist[ch.guild.id] = []
                 self.bot.voice_status[ch.guild.id] = {
