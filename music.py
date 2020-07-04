@@ -332,9 +332,9 @@ class Music(commands.Cog):
                 return await ctx.send(":warning:`To remove music that is currently playing please use `{}skip".format(self.info["PREFIX"]))
         elif code == "VOLUME_CHANGED":
             if str(ctx.guild.region) == "japan":
-                await ctx.send(":white_check_mark:`{}%に音量を変更しました`".format(arg1))
+                await ctx.send(f":white_check_mark:`{arg1}%に音量を変更しました`")
             else:
-                await ctx.send(":white_check_mark:`Changed volume to {}%`".format(arg1))
+                await ctx.send(f":white_check_mark:`Changed volume to {arg1}%`")
         elif code == "REPEAT_OFF":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":white_check_mark:`repeat機能をオフにしました`")
@@ -377,9 +377,9 @@ class Music(commands.Cog):
                 await ctx.send(":warning:`Already paused`")
         elif code == "AUTO_ENABLED":
             if str(ctx.guild.region) == "japan":
-                await ctx.send(":white_check_mark:`オート再生モードをオンにしました.検索ワード「{}」`".format(arg1))
+                await ctx.send(f":white_check_mark:`オート再生モードをオンにしました.検索ワード「{arg1}」`")
             else:
-                await ctx.send(":white_check_mark:`Turn on auto mode. Search query「{}」`".format(arg1))
+                await ctx.send(f":white_check_mark:`Turn on auto mode. Search query「{arg1}」`")
         elif code == "AUTO_ALREADY_OFF":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`オート再生モードは既にオフにです`")
@@ -476,9 +476,9 @@ class Music(commands.Cog):
                 await ctx.send("Information was cleared because an abnormal situation was detected.")
         elif code == "SOMETHING_WENT_WRONG_WITH_TITLE":
             if str(ctx.guild.region) == "japan":
-                await ctx.send(":warning:`曲の再生中に問題が発生しました.他の物を試してください.\n曲名:{}`".format(self.info["PREFIX"], arg1))
+                await ctx.send(f":warning:`曲の再生中に問題が発生しました.他の物を試してください.\n曲名:{arg1}`")
             else:
-                await ctx.send(":warning:`Something went wrong when playing music.Please try another one.\nMusicName:{}`".format(self.info["PREFIX"], arg1))
+                await ctx.send(f":warning:`Something went wrong when playing music.Please try another one.\nMusicName:{arg1}`")
         elif code == "OPERATION_DENIED":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`曲の再生準備中にコマンドが実行されたため、操作が拒否されました.再生準備が完了したあとに再度試してください.\n( muffinが入力中... となっている場合は曲の再生準備中です.)`")
@@ -526,7 +526,7 @@ class Music(commands.Cog):
                     else:
                         self.API_INDEX = 1
                     self.save_tokens()
-                    await self.report_error(ctx, "get_request", "API_INDEXを{}に変更しました".format(self.API_INDEX))
+                    await self.report_error(ctx, "get_request", f"API_INDEXを{self.API_INDEX}に変更しました")
                     async with aiohttp.ClientSession() as session2:
                         async with session2.get(url + self.YOUTUBE_API[str(self.API_INDEX)]) as r2:
                             response2 = await r2.json()
@@ -663,9 +663,7 @@ class Music(commands.Cog):
                 return await self.clean_all(ctx, report=True)
             async with ctx.typing():
                 dt0 = self.bot.playlist[ctx.guild.id].pop(0)
-                r = await self.get_request(
-                    "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&relatedToVideoId={}&maxResults=10&key=".format(
-                        dt0["id"]), ctx)
+                r = await self.get_request("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&relatedToVideoId={}&maxResults=10&key=".format(dt0["id"]), ctx)
                 res = {}
                 if r[0] == 0:  # リクエスト処理中にエラーが発生
                     await self.send_text(ctx, "UNKNOWN_ERROR")
@@ -720,8 +718,7 @@ class Music(commands.Cog):
         :param playlist: プレイリストかどうか
         :return: 整形後の動画時間
         """
-        r = await self.get_request(
-            "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={}&key=".format(txt), ctx)
+        r = await self.get_request(f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={txt}&key=", ctx)
         if r[0] == 0:  # リクエスト処理中にエラーが発生
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "get_duration", "{}\n{}".format(r[1], pprint.pformat(r[2])))
@@ -1075,8 +1072,7 @@ class Music(commands.Cog):
         if self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         r = await self.get_request(
-            "https://www.googleapis.com/youtube/v3/search?part=snippet&q={}&maxResults=10&type=video&key=".format(url),
-            ctx)
+            f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url}&maxResults=10&type=video&key=",ctx)
         res = {}
         if r[0] == 0:  # リクエスト処理中にエラーが発生
             await self.send_text(ctx, "UNKNOWN_ERROR")
@@ -1141,9 +1137,7 @@ class Music(commands.Cog):
                 await self.send_text(ctx, "AUTO_OFF")
             return
         user = ctx.author.display_name
-        r = await self.get_request(
-            "https://www.googleapis.com/youtube/v3/search?part=snippet&q={}&maxResults=1&type=video&key=".format(url),
-            ctx)
+        r = await self.get_request(f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url}&maxResults=1&type=video&key=", ctx)
         res = {}
         if r[0] == 0:
             await self.send_text(ctx, "UNKNOWN_ERROR")

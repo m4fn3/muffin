@@ -27,6 +27,48 @@ class Other(commands.Cog):
                 await ctx.send(":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
                 raise commands.CommandError("Your Account Banned")
 
+    async def send_text(self, ctx, code, arg1=None, arg2=None):
+        if code == "INVALID_STRING":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`不正な文字列です.`")
+            else:
+                await ctx.send(":warning:`Invalid string.`")
+        elif code == "TRANS_OVER_2000":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`文字列が2000文字を超えるため翻訳結果を表示できませんでした.`")
+            else:
+                await ctx.send(":warning:️`The translation result could not be displayed because the character string exceeds 2000 characters.")
+        elif code == "WRONG_LANG_CODE":
+            if str(ctx.guild.region) == "japan":
+                return await ctx.send(":warning:`言語コードが間違っています. `{}lang` で対応可能な言語コード一覧を確認できます.`".format(self.info["PREFIX"]))
+            else:
+                return await ctx.send(":warning:`Wrong lanuage code. Please send `{}lang` to see list of avaiable language codes.`".format(self.info["PREFIX"]))
+        elif code == "INVALID_ID":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`{arg1}は間違ったユーザーIDです.`")
+            else:
+                await ctx.send(f":warning:`{arg1} is invalid`")
+        elif code == "PLS_SPECIFY_WITH_ID_OR_MENTION":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`メンションまたはユーザーIDで情報を表示するユーザーを指定してください.`")
+            else:
+                await ctx.send(":warning:️`Please specify the user to display information by mention or user ID.`")
+        elif code == "INVALID_LINK":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`{arg1}は間違った招待リンクです.`")
+            else:
+                await ctx.send(f":warning:`{arg1} is invalid invitation link.`")
+        elif code == "INVALID_MESSAGE":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`{arg1}は無効なメッセージリンクです.`")
+            else:
+                await ctx.send(f":warning:`{arg1} is invalid message.`")
+        elif code == "CANNOT_GET_CUZ_ANOTHER_SERVER":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`他のサーバーのメッセージであるため,取得できません.`")
+            else:
+                await ctx.send(f":warning:`Cannot get because it is a message from another server.`")
+
     @commands.command(aliases=["h"])
     async def help(self, ctx):
         try:
@@ -188,17 +230,14 @@ class Other(commands.Cog):
         try:
             lang_list = ["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "ceb", "zh-CN", "zh", "zh-TW", "co", "hr", "cs", "da", "nl", "en", "eo", "et", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha", "haw", "he iw", "hi", "hmn", "hu", "is", "ig", "id", "ga", "it", "ja", "jv", "kn", "kk", "km", "rw", "ko", "ku", "ky", "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ny", "or", "ps", "fa", "pl", "pt", "pa", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw", "sv", "tl", "tg", "ta", "tt", "te", "th", "tr", "tk", "uk", "ur", "ug", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
             if lang not in lang_list:
-                if str(ctx.guild.region) == "japan":
-                    return await ctx.send(":warning:`言語コードが間違っています. `{}lang` で対応可能な言語コード一覧を確認できます.`".format(self.info["PREFIX"]))
-                else:
-                    return await ctx.send(":warning:`Wrong lanuage code. Please send `{}lang` to see list of avaiable language codes.`".format(self.info["PREFIX"]))
+                return await self.send_text(ctx, "WRONG_LANG_CODE")
             async with aiohttp.ClientSession() as session:
                 async with session.get("https://script.google.com/macros/s/AKfycbzy2M6VEqREaXdAY0Xa_WayFX3B3HhOGVZN8FzT1lPhiHE9_Wk/exec?text={}&target={}".format(urllib.parse.quote(text), lang)) as r:
                     if r.status == 200:
                         try:
                             res = await r.json()
                             if len(res["text"]) >= 2048:
-                                return await ctx.send(":warning:`文字列が2000文字を超えるため翻訳結果を表示できませんでした.`")
+                                return await self.send_text(ctx, "TRANS_OVER_2000")
                             if str(ctx.guild.region) == "japan":
                                 embed = discord.Embed(description="```CSS\n[{}]``` ```fix\n{}```".format(lang, res["text"]), color=0xb6ff01, timestamp=ctx.message.created_at)
                             else:
@@ -207,17 +246,11 @@ class Other(commands.Cog):
                             embed.set_footer(text=f"{ctx.guild.name} | {ctx.channel.name}")
                             await ctx.send(embed=embed)
                         except:
-                            if str(ctx.guild.region) == "japan":
-                                await ctx.send(":warning:`不正な文字列です.`")
-                            else:
-                                await ctx.send(":warning:`Invalid string.`")
+                            await self.send_text(ctx, "INVALID_STRING")
                             await ctx.send(traceback2.format_exc())
                             await self.bot.get_channel(self.info["ERROR_CHANNEL"]).send("trans関数内よりレスポンス:\n```{}```".format(pprint.pformat(r)))
                     elif r.status == 400:
-                        if str(ctx.guild.region) == "japan":
-                            await ctx.send(":warning:`不正な文字列です.`")
-                        else:
-                            await ctx.send(":warning:`Invalid string.`")
+                        await self.send_text(ctx, "INVALID_STRING")
         except:
             await ctx.send(traceback2.format_exc())
 
@@ -235,17 +268,7 @@ class Other(commands.Cog):
         message = await ctx.send("Pong")
         ping = (time.monotonic() - before) * 1000
         await message.delete()
-        if str(ctx.guild.region) == "japan":
-            embed = discord.Embed(title="Ping", color=0x8eb8ff, url=self.info["WEB_URL_JA"])
-            embed.add_field(name="反応速度:", value="{}[ms]".format(int(ping)), inline=False)
-            embed.add_field(name="接続数:", value="{}".format(len(self.bot.voice_clients)), inline=False)
-            embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]), inline=False)
-        else:
-            embed = discord.Embed(title="Ping", color=0x8eb8ff, url=self.info["WEB_URL"])
-            embed.add_field(name="Speed:", value="{}[ms]".format(int(ping)), inline=False)
-            embed.add_field(name="Connecting:", value="{}".format(len(self.bot.voice_clients)), inline=False)
-            embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
-        await ctx.send(embed=embed)
+        await ctx.send(":stopwatch:`ping: {}[ms]`".format(int(ping)))
 
     @commands.command(aliases=["f","fb"])
     async def feedback(self, ctx, *, text):
@@ -263,7 +286,7 @@ class Other(commands.Cog):
     @commands.group(aliases=["chk"])
     async def check(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send("check <user|invite|message>")
+            await ctx.send("check <user|invite|message> <ID|URL>")
 
     @check.command(name="user", aliases=["u"])
     async def check_user(self, ctx):
@@ -279,12 +302,9 @@ class Other(commands.Cog):
                     if result is not None:
                         user_list.append(int(result["userid"]))
                     else:
-                        if str(ctx.guild.region) == "japan":
-                            await ctx.send(f":warning:`{user_id}は間違ったユーザーIDです.`")
-                        else:
-                            await ctx.send(f":warning:`{user_id} is invalid`")
+                        await self.send_text(ctx, "INVALID_ID", user_id)
             else:
-                return await ctx.send(":warning:`メンションまたはユーザーIDで情報を表示するユーザーを指定してください.`")
+                return await self.send(ctx, "PLS_SPECIFY_WITH_ID_OR_MENTION")
 
         for user_id in user_list:
             await self.show_user_info(ctx, user_id)
@@ -302,10 +322,7 @@ class Other(commands.Cog):
                 if result2 is not None:
                     invite_list.append(result2["invitecode"])
                 else:
-                    if str(ctx.guild.region) == "japan":
-                        await ctx.send(f":warning:`{invite}は間違った招待リンクです.`")
-                    else:
-                        await ctx.send(f":warning:`{invite} is invalid invitation link.`")
+                    await self.send_text(ctx, "INVALID_LINK", invite)
 
         for invite in invite_list:
             await self.show_invite_info(ctx, invite)
@@ -319,17 +336,11 @@ class Other(commands.Cog):
             if result is not None:
                 msg_list.append({"message": int(result["message"]), "channel": int(result["channel"]), "guild": int(result["guild"])})
             else:
-                if str(ctx.guild.region) == "japan":
-                    await ctx.send(f":warning:`{message}は無効なメッセージリンクです.`")
-                else:
-                    await ctx.send(f":warning:`{message} is invalid message.`")
+                await self.send_text(ctx, "INVALID_MESSAGE", message)
 
         for message in msg_list:
             if message["guild"] != ctx.guild.id:
-                if str(ctx.guild.region) == "japan":
-                    await ctx.send(f":warning:`他のサーバーのメッセージであるため,取得できません.`")
-                else:
-                    await ctx.send(f":warning:`Cannot get because it is a message from another server.`")
+                await self.send_text(ctx, "CANNOT_GET_CUZ_ANOTHER_SERVER")
             else:
                 channel = ctx.guild.get_channel(message["channel"])
                 msg = await channel.fetch_message(message["message"])
@@ -345,9 +356,7 @@ class Other(commands.Cog):
             user = await self.bot.fetch_user(user_id)
         except discord.errors.NotFound:
             if str(ctx.guild.region) == "japan":
-                return await ctx.send(f":warning:`{user_id}は間違ったユーザーIDです.`")
-            else:
-                return await ctx.send(f":warning:`{user_id} is invalid User ID.`")
+                return await self.send_text(ctx, "INVALID_ID", user_id)
         embed = discord.Embed(title=str(user), color=0x66cdaa)
         embed.add_field(name="ID", value=user.id)
         embed.set_thumbnail(url=user.avatar_url)
@@ -383,7 +392,7 @@ class Other(commands.Cog):
         try:
             invite = await self.bot.fetch_invite(url=invite_code)
         except discord.errors.NotFound:
-            return await ctx.send(f"{invite_code}は無効な招待リンクです.")
+            return await self.send_text(ctx, "INVALID_LINK", invite_code)
         embed = discord.Embed(title=invite_code, url=invite.url, color=0x98fb98)
         embed.set_author(name=invite.guild.name, icon_url=invite.guild.icon_url)
         embed.set_thumbnail(url=invite.guild.icon_url)
