@@ -272,9 +272,9 @@ class Other(commands.Cog):
         message = await ctx.send("Pong")
         ping = (time.monotonic() - before) * 1000
         await message.delete()
-        await ctx.send(":stopwatch:`ping: {}[ms]`".format(int(ping)))
+        await ctx.send(":white_check_mark:`ping: {}[ms]`".format(int(ping)))
 
-    @commands.command(aliases=["f","fb"])
+    @commands.command(aliases=["f", "fb"])
     async def feedback(self, ctx, *, text):
         channel = self.bot.get_channel(self.info["ERROR_CHANNEL"])
         embed = discord.Embed(title="お問い合わせ", description="サーバー:{0.name}({0.id})\nチャンネル:{1.name}({1.id})\nユーザー:{2}({2.id})".format(ctx.guild, ctx.channel ,ctx.author))
