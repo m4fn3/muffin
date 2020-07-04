@@ -33,6 +33,9 @@ class Muffin(commands.Bot):
         self.ADMIN = roles["ADMIN"]
         self.Contributor = roles["Contributor"]
         self.BAN = roles["BAN"]
+        with open("./DATABASE.json") as F:
+            database = json.load(F)
+        self.database = database
 
     async def on_ready(self):
         print("Logged in to {}".format(bot.user))

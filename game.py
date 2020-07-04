@@ -1,6 +1,6 @@
 # import
 from discord.ext import commands, tasks
-import asyncio, discord, json, os , random, sys, time, traceback2
+import asyncio, discord, json, os, random, sys, time, traceback2
 
 
 class Game(commands.Cog):
@@ -12,54 +12,66 @@ class Game(commands.Cog):
         self.info = info
         with open("./DATABASE.json") as F:
             database = json.load(F)
-        self.database = database
+        self.bot.database = database
         with open("./correct.json") as F:
             correct = json.load(F)
         self.correct = correct
 
     def save_database(self):
         with open("./DATABASE.json", 'w') as F:
-            json.dump(self.database, F, indent=2)
+            json.dump(self.bot.database, F, indent=2)
 
     def initialize_data(self, user_id):
-        self.database[str(user_id)] = {
-            "best_score" : 30,
-            "single" : {
-                "all_matches" : 0,
-                "win_matches" : 0
+        self.bot.database[str(user_id)] = {
+            "best_score": 30,
+            "single": {
+                "all_matches": 0,
+                "win_matches": 0
             },
-            "multi" : {
-                "all_matches" : 0,
-                "win_matches" : 0
+            "multi": {
+                "all_matches": 0,
+                "win_matches": 0
             }
         }
 
-    async def cog_before_invoke(self, ctx):
-        if ctx.author.id in self.bot.BAN:
+    async def send_text(self, ctx, code, arg1=None, arg2=None):
+        if code == "YOUR_ACCOUNT_BANNED":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
                 raise commands.CommandError("Your Account Banned")
             else:
-                await ctx.send(":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
+                await ctx.send(
+                    ":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
                 raise commands.CommandError("Your Account Banned")
+
+    async def cog_before_invoke(self, ctx):
+        if ctx.author.id in self.bot.BAN:
+            await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
+            raise commands.CommandError("Your Account Banned")
 
     @commands.command(aliases=["r"])
     async def rule(self, ctx):
         embed = discord.Embed(title="Rule Of Shadow Choice (1/3)")
         embed.set_image(url="{}Tehon.jpg".format(self.info["PICT_URL"]))
-        embed.add_field(name="基本", value="```これらは頭の片隅に覚えておく必要のある5つのアイテムです.\n今から説明する2つのルールにあったアイテムをこの中から選ぶことになります.\nこれらは問題の下部にリアクションとして表示されます.\nまた各問題の右上にも表示されるので適宜参照してください.\n(注意)色鉛筆は2色を持ちます.オレンジ色と黄色は同じ1つの色(黄色)とみなします.\nではその二つのルールを説明します!```")
+        embed.add_field(name="基本",
+                        value="```これらは重要な5つのアイテムです.\n今から説明する2つのルールにあったアイテムをこの中から選ぶことになります.\nこれらは問題の下部にリアクションとして表示されます.\nまた各問題の右上にも表示されるので適宜参照してください.\n(注意)色鉛筆は2色を持ちます.オレンジ色と黄色は同じ1つの色(黄色)とみなします.\nではその二つのルールを説明します!```")
         await ctx.send(embed=embed)
         embed = discord.Embed(title="Rule Of Shadow Choice (2/3)")
         embed.set_thumbnail(url="{}Tehon.jpg".format(self.info["PICT_URL"]))
         embed.set_image(url="{}/main/1.jpg".format(self.info["PICT_URL"]))
-        embed.add_field(name="ルール1", value="```表示された絵の中に上で示した５つのうちのどれかが同じ色で入っている場合それが正解です!\nすかさずそのアイテムのリアクションをおしましょう.```", inline=False)
+        embed.add_field(name="ルール1",
+                        value="```表示された絵の中に上で示した５つのうちのどれかが同じ色で入っている場合それが正解です!\nすかさずそのアイテムのリアクションをおしましょう.```",
+                        inline=False)
         embed.add_field(name="例1", value="```この場合絵の中に名刺が同じ色(紫)でうつっているので紫の名刺のリアクションが正解です.```", inline=False)
         await ctx.send(embed=embed)
         embed = discord.Embed(title="Rule Of Shadow Choice (3/3)")
         embed.set_thumbnail(url="{}Tehon.jpg".format(self.info["PICT_URL"]))
         embed.set_image(url="{}/main/11.jpg".format(self.info["PICT_URL"]))
-        embed.add_field(name="ルール2", value="```カードの中に正しい色で写っているモノがなければ(ルール1を満たすものがなければ)、\n色も種類も絵に映っていないアイテムをとりましょう.```", inline=False)
-        embed.add_field(name="例2", value="```この場合絵の中に正しい色でうつっているものはないので,色も種類も絵に写っていないものを探します.\nはさみ,緑,黄,えんぴつがだめなので,'黄'のノート,赤い'はさみ','緑'のメジャー,青の'鉛筆'はダメです.\nよって残った紫のメジャーが正解です.```", inline=False)
+        embed.add_field(name="ルール2", value="```カードの中に正しい色で写っているモノがなければ(ルール1を満たすものがなければ)、\n色も種類も絵に映っていないアイテムをとりましょう.```",
+                        inline=False)
+        embed.add_field(name="例2",
+                        value="```この場合絵の中に正しい色でうつっているものはないので,色も種類も絵に写っていないものを探します.\nはさみ,緑,黄,えんぴつがだめなので,'黄'のノート,赤い'はさみ','緑'のメジャー,青の'鉛筆'はダメです.\nよって残った紫のメジャーが正解です.```",
+                        inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["st"])
@@ -68,13 +80,28 @@ class Game(commands.Cog):
             embed = discord.Embed(title="ステータス")
             embed.set_thumbnail(url=ctx.author.avatar_url)
             if ctx.author.id in self.bot.ADMIN:
-                embed.add_field(name="ユーザーー情報", value="```yaml\nユーザー:{}\nユーザーID:{}\n[管理者]```".format(ctx.author, ctx.author.id), inline=False)
+                embed.add_field(name="ユーザーー情報",
+                                value="```yaml\nユーザー:{}\nユーザーID:{}\n[管理者]```".format(ctx.author, ctx.author.id),
+                                inline=False)
             elif ctx.author.id in self.bot.Contributor:
-                embed.add_field(name="ユーザーー情報", value="```fix\nユーザー:{}\nユーザーID:{}\n[貢献者]```".format(ctx.author, ctx.author.id), inline=False)
+                embed.add_field(name="ユーザーー情報",
+                                value="```fix\nユーザー:{}\nユーザーID:{}\n[貢献者]```".format(ctx.author, ctx.author.id),
+                                inline=False)
             else:
-                embed.add_field(name="ユーザーー情報", value="```ユーザー:{}\nユーザーID:{}```".format(ctx.author, ctx.author.id), inline=False)
-            if str(ctx.author.id) in self.database:
-                embed.add_field(name="ShadowChoice", value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(self.database[str(ctx.author.id)]["best_score"], self.database[str(ctx.author.id)]["single"]["all_matches"], self.database[str(ctx.author.id)]["single"]["win_matches"], round(self.database[str(ctx.author.id)]["single"]["win_matches"]/self.database[str(ctx.author.id)]["single"]["all_matches"]*100 ,2) ,self.database[str(ctx.author.id)]["multi"]["all_matches"], self.database[str(ctx.author.id)]["multi"]["win_matches"], round(self.database[str(ctx.author.id)]["multi"]["win_matches"]/self.database[str(ctx.author.id)]["multi"]["all_matches"]*100 ,2)))
+                embed.add_field(name="ユーザーー情報", value="```ユーザー:{}\nユーザーID:{}```".format(ctx.author, ctx.author.id),
+                                inline=False)
+            if str(ctx.author.id) in self.bot.database:
+                embed.add_field(name="ShadowChoice",
+                                value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
+                                    self.bot.database[str(ctx.author.id)]["best_score"],
+                                    self.bot.database[str(ctx.author.id)]["single"]["all_matches"],
+                                    self.bot.database[str(ctx.author.id)]["single"]["win_matches"], round(
+                                        self.bot.database[str(ctx.author.id)]["single"]["win_matches"] /
+                                        self.bot.database[str(ctx.author.id)]["single"]["all_matches"] * 100, 2),
+                                    self.bot.database[str(ctx.author.id)]["multi"]["all_matches"],
+                                    self.bot.database[str(ctx.author.id)]["multi"]["win_matches"], round(
+                                        self.bot.database[str(ctx.author.id)]["multi"]["win_matches"] /
+                                        self.bot.database[str(ctx.author.id)]["multi"]["all_matches"] * 100, 2)))
             else:
                 embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
             await ctx.send(embed=embed)
@@ -83,13 +110,26 @@ class Game(commands.Cog):
             embed = discord.Embed(title="ステータス")
             embed.set_thumbnail(url=target.avatar_url)
             if target.id in self.bot.ADMIN:
-                embed.add_field(name="ユーザーー情報", value="```yaml\nユーザー:{}\nユーザーID:{}\n[管理者]```".format(target, target.id), inline=False)
+                embed.add_field(name="ユーザーー情報", value="```yaml\nユーザー:{}\nユーザーID:{}\n[管理者]```".format(target, target.id),
+                                inline=False)
             elif target.id in self.bot.Contributor:
-                embed.add_field(name="ユーザーー情報", value="```fix\nユーザー:{}\nユーザーID:{}\n[貢献者]```".format(target, target.id), inline=False)
+                embed.add_field(name="ユーザーー情報", value="```fix\nユーザー:{}\nユーザーID:{}\n[貢献者]```".format(target, target.id),
+                                inline=False)
             else:
-                embed.add_field(name="ユーザーー情報", value="```ユーザー:{}\nユーザーID:{}```".format(target, target.id), inline=False)
-            if str(target.id) in self.database:
-                embed.add_field(name="ShadowChoice", value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(self.database[str(target.id)]["best_score"], self.database[str(target.id)]["single"]["all_matches"], self.database[str(target.id)]["single"]["win_matches"], round(self.database[str(target.id)]["single"]["win_matches"]/ self.database[str(target.id)]["single"]["all_matches"]*100 ,2) ,self.database[str(target.id)]["multi"]["all_matches"], self.database[str(target.id)]["multi"]["win_matches"], round(self.database[str(target.id)]["multi"]["win_matches"]/self.database[str(target.id)]["multi"]["all_matches"]*100 ,2)))
+                embed.add_field(name="ユーザーー情報", value="```ユーザー:{}\nユーザーID:{}```".format(target, target.id),
+                                inline=False)
+            if str(target.id) in self.bot.database:
+                embed.add_field(name="ShadowChoice",
+                                value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
+                                    self.bot.database[str(target.id)]["best_score"],
+                                    self.bot.database[str(target.id)]["single"]["all_matches"],
+                                    self.bot.database[str(target.id)]["single"]["win_matches"], round(
+                                        self.bot.database[str(target.id)]["single"]["win_matches"] /
+                                        self.bot.database[str(target.id)]["single"]["all_matches"] * 100, 2),
+                                    self.bot.database[str(target.id)]["multi"]["all_matches"],
+                                    self.bot.database[str(target.id)]["multi"]["win_matches"], round(
+                                        self.bot.database[str(target.id)]["multi"]["win_matches"] /
+                                        self.bot.database[str(target.id)]["multi"]["all_matches"] * 100, 2)))
             else:
                 embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
             await ctx.send(embed=embed)
@@ -123,7 +163,7 @@ class Game(commands.Cog):
                     mode = int(msg_list[1])
                     round_time = int(msg_list[2])
             if mode == 1:
-                if str(ctx.author.id) not in self.database:
+                if str(ctx.author.id) not in self.bot.database:
                     self.initialize_data(ctx.author.id)
                 for i in range(round_time):
                     embed = discord.Embed(title="Wait 5 sec...")
@@ -136,11 +176,14 @@ class Game(commands.Cog):
                     await org_msg.add_reaction(self.info["SCPencil"])
                     ch = ctx.message.channel
                     ah = ctx.message.author
-                    num = str(random.randint(1,25))
+                    num = str(random.randint(1, 25))
                     num_id = self.correct[num]
+
                     def check(r, u):
-                        return u == ah and r.message.channel == ch and r.message.id == org_msg.id and r.emoji.id in self.info["SC"]
-                    embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i+1, round_time))
+                        return u == ah and r.message.channel == ch and r.message.id == org_msg.id and r.emoji.id in \
+                               self.info["SC"]
+
+                    embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i + 1, round_time))
                     embed.set_thumbnail(url="{}Tehon.jpg".format(self.info["PICT_URL"]))
                     embed.set_image(url="{}/main/{}.jpg".format(self.info["PICT_URL"], num))
                     embed.add_field(name="問題", value="下のリアクションを押して回答してください!")
@@ -156,22 +199,25 @@ class Game(commands.Cog):
                             await ctx.send("{}あなたは間違いました!".format(self.info["SCbatu"]))
                             is_right = 0
                         elapsed_time = round(elapsed_time, 2)
-                        embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i+1, round_time))
+                        embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i + 1, round_time))
                         embed.add_field(name="終了済", value="試合はすでに終了しています.")
                         await org_msg.edit(embed=embed)
                         if is_right == 1:
-                            embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i+1, round_time))
-                            embed.add_field(name="結果発表", value="```正解者:{}\n計測時間:{}[s]```".format(puser.display_name, elapsed_time))
+                            embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i + 1, round_time))
+                            embed.add_field(name="結果発表",
+                                            value="```正解者:{}\n計測時間:{}[s]```".format(puser.display_name, elapsed_time))
                             await ctx.send(embed=embed)
-                            if self.database[str(puser.id)]["best_score"] > elapsed_time:
-                                self.database[str(puser.id)]["best_score"] = elapsed_time
-                                await ctx.send("{} <@{}>さん!ベストスコア更新!\nあなたのスコア:{}[s]".format(self.info["SCcongr"], puser.id, elapsed_time))
-                            self.database[str(puser.id)]["single"]["win_matches"] += 1
+                            if self.bot.database[str(puser.id)]["best_score"] > elapsed_time:
+                                self.bot.database[str(puser.id)]["best_score"] = elapsed_time
+                                await ctx.send(
+                                    "{} <@{}>さん!ベストスコア更新!\nあなたのスコア:{}[s]".format(self.info["SCcongr"], puser.id,
+                                                                                 elapsed_time))
+                            self.bot.database[str(puser.id)]["single"]["win_matches"] += 1
                         else:
-                            embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i+1, round_time))
+                            embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i + 1, round_time))
                             embed.add_field(name="結果発表", value="```正解者:なし\n計測時間:{}[s]```".format(elapsed_time))
                             await ctx.send(embed=embed)
-                        self.database[str(puser.id)]["single"]["all_matches"] += 1
+                        self.bot.database[str(puser.id)]["single"]["all_matches"] += 1
                         self.save_database()
                         afk = 0
                     except asyncio.TimeoutError:
@@ -190,16 +236,21 @@ class Game(commands.Cog):
                 members = []
                 go_vote = []
                 ch = ctx.message.channel
-                embed.add_field(name="参加画面", value="```diff\n以下のリアクションを押して参加してください!\n+ 参加\n- 参加をキャンセル\n定員に達し次第ゲームが開始されます\n定員人数:{}人```".format(mode))
+                embed.add_field(name="参加画面",
+                                value="```diff\n以下のリアクションを押して参加してください!\n+ 参加\n- 参加をキャンセル\n定員に達し次第ゲームが開始されます\n定員人数:{}人```".format(
+                                    mode))
                 join_msg = await ctx.send(embed=embed)
+
                 def check(r, u):
-                    return r.message.channel == ch and r.message.id == join_msg.id and r.emoji.id in self.info["PM"] and u != self.bot.user
+                    return r.message.channel == ch and r.message.id == join_msg.id and r.emoji.id in self.info[
+                        "PM"] and u != self.bot.user
+
                 await join_msg.add_reaction(self.info["SCplus"])
                 await join_msg.add_reaction(self.info["SCminus"])
                 await join_msg.add_reaction(self.info["SCgoanyway"])
                 while len(members) < mode:
                     try:
-                        preaction, puser = await self.bot.wait_for("reaction_add", timeout=30.0 ,check=check)
+                        preaction, puser = await self.bot.wait_for("reaction_add", timeout=30.0, check=check)
                         if preaction.emoji.id == 717595208757280890:
                             if puser.id not in members:
                                 members.append(puser.id)
@@ -215,13 +266,17 @@ class Game(commands.Cog):
                         elif preaction.emoji.id == 718028499163807785:
                             if (puser.id not in go_vote) and (puser.id in members):
                                 go_vote.append(puser.id)
-                                await ctx.send("{}<@{}>さんが強制的にスタートに投票しました.({}/2)".format(self.info["SCmaru"], puser.id, len(go_vote)))
+                                await ctx.send("{}<@{}>さんが強制的にスタートに投票しました.({}/2)".format(self.info["SCmaru"], puser.id,
+                                                                                         len(go_vote)))
                                 if len(go_vote) == 2:
-                                    await ctx.send("{} 2人が強制的にスタートに投票したため{}人モードに変更します.".format(self.info["SCcheck"], len(members)))
+                                    await ctx.send(
+                                        "{} 2人が強制的にスタートに投票したため{}人モードに変更します.".format(self.info["SCcheck"], len(members)))
                                     mode = len(members)
                                     break
                             elif puser.id in go_vote:
-                                await ctx.send("{}<@{}>さんは既に強制的にスタートに投票しています.({}/2)".format(self.info["SCwarning"], puser.id, len(go_vote)))
+                                await ctx.send(
+                                    "{}<@{}>さんは既に強制的にスタートに投票しています.({}/2)".format(self.info["SCwarning"], puser.id,
+                                                                                 len(go_vote)))
                             else:
                                 await ctx.send("{}<@{}>さんは参加していないので投票できません!".format(self.info["SCwarning"], puser.id))
                     except asyncio.TimeoutError:
@@ -231,7 +286,7 @@ class Game(commands.Cog):
                 await join_msg.edit(embed=embed)
                 await ctx.send("{} 定員に達したためゲームを開始します!".format(self.info["SCcheck"]))
                 for i in members:
-                    if str(i) not in self.database:
+                    if str(i) not in self.bot.database:
                         self.initialize_data(i)
                 for i in range(round_time):
                     embed = discord.Embed(title="Wait 5 sec...")
@@ -244,15 +299,18 @@ class Game(commands.Cog):
                     await org_msg.add_reaction(self.info["SCPencil"])
                     ch = ctx.message.channel
                     ah = ctx.message.author
-                    num = str(random.randint(1,25))
+                    num = str(random.randint(1, 25))
                     num_id = self.correct[num]
                     answered_members = []
                     elapsed_time = 30
                     end_code = 0
                     right_ppl = None
+
                     def check(r, u):
-                        return r.message.channel == ch and r.message.id == org_msg.id and r.emoji.id in self.info["SC"] and u.id in members
-                    embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i+1, round_time))
+                        return r.message.channel == ch and r.message.id == org_msg.id and r.emoji.id in self.info[
+                            "SC"] and u.id in members
+
+                    embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i + 1, round_time))
                     embed.set_thumbnail(url="{}Tehon.jpg".format(self.info["PICT_URL"]))
                     embed.set_image(url="{}/main/{}.jpg".format(self.info["PICT_URL"], num))
                     embed.add_field(name="問題", value="下のリアクションを押して回答してください!")
@@ -264,24 +322,27 @@ class Game(commands.Cog):
                             elapsed_time = time.time() - pstart
                             if puser.id not in answered_members:
                                 if preaction.emoji.id == num_id:
-                                    await ctx.send("{}<@{}>さん!あなたは正解しました!".format(self.info["SCmaru"],puser.id))
+                                    await ctx.send("{}<@{}>さん!あなたは正解しました!".format(self.info["SCmaru"], puser.id))
                                     right_ppl = str(puser.id)
                                     end_code = 1
                                     break
                                 else:
-                                    await ctx.send("{}<@{}>さん!あなたは間違いました!\nこの試合であなたはこれ以上回答できません!\n次のラウンドをお待ちください.".format(self.info["SCbatu"],puser.id))
+                                    await ctx.send(
+                                        "{}<@{}>さん!あなたは間違いました!\nこの試合であなたはこれ以上回答できません!\n次のラウンドをお待ちください.".format(
+                                            self.info["SCbatu"], puser.id))
                                     answered_members.append(puser.id)
                             else:
-                                await ctx.send("{}<@{}>さん!あなたはすでに間違っているためこれ以上回答できません!\n次のラウンドをお待ちください.".format(self.info["SCwarning"],puser.id))
+                                await ctx.send("{}<@{}>さん!あなたはすでに間違っているためこれ以上回答できません!\n次のラウンドをお待ちください.".format(
+                                    self.info["SCwarning"], puser.id))
                         except asyncio.TimeoutError:
                             end_code = 2
                             await ctx.send("{} 一定時間反応がなかったためセッションを終了しました".format(self.info["SCwarning"]))
                             break
-                    embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i+1, round_time))
+                    embed = discord.Embed(title="Question of Shadow Choice ({}/{})".format(i + 1, round_time))
                     embed.add_field(name="終了済", value="試合はすでに終了しています.")
                     await org_msg.edit(embed=embed)
                     if end_code == 0:
-                        embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i+1, round_time))
+                        embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i + 1, round_time))
                         players = ""
                         for mem in members:
                             players += "\n<@{}>".format(mem)
@@ -289,20 +350,23 @@ class Game(commands.Cog):
                         await ctx.send(embed=embed)
                         afk = 0
                     elif end_code == 1:
-                        embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i+1, round_time))
+                        embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i + 1, round_time))
                         elapsed_time = round(elapsed_time, 2)
                         players = ""
                         for mem in members:
                             players += "\n<@{}>".format(mem)
-                        embed.add_field(name="結果発表", value="`正解者:`<@{}>\n`参加者:`{}\n`正解者の計測時間:`{}[s]".format(right_ppl, players,elapsed_time))
+                        embed.add_field(name="結果発表",
+                                        value="`正解者:`<@{}>\n`参加者:`{}\n`正解者の計測時間:`{}[s]".format(right_ppl, players,
+                                                                                               elapsed_time))
                         await ctx.send(embed=embed)
                         afk = 0
-                        if self.database[right_ppl]["best_score"] > elapsed_time:
-                            self.database[right_ppl]["best_score"] = elapsed_time
-                            await ctx.send("{} <@{}>さん!ベストスコア更新!\nあなたのスコア:{}[s]".format(self.info["SCcongr"], right_ppl, elapsed_time))
-                        self.database[right_ppl]["multi"]["win_matches"] += 1
+                        if self.bot.database[right_ppl]["best_score"] > elapsed_time:
+                            self.bot.database[right_ppl]["best_score"] = elapsed_time
+                            await ctx.send("{} <@{}>さん!ベストスコア更新!\nあなたのスコア:{}[s]".format(self.info["SCcongr"], right_ppl,
+                                                                                        elapsed_time))
+                        self.bot.database[right_ppl]["multi"]["win_matches"] += 1
                     elif end_code == 2:
-                        embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i+1, round_time))
+                        embed = discord.Embed(title="Result of Shadow Choice ({}/{})".format(i + 1, round_time))
                         players = ""
                         for mem in members:
                             players += "\n<@{}>".format(mem)
@@ -313,7 +377,7 @@ class Game(commands.Cog):
                             await ctx.send("{}2回連続で回答がなかったためこの部屋を終了します.".format(self.info["SCwarning"]))
                             break
                     for mem in members:
-                        self.database[str(mem)]["multi"]["all_matches"] += 1
+                        self.bot.database[str(mem)]["multi"]["all_matches"] += 1
                     self.save_database()
         except:
             await ctx.send(traceback2.format_exc())

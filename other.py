@@ -20,12 +20,8 @@ class Other(commands.Cog):
 
     async def cog_before_invoke(self, ctx):
         if ctx.author.id in self.bot.BAN:
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
-                raise commands.CommandError("Your Account Banned")
-            else:
-                await ctx.send(":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
-                raise commands.CommandError("Your Account Banned")
+            await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
+            raise commands.CommandError("Your Account Banned")
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
         if code == "INVALID_STRING":
@@ -68,6 +64,14 @@ class Other(commands.Cog):
                 await ctx.send(f":warning:`他のサーバーのメッセージであるため,取得できません.`")
             else:
                 await ctx.send(f":warning:`Cannot get because it is a message from another server.`")
+        elif code == "YOUR_ACCOUNT_BANNED":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
+                raise commands.CommandError("Your Account Banned")
+            else:
+                await ctx.send(
+                    ":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
+                raise commands.CommandError("Your Account Banned")
 
     @commands.command(aliases=["h"])
     async def help(self, ctx):
