@@ -1,4 +1,6 @@
 # import
+import re
+
 from discord.ext import commands
 import aiohttp, asyncio, datetime, discord, json, os, pprint, psutil, sys, time,  urllib, traceback2
 
@@ -10,6 +12,11 @@ class Other(commands.Cog):
         with open("./INFO.json") as F:
             info = json.load(F)
         self.info = info
+        self.user_match = "(?P<userid>[0-9]{18})"
+        self.invite_match = "http(s)?://((ptb.|canary.)?discord(app)?.com/invite/|discord.gg/)(?P<invitecode>[a-zA-Z0-9_]{3,})"
+        self.invite_match2 = "(?P<invitecode>[a-zA-Z0-9_]{3,})"
+        self.message_match = "http(s)?://(ptb.|canary.)?discord(app)?.com/channels/(?P<guild>[0-9]{18})/(?P<channel>[0-9]{18})/(?P<message>[0-9]{18})"
+        self.message_match2 = "(?P<message>[0-9]{18}"
 
     async def cog_before_invoke(self, ctx):
         if ctx.author.id in self.bot.BAN:
@@ -105,6 +112,7 @@ class Other(commands.Cog):
                         embed.add_field(name="{}info".format(self.info["PREFIX"]), value="BOTに関する情報を表示します", inline=False)
                         embed.add_field(name="{}feedback [内容]".format(self.info["PREFIX"]), value="フィードバックを送信します", inline=False)
                         embed.add_field(name="{}tr [言語コード] [文章]".format(self.info["PREFIX"]), value="テキストを翻訳します", inline=False)
+                        embed.add_field(name="{}check [u(ユーザー)/m(メッセージ)/i(招待)] [ID/URL/メンション等]".format(self.info["PREFIX"]), value="ユーザーIDやメッセージURL,招待URLから詳細情報を取得します.", inline=False)
                         embed.add_field(name="{}lang".format(self.info["PREFIX"]), value="言語コード一覧を表示します", inline=False)
                         embed.add_field(name="{}invite".format(self.info["PREFIX"]), value="BOTを招待するURLを送信します", inline=False)
                         embed.add_field(name="{}ping".format(self.info["PREFIX"]), value="BOTの反応速度を計測します", inline=False)
@@ -116,6 +124,7 @@ class Other(commands.Cog):
                         embed.add_field(name="{}info".format(self.info["PREFIX"]), value="Show informations about this bot", inline=False)
                         embed.add_field(name="{}feedback [text]".format(self.info["PREFIX"]), value="Send feedback.", inline=False)
                         embed.add_field(name="{}tr [lang] [text]".format(self.info["PREFIX"]), value="Translate text", inline=False)
+                        embed.add_field(name="{}check [u (user)/m (message)/i (invitation)] [ID/URL/mention etc.]", value="Get detailed information from UserID,MessageURL,InvitationURL etc.", inline=False)
                         embed.add_field(name="{}lang".format(self.info["PREFIX"]), value="Show list of language codes", inline=False)
                         embed.add_field(name="{}invite".format(self.info["PREFIX"]), value="Send invitation url", inline=False)
                         embed.add_field(name="{}ping".format(self.info["PREFIX"]), value="Show ping of this bot", inline=False)
@@ -191,10 +200,11 @@ class Other(commands.Cog):
                             if len(res["text"]) >= 2048:
                                 return await ctx.send(":warning:`文字列が2000文字を超えるため翻訳結果を表示できませんでした.`")
                             if str(ctx.guild.region) == "japan":
-                                embed = discord.Embed(description="```CSS\n[{}]``` ```fix\n{}```".format(lang, res["text"]), color=0xb6ff01)
+                                embed = discord.Embed(description="```CSS\n[{}]``` ```fix\n{}```".format(lang, res["text"]), color=0xb6ff01, timestamp=ctx.message.created_at)
                             else:
-                                embed = discord.Embed(description="```CSS\n[{}]``` ```fix\n{}```".format(lang, res["text"]), color=0xb6ff01)
+                                embed = discord.Embed(description="```CSS\n[{}]``` ```fix\n{}```".format(lang, res["text"]), color=0xb6ff01, timestamp=ctx.message.created_at)
                             embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+                            embed.set_footer(text=f"{ctx.guild.name} | {ctx.channel.name}")
                             await ctx.send(embed=embed)
                         except:
                             if str(ctx.guild.region) == "japan":
@@ -250,10 +260,150 @@ class Other(commands.Cog):
         else:
             await ctx.send(":white_check_mark: Your inquiry is complete.\nDepending on the content, the BOT administrator will post a reply on the official server.\nThank you for your valuable feedback.\nFeedback ID: {}".format(ctx.message.id))
 
-    @commands.command(aliases=["chk"])
-    async def check(self, ctx, text):
-        # TODO: check commands
-        pass
+    @commands.group(aliases=["chk"])
+    async def check(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("check <user|invite|message>")
+
+    @check.command(name="user", aliases=["u"])
+    async def check_user(self, ctx):
+        user_list = []
+        if ctx.message.mentions != []:
+            for target in ctx.message.mentions:
+                user_list.append(target.id)
+        else:
+            text = ctx.message.content.split(" ")
+            if len(text) >= 3:
+                for user_id in text[2:]:
+                    result = re.search(self.user_match, user_id)
+                    if result is not None:
+                        user_list.append(int(result["userid"]))
+                    else:
+                        if str(ctx.guild.region) == "japan":
+                            await ctx.send(f":warning:`{user_id}は間違ったユーザーIDです.`")
+                        else:
+                            await ctx.send(f":warning:`{user_id} is invalid`")
+            else:
+                return await ctx.send(":warning:`メンションまたはユーザーIDで情報を表示するユーザーを指定してください.`")
+
+        for user_id in user_list:
+            await self.show_user_info(ctx, user_id)
+
+    @check.command(name="invite", aliases=["i", "inv"])
+    async def check_invite(self, ctx, *, text):
+        invite_list = []
+        invites = text.split()
+        for invite in invites:
+            result = re.search(self.invite_match, invite)
+            if result is not None:
+                invite_list.append(result["invitecode"])
+            else:
+                result2 = re.search(self.invite_match2, invite)
+                if result2 is not None:
+                    invite_list.append(result2["invitecode"])
+                else:
+                    if str(ctx.guild.region) == "japan":
+                        await ctx.send(f":warning:`{invite}は間違った招待リンクです.`")
+                    else:
+                        await ctx.send(f":warning:`{invite} is invalid invitation link.`")
+
+        for invite in invite_list:
+            await self.show_invite_info(ctx, invite)
+
+    @check.command(name="message", aliases=["m", "msg"])
+    async def check_message(self, ctx, *, text):
+        msg_list = []
+        messages = text.split()
+        for message in messages:
+            result = re.search(self.message_match, message)
+            if result is not None:
+                msg_list.append({"message": int(result["message"]), "channel": int(result["channel"]), "guild": int(result["guild"])})
+            else:
+                if str(ctx.guild.region) == "japan":
+                    await ctx.send(f":warning:`{message}は無効なメッセージリンクです.`")
+                else:
+                    await ctx.send(f":warning:`{message} is invalid message.`")
+
+        for message in msg_list:
+            if message["guild"] != ctx.guild.id:
+                if str(ctx.guild.region) == "japan":
+                    await ctx.send(f":warning:`他のサーバーのメッセージであるため,取得できません.`")
+                else:
+                    await ctx.send(f":warning:`Cannot get because it is a message from another server.`")
+            else:
+                channel = ctx.guild.get_channel(message["channel"])
+                msg = await channel.fetch_message(message["message"])
+                embed = discord.Embed(timestamp=msg.created_at, description=msg.content, color=0xfa8072)
+                embed.set_author(name=str(msg.author), icon_url=msg.author.avatar_url)
+                embed.set_footer(text=f"{msg.guild.name} | {msg.channel.name}")
+                if msg.attachments and msg.attachments[0].proxy_url:
+                    embed.set_image(url=msg.attachments[0].proxy_url)
+                await ctx.send(embed=embed)
+
+    async def show_user_info(self, ctx, user_id: int):
+        try:
+            user = await self.bot.fetch_user(user_id)
+        except discord.errors.NotFound:
+            if str(ctx.guild.region) == "japan":
+                return await ctx.send(f":warning:`{user_id}は間違ったユーザーIDです.`")
+            else:
+                return await ctx.send(f":warning:`{user_id} is invalid User ID.`")
+        embed = discord.Embed(title=str(user), color=0x66cdaa)
+        embed.add_field(name="ID", value=user.id)
+        embed.set_thumbnail(url=user.avatar_url)
+        if str(ctx.guild.region) == "japan":
+            embed.add_field(name="アカウント作成日", value=user.created_at.strftime("%Y/%m/%d %H:%M:%S"))
+        else:
+            embed.add_field(name="AccountCreated", value=user.created_at.strftime("%Y/%m/%d %H:%M:%S"))
+        member = ctx.guild.get_member(user_id)
+        if member is not None:
+            if str(ctx.guild.region) == "japan":
+                embed.add_field(name="サーバー参加日", value=member.joined_at.strftime("%Y/%m/%d %H:%M:%S"), inline=False)
+            else:
+                embed.add_field(name="UserJoined", value=member.joined_at.strftime("%Y/%m/%d %H:%M:%S"), inline=False)
+            status = ""
+            if str(member.mobile_status) != "offline":
+                status += f"Mobile: {member.mobile_status},"
+            if str(member.desktop_status) != "offline":
+                status += f"Desktop: {member.desktop_status},"
+            if str(member.web_status) != "offline":
+                status += f"Web: {member.web_status}"
+            status = status.replace(",", "\n")
+            if status == "":
+                status = "offline"
+            if str(ctx.guild.region) == "japan":
+                embed.add_field(name="ニックネーム", value=member.display_name)
+                embed.add_field(name="ステータス", value=status)
+            else:
+                embed.add_field(name="NickName", value=member.display_name)
+                embed.add_field(name="Status", value=status)
+        await ctx.send(embed=embed)
+
+    async def show_invite_info(self, ctx, invite_code):
+        try:
+            invite = await self.bot.fetch_invite(url=invite_code)
+        except discord.errors.NotFound:
+            return await ctx.send(f"{invite_code}は無効な招待リンクです.")
+        embed = discord.Embed(title=invite_code, url=invite.url, color=0x98fb98)
+        embed.set_author(name=invite.guild.name, icon_url=invite.guild.icon_url)
+        embed.set_thumbnail(url=invite.guild.icon_url)
+        if str(ctx.guild.region) == "japan":
+            embed.add_field(name="サーバー名", value=invite.guild.name, inline=False)
+            embed.add_field(name="サーバーID", value=invite.guild.id)
+            embed.add_field(name="招待者", value=str(invite.inviter), inline=False)
+            embed.add_field(name="招待先チャンネル", value=invite.channel.name)
+            embed.add_field(name="アクティブメンバー人数", value=invite.approximate_presence_count, inline=False)
+            embed.add_field(name="メンバー人数", value=invite.approximate_member_count)
+            embed.set_footer(text="この招待リンクは有効です.")
+        else:
+            embed.add_field(name="ServerName", value=invite.guild.name, inline=False)
+            embed.add_field(name="ServerID", value=invite.guild.id)
+            embed.add_field(name="Inviter", value=str(invite.inviter), inline=False)
+            embed.add_field(name="Channel", value=invite.channel.name)
+            embed.add_field(name="ActiveMemberCount", value=invite.approximate_presence_count, inline=False)
+            embed.add_field(name="MemberCount", value=invite.approximate_member_count)
+            embed.set_footer(text="This URL available.")
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
