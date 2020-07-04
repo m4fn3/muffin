@@ -476,9 +476,9 @@ class Music(commands.Cog):
                 await ctx.send("Information was cleared because an abnormal situation was detected.")
         elif code == "SOMETHING_WENT_WRONG_WITH_TITLE":
             if str(ctx.guild.region) == "japan":
-                await ctx.send(":warning:`曲の再生中に問題が発生しました.他の物を試すか,{}autoを使用して再生してください.\n曲名:{}`".format(self.info["PREFIX"], arg1))
+                await ctx.send(":warning:`曲の再生中に問題が発生しました.他の物を試してください.\n曲名:{}`".format(self.info["PREFIX"], arg1))
             else:
-                await ctx.send(":warning:`Something went wrong when playing music.Please try another one or use {}auto to play.\nMusicName:{}`".format(self.info["PREFIX"], arg1))
+                await ctx.send(":warning:`Something went wrong when playing music.Please try another one.\nMusicName:{}`".format(self.info["PREFIX"], arg1))
         elif code == "OPERATION_DENIED":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`曲の再生準備中にコマンドが実行されたため、操作が拒否されました.再生準備が完了したあとに再度試してください.\n( muffinが入力中... となっている場合は曲の再生準備中です.)`")
