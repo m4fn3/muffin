@@ -39,7 +39,8 @@ class Muffin(commands.Bot):
 
     async def on_ready(self):
         print("Logged in to {}".format(bot.user))
-        await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
+        if self.user.id == 644065524879196193:
+            await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
 
 
 if __name__ == '__main__':
