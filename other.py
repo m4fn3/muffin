@@ -1,9 +1,9 @@
 # import
 import re
 
-import webcolors as webcolors
 from discord.ext import commands
-import aiohttp, asyncio, datetime, discord, json, os, pprint, psutil, sys, time,  urllib, traceback2
+from matplotlib import colors
+import aiohttp, asyncio, datetime, discord, json, os, pprint, psutil, sys, time,  urllib, traceback2, webcolors
 
 
 class Other(commands.Cog):
@@ -19,6 +19,27 @@ class Other(commands.Cog):
         self.message_match = "http(s)?://(ptb.|canary.)?discord(app)?.com/channels/(?P<guild>[0-9]{18})/(?P<channel>[0-9]{18})/(?P<message>[0-9]{18})"
         self.message_match2 = "(?P<message>[0-9]{18}"
         self.color_match = "(?P<color>[0-9a-fA-F]{6})"
+
+    def hex_to_rgb(self, hex_code):
+        hlen = len(hex_code)
+        return tuple(int(hex_code[i:i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+
+    async def cog_command_error(self, ctx, error):
+        """
+        エラーが発生した時
+        :param ctx: Context
+        :param error: Error
+        :return:
+        """
+        if isinstance(error, commands.MissingRequiredArgument):
+            await self.send_text(ctx, "WRONG_COMMAND")
+        elif isinstance(error, commands.errors.CommandNotFound):
+            return
+        elif isinstance(error, commands.errors.CommandError):
+            return
+        else:
+            await self.send_text(ctx, "UNKNOWN_ERROR")
+            await self.report_error(ctx, "on_command_error", str(error))
 
     async def cog_before_invoke(self, ctx):
         if ctx.author.id in self.bot.BAN:
@@ -86,14 +107,29 @@ class Other(commands.Cog):
                 await ctx.send(f":warning:`Wrong RGB color code.`")
         elif code == "WRONG_COLOR_NAME":
             if str(ctx.guild.region) == "japan":
-                await ctx.send(f":warning:`間違ったカラーネームです.`")
+                await ctx.send(f":warning:`サポートされていないカラーネームです.`")
             else:
-                await ctx.send(f":warning:`Wrong color name.`")
+                await ctx.send(f":warning:`Not supported color name.`")
         elif code == "WRONG_COLOR_TYPE":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(f":warning:`間違ったカラータイプです. hex | rgb | name のいずれかを使用してください`")
             else:
                 await ctx.send(f":warning:️` Wrong color type. Use one of hex | rgb | name`")
+        elif code == "UNKNOWN_COLOR_TYPE":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:間違ったカラータイプです.hexで16進数, rgbでRGB, nameで色名で指定できます.")
+            else:
+                await ctx.send(":warning:Wrong color type. hex is hexadecimal, rgb is RGB, name is a color name.")
+        elif code == "WRONG_COMMAND":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`コマンドが間違っています.構文が正しいことを確認してください!`")
+            else:
+                await ctx.send(":warning:`Wrong command.Please check your arguments are valid!`")
+        elif code == "UNKNOWN_ERROR":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(":warning:`不明なエラーが発生しました.`")
+            else:
+                await ctx.send(":warning:`Unknown error has occured.`")
 
     async def show_user_info(self, ctx, user_id: int):
         try:
@@ -244,6 +280,7 @@ class Other(commands.Cog):
                         embed.add_field(name="{}feedback [内容]".format(self.info["PREFIX"]), value="フィードバックを送信します", inline=False)
                         embed.add_field(name="{}tr [言語コード] [文章]".format(self.info["PREFIX"]), value="テキストを翻訳します", inline=False)
                         embed.add_field(name="{}check [u(ユーザー)/m(メッセージ)/i(招待)] [ID/URL/メンション等]".format(self.info["PREFIX"]), value="ユーザーIDやメッセージURL,招待URLから詳細情報を取得します.", inline=False)
+                        embed.add_field(name="{}color [hex(16進数)/rgb(RGB)/name(色名)] [16進数カラーコード/r g b/色名]".format(self.info["PREFIX"]), value="指定された色の情報を表示します.")
                         embed.add_field(name="{}lang".format(self.info["PREFIX"]), value="言語コード一覧を表示します", inline=False)
                         embed.add_field(name="{}invite".format(self.info["PREFIX"]), value="BOTを招待するURLを送信します", inline=False)
                         embed.add_field(name="{}ping".format(self.info["PREFIX"]), value="BOTの反応速度を計測します", inline=False)
@@ -256,6 +293,7 @@ class Other(commands.Cog):
                         embed.add_field(name="{}feedback [text]".format(self.info["PREFIX"]), value="Send feedback.", inline=False)
                         embed.add_field(name="{}tr [lang] [text]".format(self.info["PREFIX"]), value="Translate text", inline=False)
                         embed.add_field(name="{}check [u (user)/m (message)/i (invitation)] [ID/URL/mention etc.]", value="Get detailed information from UserID,MessageURL,InvitationURL etc.", inline=False)
+                        embed.add_field(name="{}color [hex(demical)/rgb(RGB)/name(color name)] [demical color code/r g b/color name]".format(self.info["PREFIX"]), value="Show information of specified color.")
                         embed.add_field(name="{}lang".format(self.info["PREFIX"]), value="Show list of language codes", inline=False)
                         embed.add_field(name="{}invite".format(self.info["PREFIX"]), value="Send invitation url", inline=False)
                         embed.add_field(name="{}ping".format(self.info["PREFIX"]), value="Show ping of this bot", inline=False)
@@ -440,64 +478,58 @@ class Other(commands.Cog):
                     embed.set_image(url=msg.attachments[0].proxy_url)
                 await ctx.send(embed=embed)
 
-    @commands.command()
-    async def color(self, ctx, color_type, *, text):
+    @commands.group(aliases=["clr"])
+    async def color(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await self.send_text(ctx, "UNKNOWN_COLOR_TYPE")
+
+    @color.command(name="hex", aliases=["h"])
+    async def color_hex_command(self, ctx, text):
+        result = re.search(self.color_match, text)
+        if result is None:
+            return await self.send_text(ctx, "WRONG_HEX_CODE")
+        hex_color = result["color"]
+        rgb = self.hex_to_rgb(hex_color)
         try:
-            if color_type == "hex":
-                result = re.search(self.color_match, text)
-                if result is None:
-                    return await self.send_text(ctx, "WRONG_HEX_CODE")
-                hex_color = result["color"]
-                rgb = self.hex_to_rgb(hex_color)
-                try:
-                    color_name = webcolors.hex_to_name(f"#{hex_color}")
-                except:
-                    color_name = "???"
-                embed = discord.Embed(title=f"Hex: {hex_color}", color=int(f'0x{hex_color}', 16))
-                embed.add_field(name="hex", value=f"#{hex_color}", inline=False)
-                embed.add_field(name="rgb", value=f"r: {rgb[0]}, g:{rgb[1]}, b:{rgb[2]}", inline=False)
-                embed.add_field(name="name", value=color_name)
-                await ctx.send(embed=embed)
-            elif color_type == "rgb":
-                rgb = text.split()
-                if len(rgb) != 3:
-                    return await self.send_text(ctx, "WRONG_RGB")
-                elif not (rgb[0].isdigit() and rgb[1].isdigit() and rgb[2].isdigit()):
-                    return await self.send_text(ctx, "WRONG_RGB")
-                elif not (int(rgb[0]) <= 255 and int(rgb[1]) <= 255 and int(rgb[2]) <= 255):
-                    return await self.send_text(ctx, "WRONG_RGB")
-                r = int(rgb[0]); g = int(rgb[1]); b = int(rgb[2])
-                hex_color = '#{:02x}{:02x}{:02x}'.format(r, g, b)
-                try:
-                    color_name = webcolors.hex_to_name(hex_color)
-                except:
-                    color_name = "???"
-                embed = discord.Embed(title=f"RGB: {r} {g} {b}", color=int(f'0x{hex_color.replace("#", "")}', 16))
-                embed.add_field(name="hex", value=hex_color, inline=False)
-                embed.add_field(name="rgb", value=f"r: {r}, g:{g}, b:{b}", inline=False)
-                embed.add_field(name="name", value=color_name)
-                await ctx.send(embed=embed)
-            elif color_type == "name":
-                try:
-                    rgb = webcolors.html5_parse_legacy_color(text.lower())
-                except:
-                    return await self.send_text(ctx, "WRONG_COLOR_NAME")
-                r = rgb.red; g = rgb.green; b = rgb.blue
-                hex_color = '#{:02x}{:02x}{:02x}'.format(r, g, b)
-                embed = discord.Embed(title=f"Name: {text.lower()}", color=int(f'0x{hex_color.replace("#", "")}', 16))
-                embed.add_field(name="hex", value=hex_color, inline=False)
-                embed.add_field(name="rgb", value=f"r: {r}, g:{g}, b:{b}", inline=False)
-                embed.add_field(name="name", value=text.lower())
-                await ctx.send(embed=embed)
-            else:
-                await self.send_text(ctx, "UNKNOWN_COLOR_TYPE")
+            color_name = webcolors.hex_to_name(f"#{hex_color}")
         except:
-            await ctx.send(traceback2.format_exc())
+            color_name = "???"
+        embed = discord.Embed(title=f"Hex: {hex_color}", color=int(f'0x{hex_color}', 16))
+        embed.add_field(name="hex", value=f"#{hex_color}", inline=False)
+        embed.add_field(name="rgb", value=f"r: {rgb[0]}, g:{rgb[1]}, b:{rgb[2]}", inline=False)
+        embed.add_field(name="name", value=color_name)
+        await ctx.send(embed=embed)
 
-    def hex_to_rgb(self, hex_code):
-        hlen = len(hex_code)
-        return tuple(int(hex_code[i:i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+    @color.command(name="rgb", aliases=["r"])
+    async def color_rgb_command(self, ctx, r, g, b):
+        if not (r.isdigit() and g.isdigit() and b.isdigit()):
+            return await self.send_text(ctx, "WRONG_RGB")
+        elif not (int(r) <= 255 and int(g) <= 255 and int(b) <= 255):
+            return await self.send_text(ctx, "WRONG_RGB")
+        r = int(r); g = int(g); b = int(b)
+        hex_color = '#{:02x}{:02x}{:02x}'.format(r, g, b)
+        try:
+            color_name = webcolors.hex_to_name(hex_color)
+        except:
+            color_name = "???"
+        embed = discord.Embed(title=f"RGB: {r} {g} {b}", color=int(f'0x{hex_color.replace("#", "")}', 16))
+        embed.add_field(name="hex", value=hex_color, inline=False)
+        embed.add_field(name="rgb", value=f"r: {r}, g:{g}, b:{b}", inline=False)
+        embed.add_field(name="name", value=color_name)
+        await ctx.send(embed=embed)
 
+    @color.command(name="name", aliases=["n"])
+    async def color_name_command(self, ctx, text):
+        try:
+            hex_color = webcolors.CSS3_NAMES_TO_HEX[text.lower()]
+        except:
+            return await self.send_text(ctx, "WRONG_COLOR_NAME")
+        rgb = self.hex_to_rgb(hex_color.replace("#", ""))
+        embed = discord.Embed(title=f"Name: {text.lower()}", color=int(f'0x{hex_color.replace("#","")}', 16))
+        embed.add_field(name="hex", value=hex_color, inline=False)
+        embed.add_field(name="rgb", value=f"r: {rgb[0]}, g:{rgb[1]}, b:{rgb[2]}", inline=False)
+        embed.add_field(name="name", value=text.lower())
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Other(bot))

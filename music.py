@@ -926,9 +926,10 @@ class Music(commands.Cog):
         else:
             modes += "loop: `off` | "
         if self.bot.voice_status[ctx.guild.id]["repeat"]:
-            modes += "repeat: `on`"
+            modes += "repeat: `on` | "
         else:
-            modes += "repeat: `off`"
+            modes += "repeat: `off` | "
+        modes += "volume: `{}%`".format(self.bot.voice_status[ctx.guild.id]["volume"])
         if str(ctx.guild.region) == "japan":
             embed.add_field(name="モード:", value=modes, inline=False)
             embed.add_field(name="合計:", value="{}曲.".format(str(len(self.bot.playlist[ctx.guild.id]))), inline=False)
