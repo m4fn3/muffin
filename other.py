@@ -1,6 +1,7 @@
 # import
 import re
 
+import webcolors as webcolors
 from discord.ext import commands
 import aiohttp, asyncio, datetime, discord, json, os, pprint, psutil, sys, time,  urllib, traceback2
 
@@ -17,6 +18,7 @@ class Other(commands.Cog):
         self.invite_match2 = "(?P<invitecode>[a-zA-Z0-9_]{3,})"
         self.message_match = "http(s)?://(ptb.|canary.)?discord(app)?.com/channels/(?P<guild>[0-9]{18})/(?P<channel>[0-9]{18})/(?P<message>[0-9]{18})"
         self.message_match2 = "(?P<message>[0-9]{18}"
+        self.color_match = "(?P<color>[0-9a-fA-F]{6})"
 
     async def cog_before_invoke(self, ctx):
         if ctx.author.id in self.bot.BAN:
@@ -72,6 +74,89 @@ class Other(commands.Cog):
                 await ctx.send(
                     ":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
                 raise commands.CommandError("Your Account Banned")
+        elif code == "WRONG_HEX_CODE":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`間違った16進数カラーコードです.`")
+            else:
+                await ctx.send(f":warning:`Wrong hexadecimal color code.`")
+        elif code == "WRONG_RGB":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`間違ったRGBカラーコードです.`")
+            else:
+                await ctx.send(f":warning:`Wrong RGB color code.`")
+        elif code == "WRONG_COLOR_NAME":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`間違ったカラーネームです.`")
+            else:
+                await ctx.send(f":warning:`Wrong color name.`")
+        elif code == "WRONG_COLOR_TYPE":
+            if str(ctx.guild.region) == "japan":
+                await ctx.send(f":warning:`間違ったカラータイプです. hex | rgb | name のいずれかを使用してください`")
+            else:
+                await ctx.send(f":warning:️` Wrong color type. Use one of hex | rgb | name`")
+
+    async def show_user_info(self, ctx, user_id: int):
+        try:
+            user = await self.bot.fetch_user(user_id)
+        except discord.errors.NotFound:
+            if str(ctx.guild.region) == "japan":
+                return await self.send_text(ctx, "INVALID_ID", user_id)
+        embed = discord.Embed(title=str(user), color=0x66cdaa)
+        embed.add_field(name="ID", value=user.id)
+        embed.set_thumbnail(url=user.avatar_url)
+        if str(ctx.guild.region) == "japan":
+            embed.add_field(name="アカウント作成日", value=user.created_at.strftime("%Y/%m/%d %H:%M:%S"))
+        else:
+            embed.add_field(name="AccountCreated", value=user.created_at.strftime("%Y/%m/%d %H:%M:%S"))
+        member = ctx.guild.get_member(user_id)
+        if member is not None:
+            if str(ctx.guild.region) == "japan":
+                embed.add_field(name="サーバー参加日", value=member.joined_at.strftime("%Y/%m/%d %H:%M:%S"), inline=False)
+            else:
+                embed.add_field(name="UserJoined", value=member.joined_at.strftime("%Y/%m/%d %H:%M:%S"), inline=False)
+            status = ""
+            if str(member.mobile_status) != "offline":
+                status += f"Mobile: {member.mobile_status},"
+            if str(member.desktop_status) != "offline":
+                status += f"Desktop: {member.desktop_status},"
+            if str(member.web_status) != "offline":
+                status += f"Web: {member.web_status}"
+            status = status.replace(",", "\n")
+            if status == "":
+                status = "offline"
+            if str(ctx.guild.region) == "japan":
+                embed.add_field(name="ニックネーム", value=member.display_name)
+                embed.add_field(name="ステータス", value=status)
+            else:
+                embed.add_field(name="NickName", value=member.display_name)
+                embed.add_field(name="Status", value=status)
+        await ctx.send(embed=embed)
+
+    async def show_invite_info(self, ctx, invite_code):
+        try:
+            invite = await self.bot.fetch_invite(url=invite_code)
+        except discord.errors.NotFound:
+            return await self.send_text(ctx, "INVALID_LINK", invite_code)
+        embed = discord.Embed(title=invite_code, url=invite.url, color=0x98fb98)
+        embed.set_author(name=invite.guild.name, icon_url=invite.guild.icon_url)
+        embed.set_thumbnail(url=invite.guild.icon_url)
+        if str(ctx.guild.region) == "japan":
+            embed.add_field(name="サーバー名", value=invite.guild.name, inline=False)
+            embed.add_field(name="サーバーID", value=invite.guild.id)
+            embed.add_field(name="招待者", value=str(invite.inviter), inline=False)
+            embed.add_field(name="招待先チャンネル", value=invite.channel.name)
+            embed.add_field(name="アクティブメンバー人数", value=invite.approximate_presence_count, inline=False)
+            embed.add_field(name="メンバー人数", value=invite.approximate_member_count)
+            embed.set_footer(text="この招待リンクは有効です.")
+        else:
+            embed.add_field(name="ServerName", value=invite.guild.name, inline=False)
+            embed.add_field(name="ServerID", value=invite.guild.id)
+            embed.add_field(name="Inviter", value=str(invite.inviter), inline=False)
+            embed.add_field(name="Channel", value=invite.channel.name)
+            embed.add_field(name="ActiveMemberCount", value=invite.approximate_presence_count, inline=False)
+            embed.add_field(name="MemberCount", value=invite.approximate_member_count)
+            embed.set_footer(text="This URL available.")
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["h"])
     async def help(self, ctx):
@@ -355,68 +440,63 @@ class Other(commands.Cog):
                     embed.set_image(url=msg.attachments[0].proxy_url)
                 await ctx.send(embed=embed)
 
-    async def show_user_info(self, ctx, user_id: int):
+    @commands.command()
+    async def color(self, ctx, color_type, *, text):
         try:
-            user = await self.bot.fetch_user(user_id)
-        except discord.errors.NotFound:
-            if str(ctx.guild.region) == "japan":
-                return await self.send_text(ctx, "INVALID_ID", user_id)
-        embed = discord.Embed(title=str(user), color=0x66cdaa)
-        embed.add_field(name="ID", value=user.id)
-        embed.set_thumbnail(url=user.avatar_url)
-        if str(ctx.guild.region) == "japan":
-            embed.add_field(name="アカウント作成日", value=user.created_at.strftime("%Y/%m/%d %H:%M:%S"))
-        else:
-            embed.add_field(name="AccountCreated", value=user.created_at.strftime("%Y/%m/%d %H:%M:%S"))
-        member = ctx.guild.get_member(user_id)
-        if member is not None:
-            if str(ctx.guild.region) == "japan":
-                embed.add_field(name="サーバー参加日", value=member.joined_at.strftime("%Y/%m/%d %H:%M:%S"), inline=False)
+            if color_type == "hex":
+                result = re.search(self.color_match, text)
+                if result is None:
+                    return await self.send_text(ctx, "WRONG_HEX_CODE")
+                hex_color = result["color"]
+                rgb = self.hex_to_rgb(hex_color)
+                try:
+                    color_name = webcolors.hex_to_name(f"#{hex_color}")
+                except:
+                    color_name = "???"
+                embed = discord.Embed(title=f"Hex: {hex_color}", color=int(f'0x{hex_color}', 16))
+                embed.add_field(name="hex", value=f"#{hex_color}", inline=False)
+                embed.add_field(name="rgb", value=f"r: {rgb[0]}, g:{rgb[1]}, b:{rgb[2]}", inline=False)
+                embed.add_field(name="name", value=color_name)
+                await ctx.send(embed=embed)
+            elif color_type == "rgb":
+                rgb = text.split()
+                if len(rgb) != 3:
+                    return await self.send_text(ctx, "WRONG_RGB")
+                elif not (rgb[0].isdigit() and rgb[1].isdigit() and rgb[2].isdigit()):
+                    return await self.send_text(ctx, "WRONG_RGB")
+                elif not (int(rgb[0]) <= 255 and int(rgb[1]) <= 255 and int(rgb[2]) <= 255):
+                    return await self.send_text(ctx, "WRONG_RGB")
+                r = int(rgb[0]); g = int(rgb[1]); b = int(rgb[2])
+                hex_color = '#{:02x}{:02x}{:02x}'.format(r, g, b)
+                try:
+                    color_name = webcolors.hex_to_name(hex_color)
+                except:
+                    color_name = "???"
+                embed = discord.Embed(title=f"RGB: {r} {g} {b}", color=int(f'0x{hex_color.replace("#", "")}', 16))
+                embed.add_field(name="hex", value=hex_color, inline=False)
+                embed.add_field(name="rgb", value=f"r: {r}, g:{g}, b:{b}", inline=False)
+                embed.add_field(name="name", value=color_name)
+                await ctx.send(embed=embed)
+            elif color_type == "name":
+                try:
+                    rgb = webcolors.html5_parse_legacy_color(text.lower())
+                except:
+                    return await self.send_text(ctx, "WRONG_COLOR_NAME")
+                r = rgb.red; g = rgb.green; b = rgb.blue
+                hex_color = '#{:02x}{:02x}{:02x}'.format(r, g, b)
+                embed = discord.Embed(title=f"Name: {text.lower()}", color=int(f'0x{hex_color.replace("#", "")}', 16))
+                embed.add_field(name="hex", value=hex_color, inline=False)
+                embed.add_field(name="rgb", value=f"r: {r}, g:{g}, b:{b}", inline=False)
+                embed.add_field(name="name", value=text.lower())
+                await ctx.send(embed=embed)
             else:
-                embed.add_field(name="UserJoined", value=member.joined_at.strftime("%Y/%m/%d %H:%M:%S"), inline=False)
-            status = ""
-            if str(member.mobile_status) != "offline":
-                status += f"Mobile: {member.mobile_status},"
-            if str(member.desktop_status) != "offline":
-                status += f"Desktop: {member.desktop_status},"
-            if str(member.web_status) != "offline":
-                status += f"Web: {member.web_status}"
-            status = status.replace(",", "\n")
-            if status == "":
-                status = "offline"
-            if str(ctx.guild.region) == "japan":
-                embed.add_field(name="ニックネーム", value=member.display_name)
-                embed.add_field(name="ステータス", value=status)
-            else:
-                embed.add_field(name="NickName", value=member.display_name)
-                embed.add_field(name="Status", value=status)
-        await ctx.send(embed=embed)
+                await self.send_text(ctx, "UNKNOWN_COLOR_TYPE")
+        except:
+            await ctx.send(traceback2.format_exc())
 
-    async def show_invite_info(self, ctx, invite_code):
-        try:
-            invite = await self.bot.fetch_invite(url=invite_code)
-        except discord.errors.NotFound:
-            return await self.send_text(ctx, "INVALID_LINK", invite_code)
-        embed = discord.Embed(title=invite_code, url=invite.url, color=0x98fb98)
-        embed.set_author(name=invite.guild.name, icon_url=invite.guild.icon_url)
-        embed.set_thumbnail(url=invite.guild.icon_url)
-        if str(ctx.guild.region) == "japan":
-            embed.add_field(name="サーバー名", value=invite.guild.name, inline=False)
-            embed.add_field(name="サーバーID", value=invite.guild.id)
-            embed.add_field(name="招待者", value=str(invite.inviter), inline=False)
-            embed.add_field(name="招待先チャンネル", value=invite.channel.name)
-            embed.add_field(name="アクティブメンバー人数", value=invite.approximate_presence_count, inline=False)
-            embed.add_field(name="メンバー人数", value=invite.approximate_member_count)
-            embed.set_footer(text="この招待リンクは有効です.")
-        else:
-            embed.add_field(name="ServerName", value=invite.guild.name, inline=False)
-            embed.add_field(name="ServerID", value=invite.guild.id)
-            embed.add_field(name="Inviter", value=str(invite.inviter), inline=False)
-            embed.add_field(name="Channel", value=invite.channel.name)
-            embed.add_field(name="ActiveMemberCount", value=invite.approximate_presence_count, inline=False)
-            embed.add_field(name="MemberCount", value=invite.approximate_member_count)
-            embed.set_footer(text="This URL available.")
-        await ctx.send(embed=embed)
+    def hex_to_rgb(self, hex_code):
+        hlen = len(hex_code)
+        return tuple(int(hex_code[i:i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
 
 
 def setup(bot):
