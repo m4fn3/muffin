@@ -51,10 +51,11 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["r"])
     async def rule(self, ctx):
-        embed = discord.Embed(title="Rule Of Shadow Choice (1/3)")
-        embed.set_image(url="{}Tehon.jpg".format(self.info["PICT_URL"]))
-        embed.add_field(name="基本",
-                        value="```これらは重要な5つのアイテムです.\n今から説明する2つのルールにあったアイテムをこの中から選ぶことになります.\nこれらは問題の下部にリアクションとして表示されます.\nまた各問題の右上にも表示されるので適宜参照してください.\n(注意)色鉛筆は2色を持ちます.オレンジ色と黄色は同じ1つの色(黄色)とみなします.\nではその二つのルールを説明します!```")
+        if str(ctx.guild.region) == "japan":
+            embed = discord.Embed(title="Rule Of Shadow Choice (1/3)")
+            embed.set_image(url="{}Tehon.jpg".format(self.info["PICT_URL"]))
+            embed.add_field(name="基本",
+                            value="```これらは重要な5つのアイテムです.\n今から説明する2つのルールにあったアイテムをこの中から選ぶことになります.\nこれらは問題の下部にリアクションとして表示されます.\nまた各問題の右上にも表示されるので適宜参照してください.\n(注意)色鉛筆は2色を持ちます.オレンジ色と黄色は同じ1つの色(黄色)とみなします.\nではその二つのルールを説明します!```")
         await ctx.send(embed=embed)
         embed = discord.Embed(title="Rule Of Shadow Choice (2/3)")
         embed.set_thumbnail(url="{}Tehon.jpg".format(self.info["PICT_URL"]))

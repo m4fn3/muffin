@@ -36,6 +36,7 @@ class Muffin(commands.Bot):
         with open("./DATABASE.json") as F:
             database = json.load(F)
         self.database = database
+        self.prefix = info["PREFIX"]
 
     async def on_ready(self):
         print("Logged in to {}".format(bot.user))

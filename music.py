@@ -209,12 +209,9 @@ class Music(commands.Cog):
         """
         if code == "AUTO_MODE_ON":
             if str(ctx.guild.region) == "japan":
-                await ctx.send(
-                    ":warning:`オート再生モードが有効なので曲を追加できません.オフにするには`{}auto off`を使用してください.`".format(self.info["PREFIX"]))
+                await ctx.send(f":warning:`オート再生モードが有効なので曲を追加できません.オフにするには`{self.bot.PREFIX}auto off`を使用してください.`")
             else:
-                await ctx.send(
-                    ":warning:`You can't add music because auto mode turn on. To turn off auto mode, please use`{}auto off".format(
-                        self.info["PREFIX"]))
+                await ctx.send(f":warning:`You can't add music because auto mode turn on. To turn off auto mode, please use`{self.bot.PREFIX}auto off")
         elif code == "WRONG_URL":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`誤った形式のURLです.`")
@@ -325,9 +322,9 @@ class Music(commands.Cog):
                 return await ctx.send(":warning:`You can't specify a value less than 0`")
         elif code == "YOU_CANT_REMOVE_CURRENTLY_MUSIC":
             if str(ctx.guild.region) == "japan":
-                return await ctx.send(":warning:`現在再生中の音楽を削除する場合は`{}skip`を使用してください`".format(self.info["PREFIX"]))
+                return await ctx.send(f":warning:`現在再生中の音楽を削除する場合は`{self.bot.PREFIX}skip`を使用してください`")
             else:
-                return await ctx.send(":warning:`To remove music that is currently playing please use `{}skip".format(self.info["PREFIX"]))
+                return await ctx.send(f":warning:`To remove music that is currently playing please use `{self.bot.PREFIX}skip")
         elif code == "VOLUME_CHANGED":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(f":white_check_mark:`{arg1}%に音量を変更しました`")
