@@ -1,6 +1,6 @@
 # import
 from discord.ext import commands
-import aiohttp, asyncio, discord, isodate, json, os, pprint, random, re, sys, time, traceback2, youtube_dl
+import aiohttp, asyncio, discord, io, isodate, json, os, pprint, random, re, sys, time, traceback2, youtube_dl
 
 
 # YTDL
@@ -193,9 +193,7 @@ class Music(commands.Cog):
             }
             if report:
                 await self.send_text(ctx, "ABNORMAL_SITUATION_DETECTED")
-                return await self.report_error(ctx, "play_after", "異常な状況が検知されました:\nプレイリスト:{}\nステータス:{}".format(
-                    pprint.pformat(self.bot.playlist[ctx.guild.id]), pprint.pformat(self.bot.voice_status[ctx.guild.id])
-                ))
+                return await self.report_error(ctx, "???", f"異常な状況が検知されました.\n{ctx.guild.name} | {ctx.channel.name} | {str(ctx.author)}")
         except:
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "clean_all", traceback2.format_exc())
@@ -471,9 +469,9 @@ class Music(commands.Cog):
                 await ctx.send(":warning:`Disconnected from voice channel because all users left`")
         elif code == "ABNORMAL_SITUATION_DETECTED":
             if str(ctx.guild.region) == "japan":
-                await ctx.send("異常な状況が検知されたため,情報をクリアしました.")
+                await ctx.send(":warning:`異常な状況が検知されたため,情報をクリアしました.`")
             else:
-                await ctx.send("Information was cleared because an abnormal situation was detected.")
+                await ctx.send(":warning:`Information was cleared because an abnormal situation was detected.`")
         elif code == "SOMETHING_WENT_WRONG_WITH_TITLE":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(f":warning:`曲の再生中に問題が発生しました.他の物を試してください.\n曲名:{arg1}`")
@@ -504,9 +502,15 @@ class Music(commands.Cog):
         :return:
         """
         channel = self.bot.get_channel(self.info["ERROR_CHANNEL"])
-        embed = discord.Embed(title=name, description=message)
-        embed.set_author(name="Error Reporter")
-        await channel.send(embed=embed)
+        try:
+            embed = discord.Embed(title=name, description=message)
+            embed.set_author(name="Error Reporter")
+            await channel.send(embed=embed)
+        except:
+            embed = discord.Embed(title=name, description="<TOO LONG>")
+            embed.set_author(name="Error Reporter")
+            msg = await channel.send(embed=embed, file=discord.File(fp=io.StringIO(message), filename="error.txt"))
+
 
     async def get_request(self, url, ctx):
         """
@@ -554,8 +558,6 @@ class Music(commands.Cog):
             if ctx.guild.id in self.bot.voice_status:
                 if self.bot.voice_status[ctx.guild.id]["status"] != 3:
                     self.bot.voice_status[ctx.guild.id]["status"] = 3
-                else:
-                    await self.report_error(ctx, "play_after", "play_after開始時にすでに処理中になっている事案が発生しました.現在この場合も処理を実行することになっていますが、必要に応じてはじくように設定してください.")
             elif self.bot.playlist[ctx.guild.id] == []:
                 return await self.clean_all(ctx, report=True)
             else:
