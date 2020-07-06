@@ -1,6 +1,6 @@
 # import
 from discord.ext import commands
-import ast, asyncio, datetime, discord, json, os, psutil, sys, time, traceback2
+import ast, asyncio, datetime, discord, io, json, os, psutil, subprocess, sys, time, traceback2
 
 
 # class
@@ -356,6 +356,36 @@ class Dev(commands.Cog):
         embed.add_field(name="Discord", value=f"```yaml\nServers:{guilds}\nTextChannels:{text_channels}\nVoiceChannels:{voice_channels}\nUsers:{users}\nConnectedVC:{vcs}```", inline=False)
         embed.add_field(name="Run", value=f"```yaml\nUptime: {uptime}\nLatency: {latency:.2f}[s]\n```")
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def cmd(self, ctx, *, text):
+        msg = ""
+        try:
+            output = await self.run_subprocess(text, loop=self.bot.loop)
+            for i in range(len(output)):
+                msg += output[i]
+            await ctx.send(msg)
+        except:
+            await ctx.send(file=discord.File(fp=io.StringIO(msg), filename="output.txt"))
+
+    async def run_subprocess(self, cmd, loop=None):
+        loop = loop or asyncio.get_event_loop()
+        try:
+            process = await asyncio.create_subprocess_shell(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except NotImplementedError:
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True) as process:
+                try:
+                    result = await loop.run_in_executor(None, process.communicate)
+                except Exception:  # muh pycodestyle
+                    def kill():
+                        process.kill()
+                        process.wait()
+                    await loop.run_in_executor(None, kill)
+                    raise
+        else:
+            result = await process.communicate()
+
+        return [res.decode('utf-8') for res in result]
 
 
 def setup(bot):
