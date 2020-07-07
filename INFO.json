@@ -20,23 +20,6 @@
   "LOG_CHANNEL" : 647280151121362949,
   "NOTIFY_CHANNEL" : 713289225143058482,
   "ERROR_CHANNEL" : 723084355987177513,
-  "ytdl_format_options" : {
-       "format": "bestaudio/best",
-       "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
-       "restrictfilenames": true,
-       "noplaylist": true,
-       "nocheckcertificate": true,
-       "ignoreerrors": false,
-       "logtostderr": false,
-       "quiet": true,
-       "no_warnings": true,
-       "default_search": "auto",
-       "source_address": "0.0.0.0"
-  },
-  "ffmpeg_options" : {
-      "options": "-vn"
-  },
-  "beforeOps" : "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
   "SCnotebook" : "<:SCnotebook:717290996018315296>",
   "SCmajor" : "<:SCmajor:717291105950892073>",
   "SCscissors" : "<:SCscissors:717291150981070848>",

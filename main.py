@@ -1,6 +1,6 @@
 # import
 from discord.ext import commands
-import datetime, time, json, logging
+import time, json, logging
 
 # define
 with open("./INFO.json") as F:
@@ -36,7 +36,7 @@ class Muffin(commands.Bot):
         with open("./DATABASE.json") as F:
             database = json.load(F)
         self.database = database
-        self.prefix = info["PREFIX"]
+        self.PREFIX = info["PREFIX"]
 
     async def on_ready(self):
         print("Logged in to {}".format(bot.user))
