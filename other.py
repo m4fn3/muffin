@@ -530,5 +530,6 @@ class Other(commands.Cog):
         embed.add_field(name="name", value=text.lower())
         await ctx.send(embed=embed)
 
+
 def setup(bot):
     bot.add_cog(Other(bot))

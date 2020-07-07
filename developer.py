@@ -21,15 +21,15 @@ class Dev(commands.Cog):
         with open("./ROLE.json", 'w') as F:
             json.dump(roles, F, indent=2)
 
-    def insert_returns(self, body):
+    def execute_returns(self, body):
         if isinstance(body[-1], ast.Expr):
             body[-1] = ast.Return(body[-1].value)
             ast.fix_missing_locations(body[-1])
         if isinstance(body[-1], ast.If):
-            insert_returns(body[-1].body)
-            insert_returns(body[-1].orelse)
+            execute_returns(body[-1].body)
+            execute_returns(body[-1].orelse)
         if isinstance(body[-1], ast.With):
-            insert_returns(body[-1].body)
+            execute_returns(body[-1].body)
 
     async def update_status(self):
         game = discord.Game("{}help | {}servers | v{} \n [ http://mafu.cf/ ]".format(self.bot.PREFIX, str(len(self.bot.guilds)), self.info["VERSION"]))
@@ -72,7 +72,7 @@ class Dev(commands.Cog):
                 await message.channel.send(embed=embed)
 
     @commands.command()
-    async def updatestatus(self, ctx):
+    async def apply_status(self, ctx):
         await self.update_status()
         await ctx.send(":white_check_mark:ステータスを更新しました.")
 
@@ -311,7 +311,7 @@ class Dev(commands.Cog):
             body = f"async def {fn_name}():\n{cmd}"
             parsed = ast.parse(body)
             body = parsed.body[0].body
-            self.insert_returns(body)
+            self.execute_returns(body)
             env = {
                 'bot': ctx.bot,
                 'discord': discord,
