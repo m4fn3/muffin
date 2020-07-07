@@ -553,6 +553,117 @@ class Music(commands.Cog):
                 else:
                     return [0, r.status, response]
 
+    async def process_music(self, ctx, url, user, is_auto=False):
+        url_code = self.parse_youtube_url(url)
+        if url_code[0] == 0:
+            if url_code[1] == 0:
+                await self.send_text(ctx, "WRONG_URL")
+            elif url_code[1] == 1:
+                await self.send_text(ctx, "NOT_SUPPORTED")
+            return 0
+        elif url_code[0] == 1:
+            r = await self.get_youtube_api_request(
+                f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={url_code[1]}&maxResults=1&type=video&key=",
+                ctx)
+            if r[0] == 0:  # リクエスト処理中にエラーが発生
+                await self.send_text(ctx, "UNKNOWN_ERROR")
+                await self.report_error(ctx, "auto", f"{r[1]}\n{pprint.pformat(r[2])}")
+                return 0
+            elif r[0] == 1:  # リクエスト成功
+                res = r[1]
+                if len(res["items"]) == 0:
+                    await self.send_text(ctx, "NO_APPROPRIATE")
+                    return 0
+                info = {
+                    "url": f"https://www.youtube.com/watch?v={res['items'][0]['id']}",
+                    "title": res['items'][0]['snippet']['title'],
+                    "id": res['items'][0]['id'],
+                    "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
+                    "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
+                    "channel": res['items'][0]['snippet']['channelTitle'],
+                    "user": user,
+                    "duration": self.parse_duration(res['items'][0])
+                }
+                if is_auto:
+                    return info
+                else:
+                    self.bot.playlist[ctx.guild.id].append(info)
+                    await self.send_text(ctx, "MUSIC_ADDED", info)
+                    return 1
+        elif url_code[0] == 2 and not is_auto:
+            r = await self.get_youtube_api_request(
+                "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={}&maxResults=50&key=".format(
+                    url_code[1]), ctx)
+            if r[0] == 0:  # リクエスト処理中にエラーが発生
+                await self.send_text(ctx, "UNKNOWN_ERROR")
+                await self.report_error(ctx, "play", "{}\n{}".format(r[1], pprint.pformat(r[2])))
+                return 0
+            elif r[0] == 1:  # リクエスト成功 r[1]
+                res = r[1]
+                if len(res["items"]) == 0:
+                    await self.send_text(ctx, "WRONG_URL")
+                    return 0
+                id_list = ""
+                for i in range(len(res["items"])):
+                    try:
+                        id_list += "{},".format(res['items'][i]['snippet']['resourceId']['videoId'])
+                    except KeyError:
+                        pass
+                res_d = await self.get_duration_from_youtube_api(id_list[:-1], ctx, playlist=True)
+                if res_d[0] == 0:
+                    return 0
+                for i in range(len(res["items"])):
+                    try:
+                        info = {"url": "https://www.youtube.com/watch?v={}".format(
+                            res['items'][i]['snippet']['resourceId']['videoId']),
+                            "title": res['items'][i]['snippet']['title'],
+                            "id": res['items'][i]['snippet']['resourceId']['videoId'],
+                            "thumbnail": res['items'][i]['snippet']['thumbnails']['high']['url'],
+                            "publish": self.parse_day(res['items'][i]['snippet']['publishedAt']),
+                            "channel": res['items'][i]['snippet']['channelTitle'],
+                            "user": user,
+                            "duration": res_d[1][i]
+                        }
+                        self.bot.playlist[ctx.guild.id].append(info)
+                    except KeyError:
+                        pass
+                    except IndexError:
+                        break
+                await self.send_text(ctx, "PLAYLIST_ADDED", info, len(res["items"]))
+                return 1
+        elif url_code[0] == 3:
+            r = await self.get_youtube_api_request(
+                f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url_code[1]}&maxResults=1&type=video&key=",
+                ctx)
+            if r[0] == 0:  # リクエスト処理中にエラーが発生
+                await self.send_text(ctx, "UNKNOWN_ERROR")
+                await self.report_error(ctx, "auto", f"{r[1]}\n{pprint.pformat(r[2])}")
+                return 0
+            elif r[0] == 1:  # リクエスト成功
+                res = r[1]
+                if len(res["items"]) == 0:
+                    await self.send_text(ctx, "NO_APPROPRIATE")
+                    return 0
+                res_d = await self.get_duration_from_youtube_api(res['items'][0]['id']['videoId'], ctx)
+                if res_d[0] == 0:
+                    return 0
+                info = {
+                    "url": f"https://www.youtube.com/watch?v={res['items'][0]['id']['videoId']}",
+                    "title": res['items'][0]['snippet']['title'],
+                    "id": res['items'][0]['id']['videoId'],
+                    "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
+                    "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
+                    "channel": res['items'][0]['snippet']['channelTitle'],
+                    "user": user,
+                    "duration": res_d[1]
+                }
+                if is_auto:
+                    return info
+                else:
+                    self.bot.playlist[ctx.guild.id].append(info)
+                    await self.send_text(ctx, "MUSIC_ADDED", info)
+                    return 1
+
     async def play_after(self, ctx):
         """
         曲の再生が終わった後の処理
@@ -968,99 +1079,9 @@ class Music(commands.Cog):
             if self.bot.voice_status[ctx.guild.id]["auto"]:
                 return await self.send_text(ctx, "AUTO_MODE_ON")
             user = ctx.author.display_name
-            # url解析
-            url_code = self.parse_youtube_url(url)
-            if url_code[0] == 0:
-                if url_code[1] == 0:
-                    return await self.send_text(ctx, "WRONG_URL")
-                elif url_code[1] == 1:
-                    return await self.send_text(ctx, "NOT_SUPPORTED")
-            elif url_code[0] == 1:
-                r = await self.get_youtube_api_request(
-                    "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={}&maxResults=1&type=video&key=".format(
-                        url_code[1]), ctx)
-                if r[0] == 0:  # リクエスト処理中にエラーが発生
-                    await self.send_text(ctx, "UNKNOWN_ERROR")
-                    return await self.report_error(ctx, "play", "{}\n{}".format(r[1], pprint.pformat(r[2])))
-                elif r[0] == 1:  # リクエスト成功 r[1]
-                    res = r[1]
-                    if len(res["items"]) == 0:
-                        return await self.send_text(ctx, "NO_APPROPRIATE")
-                    info = {
-                        "url": "https://www.youtube.com/watch?v={}".format(res['items'][0]['id']),
-                        "title": res['items'][0]['snippet']['title'],
-                        "id": res['items'][0]['id'],
-                        "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
-                        "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
-                        "channel": res['items'][0]['snippet']['channelTitle'],
-                        "user": user,
-                        "duration": self.parse_duration(res['items'][0])
-                    }
-                    self.bot.playlist[ctx.guild.id].append(info)
-                    await self.send_text(ctx, "MUSIC_ADDED", info)
-            elif url_code[0] == 2:
-                r = await self.get_youtube_api_request(
-                    "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={}&maxResults=50&key=".format(
-                        url_code[1]), ctx)
-                if r[0] == 0:  # リクエスト処理中にエラーが発生
-                    await self.send_text(ctx, "UNKNOWN_ERROR")
-                    return await self.report_error(ctx, "play", "{}\n{}".format(r[1], pprint.pformat(r[2])))
-                elif r[0] == 1:  # リクエスト成功 r[1]
-                    res = r[1]
-                    if len(res["items"]) == 0:
-                        return await self.send_text(ctx, "WRONG_URL")
-                    id_list = ""
-                    for i in range(len(res["items"])):
-                        try:
-                            id_list += "{},".format(res['items'][i]['snippet']['resourceId']['videoId'])
-                        except KeyError:
-                            pass
-                    res_d = await self.get_duration_from_youtube_api(id_list[:-1], ctx, playlist=True)
-                    if res_d[0] == 0:
-                        return
-                    for i in range(len(res["items"])):
-                        try:
-                            info = {"url": "https://www.youtube.com/watch?v={}".format(
-                                res['items'][i]['snippet']['resourceId']['videoId']),
-                                    "title": res['items'][i]['snippet']['title'],
-                                    "id": res['items'][i]['snippet']['resourceId']['videoId'],
-                                    "thumbnail": res['items'][i]['snippet']['thumbnails']['high']['url'],
-                                    "publish": self.parse_day(res['items'][i]['snippet']['publishedAt']),
-                                    "channel": res['items'][i]['snippet']['channelTitle'],
-                                    "user": user,
-                                    "duration": res_d[1][i]
-                                    }
-                            self.bot.playlist[ctx.guild.id].append(info)
-                        except KeyError:
-                            pass
-                        except IndexError:
-                            break
-                    await self.send_text(ctx, "PLAYLIST_ADDED", info, len(res["items"]))
-            elif url_code[0] == 3:
-                r = await self.get_youtube_api_request(
-                    "https://www.googleapis.com/youtube/v3/search?part=snippet&q={}&maxResults=1&type=video&key=".format(
-                        url_code[1]), ctx)
-                if r[0] == 0:  # リクエスト処理中にエラーが発生
-                    await self.send_text(ctx, "UNKNOWN_ERROR")
-                    return await self.report_error(ctx, "play", "{}\n{}".format(r[1], pprint.pformat(r[2])))
-                elif r[0] == 1:  # リクエスト成功 r[1]
-                    res = r[1]
-                    if len(res["items"]) == 0:
-                        return await self.send_text(ctx, "NO_APPROPRIATE")
-                    res_d = await self.get_duration_from_youtube_api(res['items'][0]['id']['videoId'], ctx)
-                    if res_d[0] == 0: return
-                    info = {
-                        "url": "https://www.youtube.com/watch?v={}".format(res['items'][0]['id']['videoId']),
-                        "title": res['items'][0]['snippet']['title'],
-                        "id": res['items'][0]['id']['videoId'],
-                        "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
-                        "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
-                        "channel": res['items'][0]['snippet']['channelTitle'],
-                        "user": user,
-                        "duration": res_d[1]
-                    }
-                    self.bot.playlist[ctx.guild.id].append(info)
-                    await self.send_text(ctx, "MUSIC_ADDED", info)
+            code = await self.process_music(ctx, url, user)
+            if code == 0:
+                return
             # 再生
             # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
             if self.bot.voice_status[ctx.guild.id]["status"] == 0:
@@ -1151,59 +1172,10 @@ class Music(commands.Cog):
                     await self.send_text(ctx, "AUTO_OFF")
                 return
             user = ctx.author.display_name
-            url_code = self.parse_youtube_url(url)
-            res = {}
-            info = {}
-            if url_code[0] == 0:
-                if url_code[1] == 0:
-                    return await self.send_text(ctx, "WRONG_URL")
-                elif url_code[1] == 1:
-                    return await self.send_text(ctx, "NOT_SUPPORTED")
-            elif url_code[0] == 1:
-                r = await self.get_youtube_api_request(
-                    f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={url_code[1]}&maxResults=1&type=video&key=",
-                    ctx)
-                if r[0] == 0:  # リクエスト処理中にエラーが発生
-                    await self.send_text(ctx, "UNKNOWN_ERROR")
-                    return await self.report_error(ctx, "auto", f"{r[1]}\n{pprint.pformat(r[2])}")
-                elif r[0] == 1:  # リクエスト成功
-                    res = r[1]
-                    if len(res["items"]) == 0:
-                        return await self.send_text(ctx, "NO_APPROPRIATE")
-                    info = {
-                        "url": f"https://www.youtube.com/watch?v={res['items'][0]['id']}",
-                        "title": res['items'][0]['snippet']['title'],
-                        "id": res['items'][0]['id'],
-                        "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
-                        "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
-                        "channel": res['items'][0]['snippet']['channelTitle'],
-                        "user": user,
-                        "duration": self.parse_duration(res['items'][0])
-                    }
-            elif url_code[0] == 3:
-                r = await self.get_youtube_api_request(
-                    f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url_code[1]}&maxResults=1&type=video&key=",
-                    ctx)
-                if r[0] == 0:  # リクエスト処理中にエラーが発生
-                    await self.send_text(ctx, "UNKNOWN_ERROR")
-                    return await self.report_error(ctx, "auto", f"{r[1]}\n{pprint.pformat(r[2])}")
-                elif r[0] == 1:  # リクエスト成功
-                    res = r[1]
-                    if len(res["items"]) == 0:
-                        return await self.send_text(ctx, "NO_APPROPRIATE")
-                    res_d = await self.get_duration_from_youtube_api(res['items'][0]['id']['videoId'], ctx)
-                    if res_d[0] == 0:
-                        return
-                    info = {
-                        "url": f"https://www.youtube.com/watch?v={res['items'][0]['id']['videoId']}",
-                        "title": res['items'][0]['snippet']['title'],
-                        "id": res['items'][0]['id']['videoId'],
-                        "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
-                        "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
-                        "channel": res['items'][0]['snippet']['channelTitle'],
-                        "user": user,
-                        "duration": res_d[1]
-                    }
+            code = await self.process_music(ctx, url, user, is_auto=True)
+            if code == 0:
+                return
+            info = code
             self.bot.voice_disconnected.append(ctx.guild.id)
             if ctx.voice_client.source is not None:
                 ctx.voice_client.source.cleanup()
