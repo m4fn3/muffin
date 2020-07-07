@@ -1083,7 +1083,6 @@ class Music(commands.Cog):
             if code == 0:
                 return
             # 再生
-            # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
             if self.bot.voice_status[ctx.guild.id]["status"] == 0:
                 await self.play_music(ctx)
 
@@ -1146,7 +1145,6 @@ class Music(commands.Cog):
                 }
         self.bot.playlist[ctx.guild.id].append(info)
         await self.send_text(ctx, "MUSIC_ADDED", info)
-        # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
         if self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.play_music(ctx)
 
@@ -1188,8 +1186,6 @@ class Music(commands.Cog):
             self.bot.voice_status[ctx.guild.id]["status"] = 0
             await self.send_text(ctx, "AUTO_ENABLED", url)
             self.bot.playlist[ctx.guild.id].append(info)
-            # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
-            # if self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.play_music(ctx)
         except:
             await ctx.send(traceback2.format_exc())
@@ -1209,7 +1205,6 @@ class Music(commands.Cog):
             return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        # elif (not ctx.voice_client.is_playing()) and (ctx.voice_client.is_paused()):
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         else:
@@ -1237,10 +1232,8 @@ class Music(commands.Cog):
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        # elif ctx.voice_client.is_paused():
         elif self.bot.voice_status[ctx.guild.id]["status"] == 2:
             await self.send_text(ctx, "ALREADY_PAUSED")
-        # elif ctx.voice_client.is_playing():
         elif self.bot.voice_status[ctx.guild.id]["status"] == 1:
             ctx.voice_client.pause()
             self.bot.voice_status[ctx.guild.id]["status"] = 2
@@ -1266,10 +1259,8 @@ class Music(commands.Cog):
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        # elif ctx.voice_client.is_playing():
         elif self.bot.voice_status[ctx.guild.id]["status"] == 1:
             await self.send_text(ctx, "ALREADY_RESUMED")
-        # elif ctx.voice_client.is_paused():
         elif self.bot.voice_status[ctx.guild.id]["status"] == 2:
             ctx.voice_client.resume()
             self.bot.voice_status[ctx.guild.id]["status"] = 1
@@ -1335,7 +1326,6 @@ class Music(commands.Cog):
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        # if ctx.voice_client.is_playing() or ctx.voice_client.is_paused():
         elif self.bot.voice_status[ctx.guild.id]["status"] == 1 or self.bot.voice_status[ctx.guild.id]["status"] == 2:
             ctx.voice_client.source.volume = volume / 100
             self.bot.voice_status[ctx.guild.id]["volume"] = volume
