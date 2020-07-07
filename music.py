@@ -92,7 +92,7 @@ class Music(commands.Cog):
                 else:
                     return [1, vid_id.group()]  # 動画 - 動画id
             else:
-                return [2, match.group()] # プレイリスト - プレイリストid
+                return [2, match.group()]  # プレイリスト - プレイリストid
         elif url.startswith(("http://", "https://")):
             return [0, 1]  # サポートされていないURL
         else:
@@ -684,7 +684,7 @@ class Music(commands.Cog):
                     if len(res["items"]) == 0:
                         return await self.send_text(ctx, "NO_APPROPRIATE")
                 index = random.randrange(len(res["items"]))
-                res_d = await self.get_duration(res['items'][index]['id']['videoId'], ctx)
+                res_d = await self.get_duration_from_youtube_api(res['items'][index]['id']['videoId'], ctx)
                 if res_d[0] == 0: return
                 info = {"url": "https://www.youtube.com/watch?v={}".format(res['items'][index]['id']['videoId']),
                         "title": res['items'][index]['snippet']['title'],
@@ -721,7 +721,7 @@ class Music(commands.Cog):
             await self.report_error(ctx, "play_after", traceback2.format_exc())
             self.bot.voice_status[ctx.guild.id]["status"] = 0
 
-    async def get_duration(self, txt, ctx, playlist=False):
+    async def get_duration_from_youtube_api(self, txt, ctx, playlist=False):
         """
         動画時間をAPIから取得
         :param txt: APIURL
@@ -732,7 +732,7 @@ class Music(commands.Cog):
         r = await self.get_youtube_api_request(f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={txt}&key=", ctx)
         if r[0] == 0:  # リクエスト処理中にエラーが発生
             await self.send_text(ctx, "UNKNOWN_ERROR")
-            await self.report_error(ctx, "get_duration", "{}\n{}".format(r[1], pprint.pformat(r[2])))
+            await self.report_error(ctx, "get_duration_from_youtube_api", "{}\n{}".format(r[1], pprint.pformat(r[2])))
             return [0]
         elif r[0] == 1:  # リクエスト成功 r[1]
             if playlist:
@@ -1015,8 +1015,9 @@ class Music(commands.Cog):
                             id_list += "{},".format(res['items'][i]['snippet']['resourceId']['videoId'])
                         except KeyError:
                             pass
-                    res_d = await self.get_duration(id_list[:-1], ctx, playlist=True)
-                    if res_d[0] == 0: return
+                    res_d = await self.get_duration_from_youtube_api(id_list[:-1], ctx, playlist=True)
+                    if res_d[0] == 0:
+                        return
                     for i in range(len(res["items"])):
                         try:
                             info = {"url": "https://www.youtube.com/watch?v={}".format(
@@ -1046,7 +1047,7 @@ class Music(commands.Cog):
                     res = r[1]
                     if len(res["items"]) == 0:
                         return await self.send_text(ctx, "NO_APPROPRIATE")
-                    res_d = await self.get_duration(res['items'][0]['id']['videoId'], ctx)
+                    res_d = await self.get_duration_from_youtube_api(res['items'][0]['id']['videoId'], ctx)
                     if res_d[0] == 0: return
                     info = {
                         "url": "https://www.youtube.com/watch?v={}".format(res['items'][0]['id']['videoId']),
@@ -1111,7 +1112,7 @@ class Music(commands.Cog):
             return
         elif rx[0] == 1:
             ix = rx[1]
-        res_d = await self.get_duration(res['items'][ix - 1]['id']['videoId'], ctx)
+        res_d = await self.get_duration_from_youtube_api(res['items'][ix - 1]['id']['videoId'], ctx)
         if res_d[0] == 0: return
         info = {"url": "https://www.youtube.com/watch?v={}".format(res['items'][ix - 1]['id']['videoId']),
                 "title": res['items'][ix - 1]['snippet']['title'],
@@ -1136,54 +1137,90 @@ class Music(commands.Cog):
         :param url: 曲名
         :return:
         """
-        code = await self.initialize_data(ctx)
-        if code == 0:  # VC接続に失敗した場合
-            return
-        elif code == 4:  # 操作拒否
-            return await self.send_text(ctx, "OPERATION_DENIED")
-        if url == "off":
-            if not self.bot.voice_status[ctx.guild.id]["auto"]:
-                await self.send_text(ctx, "AUTO_ALREADY_OFF")
-            else:
-                self.bot.voice_status[ctx.guild.id]["auto"] = False
-                await self.send_text(ctx, "AUTO_OFF")
-            return
-        user = ctx.author.display_name
-        r = await self.get_youtube_api_request(f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url}&maxResults=1&type=video&key=", ctx)
-        res = {}
-        if r[0] == 0:
-            await self.send_text(ctx, "UNKNOWN_ERROR")
-            return await self.report_error(ctx, "auto", "{}\n{}".format(r[1], pprint.pformat(r[2])))
-        elif r[0] == 1:
-            res = r[1]
-            if len(res["items"]) == 0:
-                return await self.send_text(ctx, "NO_APPROPRIATE")
-        self.bot.voice_disconnected.append(ctx.guild.id)
-        if ctx.voice_client.source is not None:
-            ctx.voice_client.source.cleanup()
-        await asyncio.sleep(1)
-        self.bot.voice_disconnected.remove(ctx.guild.id)
-        self.bot.voice_status[ctx.guild.id]["auto"] = True
-        self.bot.playlist[ctx.guild.id] = []
-        self.bot.voice_status[ctx.guild.id]["loop"] = False
-        self.bot.voice_status[ctx.guild.id]["repeat"] = False
-        self.bot.voice_status[ctx.guild.id]["status"] = 0
-        await self.send_text(ctx, "AUTO_ENABLED", url)
-        res_d = await self.get_duration(res['items'][0]['id']['videoId'], ctx)
-        if res_d[0] == 0: return
-        info = {"url": "https://www.youtube.com/watch?v={}".format(res['items'][0]['id']['videoId']),
-                "title": res['items'][0]['snippet']['title'],
-                "id": res['items'][0]['id']['videoId'],
-                "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
-                "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
-                "channel": res['items'][0]['snippet']['channelTitle'],
-                "user": user,
-                "duration": res_d[1]
-                }
-        self.bot.playlist[ctx.guild.id].append(info)
-        # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
-        #if self.bot.voice_status[ctx.guild.id]["status"] == 0:
-        await self.play_music(ctx)
+        try:
+            code = await self.initialize_data(ctx)
+            if code == 0:  # VC接続に失敗した場合
+                return
+            elif code == 4:  # 操作拒否
+                return await self.send_text(ctx, "OPERATION_DENIED")
+            if url == "off":
+                if not self.bot.voice_status[ctx.guild.id]["auto"]:
+                    await self.send_text(ctx, "AUTO_ALREADY_OFF")
+                else:
+                    self.bot.voice_status[ctx.guild.id]["auto"] = False
+                    await self.send_text(ctx, "AUTO_OFF")
+                return
+            user = ctx.author.display_name
+            url_code = self.parse_youtube_url(url)
+            res = {}
+            info = {}
+            if url_code[0] == 0:
+                if url_code[1] == 0:
+                    return await self.send_text(ctx, "WRONG_URL")
+                elif url_code[1] == 1:
+                    return await self.send_text(ctx, "NOT_SUPPORTED")
+            elif url_code[0] == 1:
+                r = await self.get_youtube_api_request(
+                    f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={url_code[1]}&maxResults=1&type=video&key=",
+                    ctx)
+                if r[0] == 0:  # リクエスト処理中にエラーが発生
+                    await self.send_text(ctx, "UNKNOWN_ERROR")
+                    return await self.report_error(ctx, "auto", f"{r[1]}\n{pprint.pformat(r[2])}")
+                elif r[0] == 1:  # リクエスト成功
+                    res = r[1]
+                    if len(res["items"]) == 0:
+                        return await self.send_text(ctx, "NO_APPROPRIATE")
+                    info = {
+                        "url": f"https://www.youtube.com/watch?v={res['items'][0]['id']}",
+                        "title": res['items'][0]['snippet']['title'],
+                        "id": res['items'][0]['id'],
+                        "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
+                        "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
+                        "channel": res['items'][0]['snippet']['channelTitle'],
+                        "user": user,
+                        "duration": self.parse_duration(res['items'][0])
+                    }
+            elif url_code[0] == 3:
+                r = await self.get_youtube_api_request(
+                    f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url_code[1]}&maxResults=1&type=video&key=",
+                    ctx)
+                if r[0] == 0:  # リクエスト処理中にエラーが発生
+                    await self.send_text(ctx, "UNKNOWN_ERROR")
+                    return await self.report_error(ctx, "auto", f"{r[1]}\n{pprint.pformat(r[2])}")
+                elif r[0] == 1:  # リクエスト成功
+                    res = r[1]
+                    if len(res["items"]) == 0:
+                        return await self.send_text(ctx, "NO_APPROPRIATE")
+                    res_d = await self.get_duration_from_youtube_api(res['items'][0]['id']['videoId'], ctx)
+                    if res_d[0] == 0:
+                        return
+                    info = {
+                        "url": f"https://www.youtube.com/watch?v={res['items'][0]['id']['videoId']}",
+                        "title": res['items'][0]['snippet']['title'],
+                        "id": res['items'][0]['id']['videoId'],
+                        "thumbnail": res['items'][0]['snippet']['thumbnails']['high']['url'],
+                        "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
+                        "channel": res['items'][0]['snippet']['channelTitle'],
+                        "user": user,
+                        "duration": res_d[1]
+                    }
+            self.bot.voice_disconnected.append(ctx.guild.id)
+            if ctx.voice_client.source is not None:
+                ctx.voice_client.source.cleanup()
+            await asyncio.sleep(1)
+            self.bot.voice_disconnected.remove(ctx.guild.id)
+            self.bot.voice_status[ctx.guild.id]["auto"] = True
+            self.bot.playlist[ctx.guild.id] = []
+            self.bot.voice_status[ctx.guild.id]["loop"] = False
+            self.bot.voice_status[ctx.guild.id]["repeat"] = False
+            self.bot.voice_status[ctx.guild.id]["status"] = 0
+            await self.send_text(ctx, "AUTO_ENABLED", url)
+            self.bot.playlist[ctx.guild.id].append(info)
+            # if (not ctx.voice_client.is_playing()) and (not ctx.voice_client.is_paused()):
+            # if self.bot.voice_status[ctx.guild.id]["status"] == 0:
+            await self.play_music(ctx)
+        except:
+            await ctx.send(traceback2.format_exc())
 
     @commands.command(aliases=['s'])
     async def skip(self, ctx):
