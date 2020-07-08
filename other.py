@@ -376,23 +376,23 @@ class Other(commands.Cog):
             if lang not in lang_list:
                 return await self.send_text(ctx, "WRONG_LANG_CODE")
             async with aiohttp.ClientSession() as session:
-                async with session.get("https://script.google.com/macros/s/AKfycbzy2M6VEqREaXdAY0Xa_WayFX3B3HhOGVZN8FzT1lPhiHE9_Wk/exec?text={}&target={}".format(urllib.parse.quote(text), lang)) as r:
+                async with session.get(f"https://script.google.com/macros/s/AKfycbzy2M6VEqREaXdAY0Xa_WayFX3B3HhOGVZN8FzT1lPhiHE9_Wk/exec?text={urllib.parse.quote(text)}&target={lang}") as r:
                     if r.status == 200:
                         try:
                             res = await r.json()
                             if len(res["text"]) >= 2048:
                                 return await self.send_text(ctx, "TRANS_OVER_2000")
                             if str(ctx.guild.region) == "japan":
-                                embed = discord.Embed(description="```CSS\n[{}]``` ```fix\n{}```".format(lang, res["text"]), color=0xb6ff01, timestamp=ctx.message.created_at)
+                                embed = discord.Embed(description=f"```CSS\n[{lang}]``` ```fix\n{res['text']}```", color=0xb6ff01, timestamp=ctx.message.created_at)
                             else:
-                                embed = discord.Embed(description="```CSS\n[{}]``` ```fix\n{}```".format(lang, res["text"]), color=0xb6ff01, timestamp=ctx.message.created_at)
+                                embed = discord.Embed(description=f"```CSS\n[{lang}]``` ```fix\n{res['text']}```", color=0xb6ff01, timestamp=ctx.message.created_at)
                             embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
                             embed.set_footer(text=f"{ctx.guild.name} | {ctx.channel.name}")
                             await ctx.send(embed=embed)
                         except:
                             await self.send_text(ctx, "INVALID_STRING")
                             await ctx.send(traceback2.format_exc())
-                            await self.bot.get_channel(self.info["ERROR_CHANNEL"]).send("trans関数内よりレスポンス:\n```{}```".format(pprint.pformat(r)))
+                            await self.bot.get_channel(self.info["ERROR_CHANNEL"]).send(f"trans関数内よりレスポンス:\n```{pprint.pformat(r)}```")
                     elif r.status == 400:
                         await self.send_text(ctx, "INVALID_STRING")
         except:
@@ -412,7 +412,7 @@ class Other(commands.Cog):
         message = await ctx.send("Pong")
         ping = (time.monotonic() - before) * 1000
         await message.delete()
-        await ctx.send(":white_check_mark:`ping: {}[ms]`".format(int(ping)))
+        await ctx.send(f":white_check_mark:`ping: {int(ping)}[ms]`")
 
     @commands.command(aliases=["f", "fb"])
     async def feedback(self, ctx, *, text):
@@ -423,9 +423,9 @@ class Other(commands.Cog):
         embed.set_footer(text=datetime.datetime.now().strftime('%Y年%m月%d日 %H時%M分'))
         msg = await channel.send(embed=embed)
         if str(ctx.guild.region) == "japan":
-            await ctx.send(":white_check_mark:お問い合わせが完了しました.\n内容によってはBOT管理者がお返事を公式サーバーにて掲示いたします.\n貴重なご意見ありがとうございました。\nお問い合わせID: {}".format(ctx.message.id))
+            await ctx.send(f":white_check_mark:お問い合わせが完了しました.\n内容によってはBOT管理者がお返事を公式サーバーにて掲示いたします.\n貴重なご意見ありがとうございました。\nお問い合わせID: {ctx.message.id}")
         else:
-            await ctx.send(":white_check_mark: Your inquiry is complete.\nDepending on the content, the BOT administrator will post a reply on the official server.\nThank you for your valuable feedback.\nFeedback ID: {}".format(ctx.message.id))
+            await ctx.send(f":white_check_mark: Your inquiry is complete.\nDepending on the content, the BOT administrator will post a reply on the official server.\nThank you for your valuable feedback.\nFeedback ID: {ctx.message.id}")
 
     @commands.group(aliases=["chk"])
     async def check(self, ctx):

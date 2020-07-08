@@ -45,12 +45,12 @@ class Dev(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await self.bot.get_channel(self.info["ERROR_CHANNEL"]).send("{}に参加しました.".format(guild.name))
+        await self.bot.get_channel(self.info["ERROR_CHANNEL"]).send(f"{guild.name}に参加しました.")
         await self.update_status()
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        await self.bot.get_channel(self.info["ERROR_CHANNEL"]).send("{}を退出しました.".format(guild.name))
+        await self.bot.get_channel(self.info["ERROR_CHANNEL"]).send(f"{guild.name}を退出しました.")
         await self.update_status()
 
     @commands.Cog.listener()
@@ -85,8 +85,8 @@ class Dev(commands.Cog):
     async def list_server(self, ctx):
         text = "サーバー一覧:"
         for i in self.bot.guilds:
-            text += "\n> **{}**\n> ({}) | {}".format(i.name, i.id, len(i.members))
-        text += "\n計: {}サーバー".format(len(self.bot.guilds))
+            text += f"\n> **{i.name}**\n> ({i.id}) | {len(i.members)}"
+        text += f"\n計: {len(self.bot.guilds)}サーバー"
         msg_obj = await ctx.send(text)
         await asyncio.sleep(30)
         await msg_obj.delete()
@@ -132,8 +132,8 @@ class Dev(commands.Cog):
     async def vc(self, ctx):
         text = "vc接続中のサーバー:"
         for i in self.bot.voice_clients:
-            text += "\n> **{}** ({})\n> ({}) | {}".format(i.guild.name, len(i.channel.members), i.guild.id, len(i.guild.members))
-        text += "\n計: {}サーバー".format(len(self.bot.voice_clients))
+            text += f"\n> **{i.guild.name}** ({len(i.channel.members)})\n> ({i.guild.id}) | {len(i.guild.members)}"
+        text += f"\n計: {len(self.bot.voice_clients)}サーバー"
         await ctx.send(text)
 
     @commands.group()
@@ -148,7 +148,7 @@ class Dev(commands.Cog):
                 await ctx.send("このユーザーは既に管理者です.")
             else:
                 self.bot.ADMIN.append(target.id)
-                await ctx.send("<@{}>さんが管理者になりました.".format(target.id))
+                await ctx.send(f"<@{target.id}>さんが管理者になりました.")
         self.save_roles()
 
     @admin.command(name="delete", aliases=["remove"])
@@ -158,7 +158,7 @@ class Dev(commands.Cog):
                 await ctx.send("このユーザーは管理者ではありません.")
             else:
                 self.bot.ADMIN.remove(target.id)
-                await ctx.send("<@{}>さんが管理者から削除されました.".format(target.id))
+                await ctx.send(f"<@{target.id}>さんが管理者から削除されました.")
         self.save_roles()
 
     @admin.command(name="list")
@@ -181,7 +181,7 @@ class Dev(commands.Cog):
                 await ctx.send("このユーザーはすでにBANされています.")
             else:
                 self.bot.BAN.append(target.id)
-                await ctx.send("<@{}>がBANされました.".format(target.id))
+                await ctx.send(f"<@{target.id}>がBANされました.")
         self.save_roles()
 
     @ban.command(name="delete", aliases=["remove"])
@@ -191,7 +191,7 @@ class Dev(commands.Cog):
                 await ctx.send("このユーザーはBANされていません.")
             else:
                 self.bot.BAN.remove(target.id)
-                await ctx.send("<@{}>さんがBANを解除されました.".format(target.id))
+                await ctx.send(f"<@{target.id}>さんがBANを解除されました.")
         self.save_roles()
 
     @ban.command(name="list")
@@ -214,7 +214,7 @@ class Dev(commands.Cog):
                 await ctx.send("このユーザーはすでに貢献者されています.")
             else:
                 self.bot.Contributor.append(target.id)
-                await ctx.send("<@{}>が貢献者になりました.".format(target.id))
+                await ctx.send(f"<@{target.id}>が貢献者になりました.")
         self.save_roles()
 
     @contributor.command(name="delete", aliases=["remove"])
@@ -224,7 +224,7 @@ class Dev(commands.Cog):
                 await ctx.send("このユーザーは貢献者ではありません.")
             else:
                 self.bot.Contributor.remove(target.id)
-                await ctx.send("<@{}>さんが貢献者ではなくなりました.".format(target.id))
+                await ctx.send(f"<@{target.id}>さんが貢献者ではなくなりました.")
         self.save_roles()
 
     @contributor.command(name="list")
@@ -251,9 +251,9 @@ class Dev(commands.Cog):
                 self.bot.unload_extension(text)
                 self.bot.load_extension(text)
             except:
-                await ctx.send("{}の再読み込みに失敗しました\n{}.".format(text, traceback2.format_exc()))
+                await ctx.send(f"{text}の再読み込みに失敗しました\n{traceback2.format_exc()}.")
             else:
-                await ctx.send("{}の再読み込みに成功しました.".format(text))
+                await ctx.send(f"{text}の再読み込みに成功しました.")
         else:
             await ctx.send("存在しない名前です.")
 
@@ -264,9 +264,9 @@ class Dev(commands.Cog):
             try:
                 self.bot.load_extension(text)
             except:
-                await ctx.send("{}の読み込みに失敗しました\n{}.".format(text,traceback2.format_exc()))
+                await ctx.send(f"{text}の読み込みに失敗しました\n{traceback2.format_exc()}.")
             else:
-                await ctx.send("{}の読み込みに成功しました.".format(text))
+                await ctx.send(f"{text}の読み込みに成功しました.")
         else:
             await ctx.send("存在しない名前です.")
 
@@ -279,9 +279,9 @@ class Dev(commands.Cog):
                 await music.leave_all(ctx)
                 self.bot.unload_extension(text)
             except:
-                await ctx.send("{}の切り離しに失敗しました\n{}.".format(text,traceback2.format_exc()))
+                await ctx.send(f"{text}の切り離しに失敗しました\n{traceback2.format_exc()}.")
             else:
-                await ctx.send("{}の切り離しに成功しました.".format(text))
+                await ctx.send(f"{text}の切り離しに成功しました.")
         else:
             await ctx.send("存在しない名前です.")
 
@@ -324,7 +324,7 @@ class Dev(commands.Cog):
             await ctx.message.add_reaction("✅")
         except:
             await ctx.message.add_reaction("🚫")
-            await ctx.send("{}".format(traceback2.format_exc()))
+            await ctx.send(f"{traceback2.format_exc()}")
 
     @commands.command(aliases=["pr"])
     async def process(self, ctx):

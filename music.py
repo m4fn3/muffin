@@ -406,7 +406,7 @@ class Music(commands.Cog):
                 embed.add_field(name="チャンネル", value=arg1['channel'])
                 embed.add_field(name="アップロード", value=arg1['publish'])
                 embed.add_field(name="動画時間", value=arg1['duration'])
-                embed.add_field(name="リクエスト", value="    {}".format(arg1["user"]))
+                embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
             else:
                 embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0x93ffab)
                 embed.set_author(name="Music added")
@@ -414,18 +414,17 @@ class Music(commands.Cog):
                 embed.add_field(name="Channel", value=arg1['channel'])
                 embed.add_field(name="Upload", value=arg1['publish'])
                 embed.add_field(name="Duration", value=arg1['duration'])
-                embed.add_field(name="Requested by", value="    {}".format(arg1["user"]))
+                embed.add_field(name="Requested by", value=f"    {arg1['user']}")
             await ctx.send(embed=embed)
         elif code == "PLAYLIST_ADDED":
             if str(ctx.guild.region) == "japan":
-                embed = discord.Embed(title=arg1["title"] + "\n...等 {}曲".format(str(arg2)), url=arg1["url"],
-                                      color=0x93ffab)
+                embed = discord.Embed(title=arg1["title"] + f"\n...等 {str(arg2)}曲", url=arg1["url"], color=0x93ffab)
                 embed.set_author(name="曲を追加しました")
                 embed.set_thumbnail(url=arg1["thumbnail"])
                 embed.add_field(name="チャンネル", value=arg1['channel'])
                 embed.add_field(name="アップロード", value=arg1['publish'])
                 embed.add_field(name="動画時間", value=arg1['duration'])
-                embed.add_field(name="リクエスト", value="    {}".format(arg1["user"]))
+                embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
             else:
                 embed = discord.Embed(title=arg1["title"] + "\n etc... {}songs".format(str(arg2)),
                                       url=arg1["url"], color=0x93ffab)
@@ -434,7 +433,7 @@ class Music(commands.Cog):
                 embed.add_field(name="Channel", value=arg1['channel'])
                 embed.add_field(name="Upload", value=arg1['publish'])
                 embed.add_field(name="Duration", value=arg1['duration'])
-                embed.add_field(name="Requested by", value="    {}".format(arg1["user"]))
+                embed.add_field(name="Requested by", value=f"    {arg1['user']}")
             await ctx.send(embed=embed)
         elif code == "MUSIC_PLAY_NOW":
             if str(ctx.guild.region) == "japan":
@@ -444,7 +443,7 @@ class Music(commands.Cog):
                 embed.add_field(name="チャンネル", value=arg1['channel'])
                 embed.add_field(name="アップロード", value=arg1['publish'])
                 embed.add_field(name="動画時間", value=arg1['duration'])
-                embed.add_field(name="リクエスト", value="    {}".format(arg1["user"]))
+                embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
             else:
                 embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0xff82b2)
                 embed.set_author(name="Now playing")
@@ -452,7 +451,7 @@ class Music(commands.Cog):
                 embed.add_field(name="Channel", value=arg1['channel'])
                 embed.add_field(name="Upload", value=arg1['publish'])
                 embed.add_field(name="Duration", value=arg1['duration'])
-                embed.add_field(name="Requested by", value="    {}".format(arg1["user"]))
+                embed.add_field(name="Requested by", value=f"    {arg1['user']}")
             msg_obj = await ctx.send(embed=embed)
             return msg_obj
         elif code == "MUSIC_REMOVED":
@@ -463,14 +462,14 @@ class Music(commands.Cog):
                 embed.add_field(name="チャンネル", value=arg1['channel'])
                 embed.add_field(name="アップロード", value=arg1['publish'])
                 embed.add_field(name="動画時間", value=arg1['duration'])
-                embed.add_field(name="リクエスト", value="    {}".format(arg1["user"]))
+                embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
             else:
                 embed.set_author(name="Music deleted")
                 embed.set_thumbnail(url=arg1["thumbnail"])
                 embed.add_field(name="Channel", value=arg1['channel'])
                 embed.add_field(name="Upload", value=arg1['publish'])
                 embed.add_field(name="Duration", value=arg1['duration'])
-                embed.add_field(name="Requested by", value="    {}".format(arg1["user"]))
+                embed.add_field(name="Requested by", value=f"    {arg1['user']}")
             await ctx.send(embed=embed)
         elif code == "DISCONNECTED_BECAUSE_ALL_USERS_LEFT":
             if str(ctx.guild.region) == "japan":
@@ -592,11 +591,10 @@ class Music(commands.Cog):
                     return 1
         elif url_code[0] == 2 and not is_auto:
             r = await self.get_youtube_api_request(
-                "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={}&maxResults=50&key=".format(
-                    url_code[1]), ctx)
+                f"https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={url_code[1]}&maxResults=50&key=", ctx)
             if r[0] == 0:  # リクエスト処理中にエラーが発生
                 await self.send_text(ctx, "UNKNOWN_ERROR")
-                await self.report_error(ctx, "play", "{}\n{}".format(r[1], pprint.pformat(r[2])))
+                await self.report_error(ctx, "play", f"{r[1]}\n{pprint.pformat(r[2])}")
                 return 0
             elif r[0] == 1:  # リクエスト成功 r[1]
                 res = r[1]
@@ -606,7 +604,7 @@ class Music(commands.Cog):
                 id_list = ""
                 for i in range(len(res["items"])):
                     try:
-                        id_list += "{},".format(res['items'][i]['snippet']['resourceId']['videoId'])
+                        id_list += f"{res['items'][i]['snippet']['resourceId']['videoId']},"
                     except KeyError:
                         pass
                 res_d = await self.get_duration_from_youtube_api(id_list[:-1], ctx, playlist=True)
@@ -614,8 +612,8 @@ class Music(commands.Cog):
                     return 0
                 for i in range(len(res["items"])):
                     try:
-                        info = {"url": "https://www.youtube.com/watch?v={}".format(
-                            res['items'][i]['snippet']['resourceId']['videoId']),
+                        info = {
+                            "url": f"https://www.youtube.com/watch?v={res['items'][i]['snippet']['resourceId']['videoId']}",
                             "title": res['items'][i]['snippet']['title'],
                             "id": res['items'][i]['snippet']['resourceId']['videoId'],
                             "thumbnail": res['items'][i]['snippet']['thumbnails']['high']['url'],
@@ -633,8 +631,7 @@ class Music(commands.Cog):
                 return 1
         elif url_code[0] == 3:
             r = await self.get_youtube_api_request(
-                f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url_code[1]}&maxResults=1&type=video&key=",
-                ctx)
+                f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={url_code[1]}&maxResults=1&type=video&key=", ctx)
             if r[0] == 0:  # リクエスト処理中にエラーが発生
                 await self.send_text(ctx, "UNKNOWN_ERROR")
                 await self.report_error(ctx, "auto", f"{r[1]}\n{pprint.pformat(r[2])}")
@@ -785,19 +782,20 @@ class Music(commands.Cog):
                 return await self.clean_all(ctx, report=True)
             async with ctx.typing():
                 dt0 = self.bot.playlist[ctx.guild.id].pop(0)
-                r = await self.get_youtube_api_request("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&relatedToVideoId={}&maxResults=10&key=".format(dt0["id"]), ctx)
+                r = await self.get_youtube_api_request(f"https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&relatedToVideoId={dt0['id']}&maxResults=10&key=", ctx)
                 res = {}
                 if r[0] == 0:  # リクエスト処理中にエラーが発生
                     await self.send_text(ctx, "UNKNOWN_ERROR")
-                    return await self.report_error(ctx, "play_related_music", "{}\n{}".format(r[1], pprint.pformat(r[2])))
+                    return await self.report_error(ctx, "play_related_music", f"{r[1]}\n{pprint.pformat(r[2])}")
                 elif r[0] == 1:  # リクエスト成功 r[1]
                     res = r[1]
                     if len(res["items"]) == 0:
                         return await self.send_text(ctx, "NO_APPROPRIATE")
                 index = random.randrange(len(res["items"]))
                 res_d = await self.get_duration_from_youtube_api(res['items'][index]['id']['videoId'], ctx)
-                if res_d[0] == 0: return
-                info = {"url": "https://www.youtube.com/watch?v={}".format(res['items'][index]['id']['videoId']),
+                if res_d[0] == 0:
+                    return
+                info = {"url": f"https://www.youtube.com/watch?v={res['items'][index]['id']['videoId']}",
                         "title": res['items'][index]['snippet']['title'],
                         "id": res['items'][index]['id']['videoId'],
                         "thumbnail": res['items'][index]['snippet']['thumbnails']['high']['url'],
@@ -842,7 +840,7 @@ class Music(commands.Cog):
         r = await self.get_youtube_api_request(f"https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={txt}&key=", ctx)
         if r[0] == 0:  # リクエスト処理中にエラーが発生
             await self.send_text(ctx, "UNKNOWN_ERROR")
-            await self.report_error(ctx, "get_duration_from_youtube_api", "{}\n{}".format(r[1], pprint.pformat(r[2])))
+            await self.report_error(ctx, "get_duration_from_youtube_api", f"{r[1]}\n{pprint.pformat(r[2])}")
             return [0]
         elif r[0] == 1:  # リクエスト成功 r[1]
             if playlist:
@@ -1108,15 +1106,14 @@ class Music(commands.Cog):
         res = {}
         if r[0] == 0:  # リクエスト処理中にエラーが発生
             await self.send_text(ctx, "UNKNOWN_ERROR")
-            return await self.report_error(ctx, "search", "{}\n{}".format(r[1], pprint.pformat(r[2])))
+            return await self.report_error(ctx, "search", f"{r[1]}\n{pprint.pformat(r[2])}")
         elif r[0] == 1:  # リクエスト成功 r[1]
             res = r[1]
             if len(res["items"]) == 0:
                 return await self.send_text(ctx, "NO_APPROPRIATE")
         embed = discord.Embed(title="Search", color=0xaaaaaa)
         for i in range(1, len(res["items"]) + 1):
-            embed.add_field(name=str(i) + ":", value="{}".format(res['items'][i - 1]['snippet']['title'], ),
-                            inline=False)
+            embed.add_field(name=str(i) + ":", value=res['items'][i - 1]['snippet']['title'], inline=False)
         if str(ctx.guild.region) == "japan":
             embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="番号を入力して曲を指定します.\n一定時間経過するとタイムアウトします.", inline=False)
         else:
@@ -1132,8 +1129,9 @@ class Music(commands.Cog):
         elif rx[0] == 1:
             ix = rx[1]
         res_d = await self.get_duration_from_youtube_api(res['items'][ix - 1]['id']['videoId'], ctx)
-        if res_d[0] == 0: return
-        info = {"url": "https://www.youtube.com/watch?v={}".format(res['items'][ix - 1]['id']['videoId']),
+        if res_d[0] == 0:
+            return
+        info = {"url": f"https://www.youtube.com/watch?v={res['items'][ix - 1]['id']['videoId']}",
                 "title": res['items'][ix - 1]['snippet']['title'],
                 "id": res['items'][ix - 1]['id']['videoId'],
                 "thumbnail": res['items'][ix - 1]['snippet']['thumbnails']['high']['url'],
@@ -1239,7 +1237,7 @@ class Music(commands.Cog):
             await self.send_text(ctx, "PAUSED_MUSIC")
         else:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-            await self.report_error(ctx, "pause", "どの例にも当てはまらない状況が発生しました.\nstatus:{}".format(self.bot.voice_status[ctx.guild.id]["status"]))
+            await self.report_error(ctx, "pause", f"どの例にも当てはまらない状況が発生しました.\nstatus:{self.bot.voice_status[ctx.guild.id]['status']}")
 
     @commands.command(aliases=['re', 'res'])
     async def resume(self, ctx):
