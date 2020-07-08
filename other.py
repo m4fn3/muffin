@@ -3,7 +3,7 @@ import re
 
 from discord.ext import commands
 from matplotlib import colors
-import aiohttp, asyncio, datetime, discord, json, os, pprint, psutil, sys, time,  urllib, traceback2, webcolors
+import aiohttp, asyncio, datetime, discord, io, json, os, pprint, psutil, sys, time,  urllib, traceback2, webcolors
 
 
 class Other(commands.Cog):
@@ -129,7 +129,25 @@ class Other(commands.Cog):
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`不明なエラーが発生しました.`")
             else:
-                await ctx.send(":warning:`Unknown error has occured.`")
+                await ctx.send(":warning:`Unknown error has occurred.`")
+
+    async def report_error(self, ctx, name, message):
+        """
+        エラーをログチャンネルに送信
+        :param ctx: Context
+        :param name: 関数名
+        :param message: エラーメッセージ
+        :return:
+        """
+        channel = self.bot.get_channel(self.info["ERROR_CHANNEL"])
+        try:
+            embed = discord.Embed(title=name, description=message)
+            embed.set_author(name="Error Reporter")
+            await channel.send(embed=embed)
+        except:
+            embed = discord.Embed(title=name, description="<TOO LONG>")
+            embed.set_author(name="Error Reporter")
+            msg = await channel.send(embed=embed, file=discord.File(fp=io.StringIO(message), filename="error.txt"))
 
     async def show_user_info(self, ctx, user_id: int):
         try:

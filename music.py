@@ -811,7 +811,6 @@ class Music(commands.Cog):
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
-                    await self.report_error(ctx, "play_related_music", traceback2.format_exc())
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
                 msg_obj = await self.send_text(ctx, "MUSIC_PLAY_NOW", info)
