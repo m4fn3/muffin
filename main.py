@@ -43,6 +43,15 @@ class Muffin(commands.Bot):
         if self.user.id == 644065524879196193:
             await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
 
+    async def on_message(self, message):
+        if message.author.bot:
+            raise commands.CommandError("From Bot")
+        elif message.guild is None:
+            await message.channel.send("muffin is __Only__ available on Servers!\nTo get started: http://mafu.cf/\nTo invite Bot: http://mafu.cf/muffin")
+            raise commands.CommandError("Not Available On DM")
+        else:
+            await self.process_commands(message)
+
 
 if __name__ == '__main__':
     bot = Muffin(command_prefix=(info["PREFIX"]))

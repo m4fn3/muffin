@@ -228,17 +228,23 @@ class Game(commands.Cog):
     @commands.command(aliases=["st"])
     async def status(self, ctx):
         if ctx.message.mentions == []:
-            embed = discord.Embed(title="ステータス")
-            embed.set_thumbnail(url=ctx.author.avatar_url)
-            decoration = ""
-            if ctx.author.id in self.bot.ADMIN:
-                embed.add_field(name="ユーザーー情報", value=f"```yaml\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n[管理者]```", inline=False)
-            elif ctx.author.id in self.bot.Contributor:
-                embed.add_field(name="ユーザーー情報", value=f"```fix\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n[貢献者]```", inline=False)
+            if str(ctx.guild.region) == "japan":
+                embed = discord.Embed(title="ステータス")
             else:
-                embed.add_field(name="ユーザーー情報", value=f"```ユーザー:{ctx.author}\nユーザーID:{ctx.author.id}```", inline=False)
+                embed = discord.Embed(title="Status")
+            embed.set_thumbnail(url=ctx.author.avatar_url)
+            decoration = ""; role = ""
+            if ctx.author.id in self.bot.ADMIN:
+                decoration += "yaml"; role += "[ADMIN]"
+            elif ctx.author.id in self.bot.Contributor:
+                decoration += "fix"; role += "[Contributor]"
+            if str(ctx.guild.region) == "japan":
+                embed.add_field(name="ユーザー情報", value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}```", inline=False)
+            else:
+                embed.add_field(name="UserInformation", value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}```", inline=False)
             if str(ctx.author.id) in self.bot.database:
-                embed.add_field(name="ShadowChoice",
+                if str(ctx.guild.region) == "japan":
+                    embed.add_field(name="ShadowChoice",
                                 value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
                                     self.bot.database[str(ctx.author.id)]["best_score"],
                                     self.bot.database[str(ctx.author.id)]["single"]["all_matches"],
@@ -253,21 +259,47 @@ class Game(commands.Cog):
                                         self.bot.database[str(ctx.author.id)]["multi"]["win_matches"] /
                                         self.bot.database[str(ctx.author.id)]["multi"]["all_matches"] * 100, 2
                                     )))
+                else:
+                    embed.add_field(name="ShadowChoice",
+                                    value="```c\nShoretstAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
+                                        self.bot.database[str(ctx.author.id)]["best_score"],
+                                        self.bot.database[str(ctx.author.id)]["single"]["all_matches"],
+                                        self.bot.database[str(ctx.author.id)]["single"]["win_matches"],
+                                        round(
+                                            self.bot.database[str(ctx.author.id)]["single"]["win_matches"] /
+                                            self.bot.database[str(ctx.author.id)]["single"]["all_matches"] * 100, 2
+                                        ),
+                                        self.bot.database[str(ctx.author.id)]["multi"]["all_matches"],
+                                        self.bot.database[str(ctx.author.id)]["multi"]["win_matches"],
+                                        round(
+                                            self.bot.database[str(ctx.author.id)]["multi"]["win_matches"] /
+                                            self.bot.database[str(ctx.author.id)]["multi"]["all_matches"] * 100, 2
+                                        )))
             else:
-                embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
+                if str(ctx.guild.region) == "japan":
+                    embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
+                else:
+                    embed.add_field(name="ShadowChoice", value="```You have't played yet.```")
             await ctx.send(embed=embed)
         else:
             target = ctx.message.mentions[0]
-            embed = discord.Embed(title="ステータス")
-            embed.set_thumbnail(url=target.avatar_url)
-            if target.id in self.bot.ADMIN:
-                embed.add_field(name="ユーザーー情報", value=f"```yaml\nユーザー:{target}\nユーザーID:{target.id}\n[管理者]```", inline=False)
-            elif target.id in self.bot.Contributor:
-                embed.add_field(name="ユーザーー情報", value=f"```fix\nユーザー:{target}\nユーザーID:{target.id}\n[貢献者]```", inline=False)
+            if str(ctx.guild.region) == "japan":
+                embed = discord.Embed(title="ステータス")
             else:
-                embed.add_field(name="ユーザーー情報", value=f"```ユーザー:{target}\nユーザーID:{target.id}```", inline=False)
+                embed = discord.Embed(title="Status")
+            embed.set_thumbnail(url=target.avatar_url)
+            decoration = ""; role = ""
+            if ctx.author.id in self.bot.ADMIN:
+                decoration += "yaml"; role += "[ADMIN]"
+            elif ctx.author.id in self.bot.Contributor:
+                decoration += "fix"; role += "[Contributor]"
+            if str(ctx.guild.region) == "japan":
+                embed.add_field(name="ユーザー情報", value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```", inline=False)
+            else:
+                embed.add_field(name="UserInformation", value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```", inline=False)
             if str(target.id) in self.bot.database:
-                embed.add_field(name="ShadowChoice",
+                if str(ctx.guild.region) == "japan":
+                    embed.add_field(name="ShadowChoice",
                                 value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
                                     self.bot.database[str(target.id)]["best_score"],
                                     self.bot.database[str(target.id)]["single"]["all_matches"],
@@ -278,8 +310,24 @@ class Game(commands.Cog):
                                     self.bot.database[str(target.id)]["multi"]["win_matches"], round(
                                         self.bot.database[str(target.id)]["multi"]["win_matches"] /
                                         self.bot.database[str(target.id)]["multi"]["all_matches"] * 100, 2)))
+                else:
+                    embed.add_field(name="ShadowChoice",
+                                    value="```c\nShortestAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
+                                        self.bot.database[str(target.id)]["best_score"],
+                                        self.bot.database[str(target.id)]["single"]["all_matches"],
+                                        self.bot.database[str(target.id)]["single"]["win_matches"], round(
+                                            self.bot.database[str(target.id)]["single"]["win_matches"] /
+                                            self.bot.database[str(target.id)]["single"]["all_matches"] * 100, 2),
+                                        self.bot.database[str(target.id)]["multi"]["all_matches"],
+                                        self.bot.database[str(target.id)]["multi"]["win_matches"], round(
+                                            self.bot.database[str(target.id)]["multi"]["win_matches"] /
+                                            self.bot.database[str(target.id)]["multi"]["all_matches"] * 100, 2)))
+
             else:
-                embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
+                if str(ctx.guild.region) == "japan":
+                    embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
+                else:
+                    embed.add_field(name="ShadowChoice", value="```You have't played yet.```")
             await ctx.send(embed=embed)
 
     @commands.command(aliases=["sc"])

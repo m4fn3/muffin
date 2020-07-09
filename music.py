@@ -982,8 +982,6 @@ class Music(commands.Cog):
         if ctx.guild.id in self.bot.voice_status:
             if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        else:
-            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         else:
@@ -997,8 +995,10 @@ class Music(commands.Cog):
         :param ctx: Context
         :return:
         """
-        if ctx.guild.id not in self.bot.playlist:
-            await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+        if ctx.voice_client is None:
+            return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+        elif ctx.guild.id not in self.bot.playlist:
+            return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         if str(ctx.guild.region) == "japan":
             embed = discord.Embed(title="キュー", color=0xff22ff, url=self.info["WEB_URL_JA"])
         else:
@@ -1198,8 +1198,6 @@ class Music(commands.Cog):
         if ctx.guild.id in self.bot.voice_status:
             if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        else:
-            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
@@ -1223,8 +1221,6 @@ class Music(commands.Cog):
         if ctx.guild.id in self.bot.voice_status:
             if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        else:
-            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
@@ -1250,8 +1246,6 @@ class Music(commands.Cog):
         if ctx.guild.id in self.bot.voice_status:
             if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        else:
-            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
@@ -1317,12 +1311,11 @@ class Music(commands.Cog):
         if ctx.guild.id in self.bot.voice_status:
             if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        else:
-            return await self.clean_all(ctx, report=True)
         if ctx.voice_client is None:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif self.bot.voice_status[ctx.guild.id]["status"] == 0:
-            await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+            self.bot.voice_status[ctx.guild.id]["volume"] = volume
+            await self.send_text(ctx, "VOLUME_CHANGED", volume)
         elif self.bot.voice_status[ctx.guild.id]["status"] == 1 or self.bot.voice_status[ctx.guild.id]["status"] == 2:
             ctx.voice_client.source.volume = volume / 100
             self.bot.voice_status[ctx.guild.id]["volume"] = volume
@@ -1340,7 +1333,9 @@ class Music(commands.Cog):
         if ctx.guild.id in self.bot.voice_status:
             if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        if self.bot.voice_status[ctx.guild.id]["auto"]:
+        if ctx.voice_client is None:
+            return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+        elif self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.guild.id not in self.bot.playlist:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
@@ -1367,9 +1362,9 @@ class Music(commands.Cog):
         if ctx.guild.id in self.bot.voice_status:
             if self.bot.voice_status[ctx.guild.id]["status"] == 3:
                 return await self.send_text(ctx, "OPERATION_DENIED")
-        else:
-            return await self.clean_all(ctx, report=True)
-        if self.bot.voice_status[ctx.guild.id]["auto"]:
+        if ctx.voice_client is None:
+            return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+        elif self.bot.voice_status[ctx.guild.id]["auto"]:
             return await self.send_text(ctx, "AUTO_MODE_ON")
         if ctx.guild.id not in self.bot.playlist:
             await self.send_text(ctx, "NOT_PLAYING_MUSIC")
