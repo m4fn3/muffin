@@ -262,9 +262,9 @@ class Music(commands.Cog):
                 return await ctx.send(":warning:`Already connected to VC.`")
         elif code == "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC":
             if str(ctx.guild.region) == "japan":
-                await ctx.send(":warning:`動画の読み込み中にエラーが発生しました.`")
+                await ctx.send(":warning:`動画の読み込み中にエラーが発生しました.この動画は著作権の問題があるため日本では再生できません.`")
             else:
-                await ctx.send(":warning:`Something went wrong when playing music.`")
+                await ctx.send(":warning:`Something went wrong when playing music.This video cannot be played due to copyright issues in Japan.`")
         elif code == "PROCESS_TIMEOUT":
             if str(ctx.guild.region) == "japan":
                 await ctx.send(":warning:`一定時間内に選ばれなかったのでプロセスを終了しました`")
@@ -743,7 +743,6 @@ class Music(commands.Cog):
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
-                    await self.report_error(ctx, "play_music", traceback2.format_exc())
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
                 msg_obj = await self.send_text(ctx, "MUSIC_PLAY_NOW", info)
