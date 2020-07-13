@@ -20,9 +20,42 @@ class Other(commands.Cog):
         self.message_match2 = "(?P<message>[0-9]{18}"
         self.color_match = "(?P<color>[0-9a-fA-F]{6})"
 
+    def save_database(self):
+        with open("./DATABASE.json", 'w') as F:
+            json.dump(self.bot.database, F, indent=2)
+
     def hex_to_rgb(self, hex_code):
         hlen = len(hex_code)
         return tuple(int(hex_code[i:i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
+
+    async def init_database(self, ctx):
+        self.bot.database[str(ctx.author.id)] = {
+            "language": 0,
+            "shadowchoice": {
+                "best_score": 30.00,
+                "single": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                },
+                "multi": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                }
+            },
+            "music": {
+                "play_message": True
+            }
+        }
+        embed = discord.Embed(title=f"Welcome to muffin {len(self.bot.database)}th user!",
+                              description=f"<:muffin:731764451073720361> https://mafu.cf/\n<:help:731757723422556201>{self.bot.PREFIX}help")
+        embed.add_field(name="Languages",
+                        value=":flag_jp:日本語 ... {0}lang ja\n:flag_us:English ... {0}lang en".format(self.bot.PREFIX))
+        embed.add_field(name="Support",
+                        value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}",
+                        inline=False)
+        await ctx.send(embed=embed)
+        await ctx.send(ctx.author.mention)
+        self.save_database()
 
     async def cog_command_error(self, ctx, error):
         """
@@ -42,6 +75,8 @@ class Other(commands.Cog):
             await self.report_error(ctx, "on_command_error", str(error))
 
     async def cog_before_invoke(self, ctx):
+        if str(ctx.author.id) not in self.bot.database:
+            await self.init_database(ctx)
         if ctx.author.id in self.bot.BAN:
             await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
             raise commands.CommandError("Your Account Banned")

@@ -21,6 +21,10 @@ class Dev(commands.Cog):
         with open("./ROLE.json", 'w') as F:
             json.dump(roles, F, indent=2)
 
+    def save_database(self):
+        with open("./DATABASE.json", 'w') as F:
+            json.dump(self.bot.database, F, indent=2)
+
     def execute_returns(self, body):
         if isinstance(body[-1], ast.Expr):
             body[-1] = ast.Return(body[-1].value)
@@ -31,11 +35,42 @@ class Dev(commands.Cog):
         if isinstance(body[-1], ast.With):
             execute_returns(body[-1].body)
 
+    async def init_database(self, ctx):
+        self.bot.database[str(ctx.author.id)] = {
+            "language": 0,
+            "shadowchoice": {
+                "best_score": 30.00,
+                "single": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                },
+                "multi": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                }
+            },
+            "music": {
+                "play_message": True
+            }
+        }
+        embed = discord.Embed(title=f"Welcome to muffin {len(self.bot.database)}th user!",
+                              description=f"<:muffin:731764451073720361> https://mafu.cf/\n<:help:731757723422556201>{self.bot.PREFIX}help")
+        embed.add_field(name="Languages",
+                        value=":flag_jp:日本語 ... {0}lang ja\n:flag_us:English ... {0}lang en".format(self.bot.PREFIX))
+        embed.add_field(name="Support",
+                        value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}",
+                        inline=False)
+        await ctx.send(embed=embed)
+        await ctx.send(ctx.author.mention)
+        self.save_database()
+
     async def update_status(self):
         game = discord.Game("{}help | {}servers | v{} \n [ http://mafu.cf/ ]".format(self.bot.PREFIX, str(len(self.bot.guilds)), self.info["VERSION"]))
         await self.bot.change_presence(status=discord.Status.idle, activity=game)
 
     async def cog_before_invoke(self, ctx):
+        if str(ctx.author.id) not in self.bot.database:
+            await self.init_database(ctx)
         if ctx.author.id not in self.bot.ADMIN:
             raise commands.CommandError("Developer-Admin-Error")
 
@@ -135,6 +170,21 @@ class Dev(commands.Cog):
             text += f"\n> **{i.guild.name}** ({len(i.channel.members)})\n> ({i.guild.id}) | {len(i.guild.members)}"
         text += f"\n計: {len(self.bot.voice_clients)}サーバー"
         await ctx.send(text)
+
+    @commands.group(aliases=["db"])
+    async def database(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("delete <@user>")
+
+    @database.command(name="delete", aliases=["remove"])
+    async def delete_database(self, ctx, *, text):
+        for target in ctx.message.mentions:
+            if str(target.id) not in self.bot.database:
+                await ctx.send("このユーザーは登録されていません.")
+            else:
+                self.bot.database.pop(str(target.id))
+                await ctx.send(f"<@{target.id}>さんをデータベースから削除されました.")
+        self.save_database()
 
     @commands.group()
     async def admin(self, ctx):

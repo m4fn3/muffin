@@ -21,18 +21,34 @@ class Game(commands.Cog):
         with open("./DATABASE.json", 'w') as F:
             json.dump(self.bot.database, F, indent=2)
 
-    def initialize_data(self, user_id):
-        self.bot.database[str(user_id)] = {
-            "best_score": 30,
-            "single": {
-                "all_matches": 0,
-                "win_matches": 0
+    async def init_database(self, ctx):
+        self.bot.database[str(ctx.author.id)] = {
+            "language": 0,
+            "shadowchoice": {
+                "best_score": 30.00,
+                "single": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                },
+                "multi": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                }
             },
-            "multi": {
-                "all_matches": 0,
-                "win_matches": 0
+            "music": {
+                "play_message": True
             }
         }
+        embed = discord.Embed(title=f"Welcome to muffin {len(self.bot.database)}th user!",
+                              description=f"<:muffin:731764451073720361> https://mafu.cf/\n<:help:731757723422556201>{self.bot.PREFIX}help")
+        embed.add_field(name="Languages",
+                        value=":flag_jp:日本語 ... {0}lang ja\n:flag_us:English ... {0}lang en".format(self.bot.PREFIX))
+        embed.add_field(name="Support",
+                        value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}",
+                        inline=False)
+        await ctx.send(embed=embed)
+        await ctx.send(ctx.author.mention)
+        self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
         if code == "YOUR_ACCOUNT_BANNED":
@@ -195,6 +211,8 @@ class Game(commands.Cog):
             await self.report_error(ctx, "on_command_error", str(error))
 
     async def cog_before_invoke(self, ctx):
+        if str(ctx.author.id) not in self.bot.database:
+            await self.init_database(ctx)
         if ctx.author.id in self.bot.BAN:
             await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
             raise commands.CommandError("Your Account Banned")

@@ -72,6 +72,10 @@ class Music(commands.Cog):
         with open("./TOKEN.json", 'w') as F:
             json.dump(tokens, F, indent=2)
 
+    def save_database(self):
+        with open("./DATABASE.json", 'w') as F:
+            json.dump(self.bot.database, F, indent=2)
+
     def parse_youtube_url(self, url, no_playlist=False):
         """
         URLまたは曲名を認識
@@ -132,7 +136,7 @@ class Music(commands.Cog):
         else:
             return 0
 
-    async def initialize_data(self, ctx):
+    async def init_voice_status_data(self, ctx):
         """
         playlist, statusの初期化 & ボイスチャンネルへの接続,移動
         :param ctx: Context
@@ -183,6 +187,35 @@ class Music(commands.Cog):
         # BOTと送信者のVCが同じの場合
         else:
             return 3
+
+    async def init_database(self, ctx):
+        self.bot.database[str(ctx.author.id)] = {
+            "language": 0,
+            "shadowchoice": {
+                "best_score": 30.00,
+                "single": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                },
+                "multi": {
+                    "all_matches": 0,
+                    "win_matches": 0
+                }
+            },
+            "music": {
+                "play_message": True
+            }
+        }
+        embed = discord.Embed(title=f"Welcome to muffin {len(self.bot.database)}th user!",
+                              description=f"<:muffin:731764451073720361> https://mafu.cf/\n<:help:731757723422556201>{self.bot.PREFIX}help")
+        embed.add_field(name="Languages",
+                        value=":flag_jp:日本語 ... {0}lang ja\n:flag_us:English ... {0}lang en".format(self.bot.PREFIX))
+        embed.add_field(name="Support",
+                        value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}",
+                        inline=False)
+        await ctx.send(embed=embed)
+        await ctx.send(ctx.author.mention)
+        self.save_database()
 
     async def clean_all(self, ctx, report=False):
         try:
@@ -891,6 +924,8 @@ class Music(commands.Cog):
         :param ctx: Context
         :return:
         """
+        if str(ctx.author.id) not in self.bot.database:
+            await self.init_database(ctx)
         if ctx.author.id in self.bot.BAN:
             await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
             raise commands.CommandError("YOUR_ACCOUNT_BANNED")
@@ -959,7 +994,7 @@ class Music(commands.Cog):
         :return:
         """
         try:
-            code = await self.initialize_data(ctx)
+            code = await self.init_voice_status_data(ctx)
         except:
             await ctx.send(traceback2.format_exc())
         if code == 1:  # 接続に成功した場合
@@ -1068,7 +1103,7 @@ class Music(commands.Cog):
         """
         try:
             # 初期化
-            code = await self.initialize_data(ctx)
+            code = await self.init_voice_status_data(ctx)
             if code == 0:  # VC接続に失敗した場合
                 return
             elif code == 4:  # 操作拒否
@@ -1094,7 +1129,7 @@ class Music(commands.Cog):
         :param url: 曲名
         :return:
         """
-        code = await self.initialize_data(ctx)
+        code = await self.init_voice_status_data(ctx)
         if code == 0:  # VC接続に失敗した場合
             return
         elif code == 4:  # 操作拒否
@@ -1154,7 +1189,7 @@ class Music(commands.Cog):
         :return:
         """
         try:
-            code = await self.initialize_data(ctx)
+            code = await self.init_voice_status_data(ctx)
             if code == 0:  # VC接続に失敗した場合
                 return
             elif code == 4:  # 操作拒否
@@ -1376,6 +1411,9 @@ class Music(commands.Cog):
             self.bot.playlist[ctx.guild.id].append(save)
             await self.send_text(ctx, "CLEARED_MUSIC")
 
+    @commands.command()
+    async def test(self, ctx):
+        await self.send_text(ctx, "WELCOME")
 
 def setup(bot):
     bot.add_cog(Music(bot))
