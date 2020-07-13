@@ -1,6 +1,7 @@
 # import
 from discord.ext import commands, tasks
 import asyncio, discord, io, json, os, random, sys, time, traceback2
+from identifier import *
 
 
 class Game(commands.Cog):
@@ -53,8 +54,20 @@ class Game(commands.Cog):
         self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
-        if code == "YOUR_ACCOUNT_BANNED":
+        lang: LanguageCode
+
+        if self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.CHANNEL:
             if str(ctx.guild.region) == "japan":
+                lang = LanguageCode.JAPANESE
+            else:
+                lang = LanguageCode.ENGLISH
+        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.JAPANESE:
+            lang = LanguageCode.JAPANESE
+        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.ENGLISH:
+            lang = LanguageCode.ENGLISH
+
+        if code == "YOUR_ACCOUNT_BANNED":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
                 raise commands.CommandError("Your Account Banned")
             else:
@@ -62,120 +75,120 @@ class Game(commands.Cog):
                     ":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
                 raise commands.CommandError("Your Account Banned")
         elif code == "WRONG_COMMAND_SC":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f":warning:コマンドが間違っています.正しい構文: `{self.bot.PREFIX}play [人数] [試合数]`")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f":warning:`コマンドが間違っています.正しい構文: `{self.bot.PREFIX}play [人数] [試合数]")
             else:
-                await ctx.send(f":warning:Command is wrong. Correct syntax: `{self.bot.PREFIX}play [number of players] [number of matches]`")
+                await ctx.send(f":warning:`Command is wrong. Correct syntax: `{self.bot.PREFIX}play [number of players] [number of matches]")
         elif code == "WRONG_COMMAND":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`コマンドが間違っています.構文が正しいことを確認してください!`")
             else:
                 await ctx.send(":warning:`Wrong command.Please check your arguments are valid!`")
         elif code == "UNKNOWN_ERROR":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`不明なエラーが発生しました.`")
             else:
                 await ctx.send(":warning:`Unknown error has occurred.`")
         elif code == "SPECIFY_AS_INTEGER":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(":warning:整数で指定してください.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(":warning:`整数で指定してください.`")
             else:
-                await ctx.send(":warning:Please specify as an integer.")
+                await ctx.send(":warning:`Please specify as an integer.`")
         elif code == "SPECIFY_WITH_1_OR_MORE":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(":warning:1以上で指定してください.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(":warning:`1以上で指定してください.`")
             else:
-                await ctx.send(":warning:Please specify with ️1 or more.")
+                await ctx.send(":warning:`Please specify with ️1 or more.`")
         elif code == "CORRECT_ANSWER_SINGLE":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCmaru']}あなたは正解しました!")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCmaru']}`あなたは正解しました!`")
             else:
-                await ctx.send(f"{self.info['SCmaru']} You got correct answer!")
+                await ctx.send(f"{self.info['SCmaru']} `You got correct answer!`")
         elif code == "INCORRECT_ANSWER_SINGLE":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCbatu']}あなたは間違いました!")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCbatu']}`あなたは間違いました!`")
             else:
-                await ctx.send(f"{self.info['SCbatu']} You got incorrect answer!")
+                await ctx.send(f"{self.info['SCbatu']} `You got incorrect answer!`")
         elif code == "BEST_SCORE":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCcongr']} <@{arg1}>さん!ベストスコア更新!\nあなたのスコア:{arg2}[s]")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCcongr']} `<@{arg1}>さん!ベストスコア更新!\nあなたのスコア:{arg2}[s]`")
             else:
-                await ctx.send(f"{self.info['SCcongr']} <@{arg1}>! Your best score updated!\nScore:{arg2}[s]")
+                await ctx.send(f"{self.info['SCcongr']} `<@{arg1}>! Your best score updated!\nScore:{arg2}[s]`")
         elif code == "NO_ONE_RESPOND":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']}回答できた人がいなかったため,この問題を終了します.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']}`回答できた人がいなかったため,この問題を終了します.`")
             else:
-                await ctx.send(f"{self.info['SCwarning']} This question ends because no one could answer.")
+                await ctx.send(f"{self.info['SCwarning']} `This question ends because no one could answer.`")
         elif code == "MATCH_TIMEOUT":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']} 2回連続で回答がなかったためこの部屋を終了します.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']} `2回連続で回答がなかったためこの部屋を終了します.`")
             else:
-                await ctx.send(f"{self.info['SCwarning']} This room will be closed because there was no response twice in a row.")
+                await ctx.send(f"{self.info['SCwarning']} `This room will be closed because there was no response twice in a row.`")
         elif code == "ON_JOIN":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>さんが参加しました.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}>さんが参加しました.`")
             else:
-                await ctx.send(f"{self.info['SCmaru']}<@{arg1}> joined.")
+                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> joined.`")
         elif code == "ALREADY_JOIN":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>さんは既に参加しています.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは既に参加しています.`")
             else:
-                await ctx.send(f"{self.info['SCmaru']}<@{arg1}> already joined.")
+                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> already joined.`")
         elif code == "ON_CANCEL":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCbatu']}<@{arg1}>さんの参加をキャンセルしました.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}>さんの参加をキャンセルしました.`")
             else:
-                await ctx.send(f"{self.info['SCbatu']}<@{arg1}> canceled.")
+                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}> canceled.`")
         elif code == "NOT_JOINED":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>さんは参加していません.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは参加していません.`")
             else:
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}> didn't join.")
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> didn't join.`")
         elif code == "VOTE_GO":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>さんが強制的にスタートに投票しました.({arg2}/2)")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}>さんが強制的にスタートに投票しました.({arg2}/2)`")
             else:
-                await ctx.send(f"{self.info['SCmaru']}<@{arg1}> voted for forcibly start. ({arg2}/2)")
+                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> voted for forcibly start. ({arg2}/2)`")
         elif code == "FORCE_START":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCcheck']} 2人が強制的にスタートに投票したため{arg1}人モードに変更します.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCcheck']} `2人が強制的にスタートに投票したため{arg1}人モードに変更します.`")
             else:
-                await ctx.send(f"{self.info['SCcheck']} Change to {arg1} person mode because 2 people vote for force start.")
+                await ctx.send(f"{self.info['SCcheck']} `Change to {arg1} person mode because 2 people vote for force start.`")
         elif code == "ALREADY_VOTED":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>さんは既に強制的にスタートに投票しています.({arg2}/2)")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは既に強制的にスタートに投票しています.({arg2}/2)`")
             else:
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}> already voted for force start.({arg2}/2)")
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> already voted for force start.({arg2}/2)`")
         elif code == "NOT_JOINED_VOTE":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>さんは参加していないので投票できません!")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは参加していないので投票できません!`")
             else:
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}> can't vote because not joined match.")
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> can't vote because not joined match.`")
         elif code == "SESSION_ENDED":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']} 一定時間反応がなかったためセッションを終了しました.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']} `一定時間反応がなかったためセッションを終了しました.`")
             else:
-                await ctx.send(f"{self.info['SCwarning']} The session ended because there was no response for a certain period of time.")
+                await ctx.send(f"{self.info['SCwarning']} `The session ended because there was no response for a certain period of time.`")
         elif code == "START_MATCH":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCcheck']} 定員に達したためゲームを開始します!")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCcheck']} `定員に達したためゲームを開始します!`")
             else:
-                await ctx.send(f"{self.info['SCcheck']} The game has started because the number of people has reached the limit!")
+                await ctx.send(f"{self.info['SCcheck']} `The game has started because the number of people has reached the limit!`")
         elif code == "CORRECT_ANSWER":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>さん!あなたは正解しました!")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}>さん!あなたは正解しました!`")
             else:
-                await ctx.send(f"{self.info['SCmaru']}<@{arg1}> You got correct answer!")
+                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> You got correct answer!`")
         elif code == "INCORRECT_ANSWER":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCbatu']}<@{arg1}>さん!あなたは間違いました!\nこの試合であなたはこれ以上回答できません!\n次のラウンドをお待ちください.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}>さん!あなたは間違いました!\nこの試合であなたはこれ以上回答できません!\n次のラウンドをお待ちください.`")
             else:
-                await ctx.send(f"{self.info['SCbatu']}<@{arg1}> You got incorrect answer!\nYou can't answer any more in this match!\nPlease wait for the next round.")
+                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}> You got incorrect answer!\nYou can't answer any more in this match!\nPlease wait for the next round.`")
         elif code == "ALREADY_INCORRECT":
-            if str(ctx.guild.region) == "japan":
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>さん!あなたはすでに間違っているためこれ以上回答できません!\n次のラウンドをお待ちください.")
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さん!あなたはすでに間違っているためこれ以上回答できません!\n次のラウンドをお待ちください.`")
             else:
-                await ctx.send(f"{self.info['SCwarning']}<@{arg1}> You can't answer anymore because you are already wrong!\nPlease wait for the next round.")
+                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> You can't answer anymore because you are already wrong!\nPlease wait for the next round.`")
 
     async def report_error(self, ctx, name, message):
         """

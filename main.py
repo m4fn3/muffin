@@ -22,6 +22,7 @@ class Muffin(commands.Bot):
         self.load_extension("music")
         self.load_extension("game")
         self.load_extension("other")
+        self.load_extension("setting")
 
         self.uptime = time.time()
         self.playlist = {}

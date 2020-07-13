@@ -1,9 +1,8 @@
 # import
-import re
-
 from discord.ext import commands
 from matplotlib import colors
-import aiohttp, asyncio, datetime, discord, io, json, os, pprint, psutil, sys, time,  urllib, traceback2, webcolors
+import aiohttp, asyncio, datetime, discord, io, json, os, pprint, psutil, re, sys, time,  urllib, traceback2, webcolors
+from identifier import *
 
 
 class Other(commands.Cog):
@@ -82,48 +81,60 @@ class Other(commands.Cog):
             raise commands.CommandError("Your Account Banned")
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
-        if code == "INVALID_STRING":
+        lang: LanguageCode
+
+        if self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.CHANNEL:
             if str(ctx.guild.region) == "japan":
+                lang = LanguageCode.JAPANESE
+            else:
+                lang = LanguageCode.ENGLISH
+        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.JAPANESE:
+            lang = LanguageCode.JAPANESE
+        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.ENGLISH:
+            lang = LanguageCode.ENGLISH
+
+        if code == "INVALID_STRING":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`不正な文字列です.`")
             else:
                 await ctx.send(":warning:`Invalid string.`")
         elif code == "TRANS_OVER_2000":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`文字列が2000文字を超えるため翻訳結果を表示できませんでした.`")
             else:
                 await ctx.send(":warning:️`The translation result could not be displayed because the character string exceeds 2000 characters.")
         elif code == "WRONG_LANG_CODE":
-            if str(ctx.guild.region) == "japan":
-                return await ctx.send(f":warning:`言語コードが間違っています. `{self.bot.PREFIX}lang` で対応可能な言語コード一覧を確認できます.`")
+            if lang == LanguageCode.JAPANESE:
+                return await ctx.send(f":warning:`言語コードが間違っています. `{self.bot.PREFIX}tr_lg` で対応可能な言語コード一覧を確認できます.`")
             else:
-                return await ctx.send(f":warning:`Wrong lanuage code. Please send `{self.bot.PREFIX}lang` to see list of avaiable language codes.`")
+                return await ctx.send(f":warning:`Wrong lanuage code. Please send `{self.bot.PREFIX}tr_lg` to see list of avaiable language codes.`")
         elif code == "INVALID_ID":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`{arg1}は間違ったユーザーIDです.`")
             else:
                 await ctx.send(f":warning:`{arg1} is invalid`")
         elif code == "PLS_SPECIFY_WITH_ID_OR_MENTION":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`メンションまたはユーザーIDで情報を表示するユーザーを指定してください.`")
             else:
                 await ctx.send(":warning:️`Please specify the user to display information by mention or user ID.`")
         elif code == "INVALID_LINK":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`{arg1}は間違った招待リンクです.`")
             else:
                 await ctx.send(f":warning:`{arg1} is invalid invitation link.`")
         elif code == "INVALID_MESSAGE":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`{arg1}は無効なメッセージリンクです.`")
             else:
                 await ctx.send(f":warning:`{arg1} is invalid message.`")
         elif code == "CANNOT_GET_CUZ_ANOTHER_SERVER":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`他のサーバーのメッセージであるため,取得できません.`")
             else:
                 await ctx.send(f":warning:`Cannot get because it is a message from another server.`")
         elif code == "YOUR_ACCOUNT_BANNED":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
                 raise commands.CommandError("Your Account Banned")
             else:
@@ -131,37 +142,37 @@ class Other(commands.Cog):
                     ":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
                 raise commands.CommandError("Your Account Banned")
         elif code == "WRONG_HEX_CODE":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`間違った16進数カラーコードです.`")
             else:
                 await ctx.send(f":warning:`Wrong hexadecimal color code.`")
         elif code == "WRONG_RGB":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`間違ったRGBカラーコードです.`")
             else:
                 await ctx.send(f":warning:`Wrong RGB color code.`")
         elif code == "WRONG_COLOR_NAME":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`サポートされていないカラーネームです.`")
             else:
                 await ctx.send(f":warning:`Not supported color name.`")
         elif code == "WRONG_COLOR_TYPE":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`間違ったカラータイプです. hex | rgb | name のいずれかを使用してください`")
             else:
                 await ctx.send(f":warning:️` Wrong color type. Use one of hex | rgb | name`")
         elif code == "UNKNOWN_COLOR_TYPE":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:間違ったカラータイプです.hexで16進数, rgbでRGB, nameで色名で指定できます.")
             else:
                 await ctx.send(":warning:Wrong color type. hex is hexadecimal, rgb is RGB, name is a color name.")
         elif code == "WRONG_COMMAND":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`コマンドが間違っています.構文が正しいことを確認してください!`")
             else:
                 await ctx.send(":warning:`Wrong command.Please check your arguments are valid!`")
         elif code == "UNKNOWN_ERROR":
-            if str(ctx.guild.region) == "japan":
+            if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`不明なエラーが発生しました.`")
             else:
                 await ctx.send(":warning:`Unknown error has occurred.`")
@@ -188,8 +199,7 @@ class Other(commands.Cog):
         try:
             user = await self.bot.fetch_user(user_id)
         except discord.errors.NotFound:
-            if str(ctx.guild.region) == "japan":
-                return await self.send_text(ctx, "INVALID_ID", user_id)
+            return await self.send_text(ctx, "INVALID_ID", user_id)
         embed = discord.Embed(title=str(user), color=0x66cdaa)
         embed.add_field(name="ID", value=user.id)
         embed.set_thumbnail(url=user.avatar_url)
@@ -333,7 +343,7 @@ class Other(commands.Cog):
                         embed.add_field(name=f"{self.bot.PREFIX}tr [言語コード] [文章]", value="テキストを翻訳します", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}check [u(ユーザー)/m(メッセージ)/i(招待)] [ID/URL/メンション等]", value="ユーザーIDやメッセージURL,招待URLから詳細情報を取得します.", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}color [hex(16進数)/rgb(RGB)/name(色名)] [16進数カラーコード/r g b/色名]", value="指定された色の情報を表示します.")
-                        embed.add_field(name=f"{self.bot.PREFIX}lang", value="言語コード一覧を表示します", inline=False)
+                        embed.add_field(name=f"{self.bot.PREFIX}trans_lang", value="言語コード一覧を表示します", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}invite", value="BOTを招待するURLを送信します", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}ping", value="BOTの反応速度を計測します", inline=False)
                         embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]), inline=False)
@@ -346,7 +356,7 @@ class Other(commands.Cog):
                         embed.add_field(name=f"{self.bot.PREFIX}tr [lang] [text]", value="Translate text", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}check [u (user)/m (message)/i (invitation)] [ID/URL/mention etc.]", value="Get detailed information from UserID,MessageURL,InvitationURL etc.", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}color [hex(demical)/rgb(RGB)/name(color name)] [demical color code/r g b/color name]", value="Show information of specified color.")
-                        embed.add_field(name=f"{self.bot.PREFIX}lang", value="Show list of language codes", inline=False)
+                        embed.add_field(name=f"{self.bot.PREFIX}trans_lang", value="Show list of language codes", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}invite", value="Send invitation url", inline=False)
                         embed.add_field(name=f"{self.bot.PREFIX}ping", value="Show ping of this bot", inline=False)
                         embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
@@ -433,8 +443,8 @@ class Other(commands.Cog):
         except:
             await ctx.send(traceback2.format_exc())
 
-    @commands.command(aliases=['lg'])
-    async def lang(self, ctx):
+    @commands.command(aliases=['tr_lg'])
+    async def trans_lang(self, ctx):
         if str(ctx.guild.region) == "japan":
             embed = discord.Embed(title="言語コード一覧", color=0xbc8f8f ,description="```CSS\n[アフリカーンス語] ... af\n[アルバニア語] ... sq\n[アムハラ語] ... am\n[アラビア文字] ... ar\n[アルメニア語] ... hy\n[アゼルバイジャン語] ... az\n[バスク語] ... eu\n[ベラルーシ語] ... be\n[ベンガル文字] ... bn\n[ボスニア語] ... bs\n[ブルガリア語] ... bg\n[カタロニア語] ... ca\n[セブ語] ... ceb\n[中国語(簡体)] ... zh-CN または zh\n[中国語(繁体)] ... zh-TW\n[コルシカ語] ... co\n[クロアチア語] ... hr\n[チェコ語] ... cs\n[デンマーク語] ... da\n[オランダ語] ... nl\n[英語] ... en\n[エスペラント語] ... eo\n[エストニア語] ... et\n[フィンランド語] ... fi\n[フランス語] ... fr\n[フリジア語] ... fy\n[ガリシア語] ... gl\n[グルジア語] ... ka\n[ドイツ語] ... de\n[ギリシャ語] ... el\n[グジャラト語] ... gu\n[クレオール語(ハイチ)] ... ht\n[ハウサ語] ... ha\n[ハワイ語] ... haw\n[ヘブライ語] ... he または iw\n[ヒンディー語] ... hi\n[モン語] ... hmn\n[ハンガリー語] ... hu\n[アイスランド語] ... is\n[イボ語] ... ig\n[インドネシア語] ... id\n[アイルランド語] ... ga\n[イタリア語] ... it\n[日本語] ... ja\n[ジャワ語] ... jv\n[カンナダ語] ... kn\n[カザフ語] ... kk\n[クメール語] ... km\n[キニヤルワンダ語] ... rw\n[韓国語] ... ko\n[クルド語] ... ku\n[キルギス語] ... ky\n[ラオ語] ... lo\n[ラテン語] ... la\n[ラトビア語] ... lv\n[リトアニア語] ... lt\n[ルクセンブルク語] ... lb\n[マケドニア語] ... mk\n[マラガシ語] ... mg\n[マレー語] ... ms\n[マラヤーラム文字] ... ml\n[マルタ語] ... mt\n[マオリ語] ... mi\n[マラーティー語] ... mr\n[モンゴル語] ... mn\n[ミャンマー語(ビルマ語)] ... my\n[ネパール語] ... ne\n[ノルウェー語] ... no\n[ニャンジャ語(チェワ語)] ... ny\n[オリヤ語] ... or\n[パシュト語] ... ps\n[ペルシャ語] ... fa\n[ポーランド語] ... pl\n[ポルトガル語(ポルトガル、ブラジル)] ... pt\n[パンジャブ語] ... pa\n[ルーマニア語] ... ro\n[ロシア語] ... ru\n[サモア語] ... sm\n[スコットランド ゲール語] ... gd\n[セルビア語] ... sr\n[セソト語] ... st\n[ショナ語] ... sn\n[シンド語] ... sd\n[シンハラ語] ... si\n[スロバキア語] ... sk\n[スロベニア語] ... sl\n[ソマリ語] ... so\n[スペイン語] ... es\n[スンダ語] ... su\n[スワヒリ語] ... sw\n[スウェーデン語] ... sv\n[タガログ語(フィリピン語)] ... tl\n[タジク語] ... tg\n[タミル語] ... ta\n[タタール語] ... tt\n[テルグ語] ... te\n[タイ語] ... th\n[トルコ語] ... tr\n[トルクメン語] ... tk\n[ウクライナ語] ... uk\n[ウルドゥー語] ... ur\n[ウイグル語] ... ug\n[ウズベク語] ... uz\n[ベトナム語] ... vi\n[ウェールズ語] ... cy\n[コーサ語] ... xh\n[イディッシュ語] ... yi\n[ヨルバ語] ... yo\n[ズールー語] ... zu```")
         else:

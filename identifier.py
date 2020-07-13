@@ -8,7 +8,7 @@ class MusicStatus(IntEnum):
     LOADING = 3
 
 
-class Language(IntEnum):
+class LanguageCode(IntEnum):
     CHANNEL = 0
     ENGLISH = 1
     JAPANESE = 2
