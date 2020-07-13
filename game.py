@@ -21,8 +21,10 @@ class Game(commands.Cog):
         with open("./DATABASE.json", 'w') as F:
             json.dump(self.bot.database, F, indent=2)
 
-    async def init_database(self, ctx):
-        self.bot.database[str(ctx.author.id)] = {
+    async def init_database(self, ctx, user_id=None):
+        if user_id is None:
+            user_id = ctx.author.id
+        self.bot.database[str(user_id)] = {
             "language": 0,
             "shadowchoice": {
                 "best_score": 30.00,
@@ -47,7 +49,7 @@ class Game(commands.Cog):
                         value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}",
                         inline=False)
         await ctx.send(embed=embed)
-        await ctx.send(ctx.author.mention)
+        await ctx.send(f"<@{user_id}>")
         self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
@@ -245,108 +247,134 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["st"])
     async def status(self, ctx):
-        if ctx.message.mentions == []:
-            if str(ctx.guild.region) == "japan":
-                embed = discord.Embed(title="ステータス")
-            else:
-                embed = discord.Embed(title="Status")
-            embed.set_thumbnail(url=ctx.author.avatar_url)
-            decoration = ""; role = ""
-            if ctx.author.id in self.bot.ADMIN:
-                decoration += "yaml"; role += "[ADMIN]"
-            elif ctx.author.id in self.bot.Contributor:
-                decoration += "fix"; role += "[Contributor]"
-            if str(ctx.guild.region) == "japan":
-                embed.add_field(name="ユーザー情報", value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}```", inline=False)
-            else:
-                embed.add_field(name="UserInformation", value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}```", inline=False)
-            if str(ctx.author.id) in self.bot.database:
+        try:
+            if ctx.message.mentions == []:
+                if str(ctx.guild.region) == "japan":
+                    embed = discord.Embed(title="ステータス")
+                else:
+                    embed = discord.Embed(title="Status")
+                embed.set_thumbnail(url=ctx.author.avatar_url)
+                decoration = "";
+                role = ""
+                if ctx.author.id in self.bot.ADMIN:
+                    decoration += "yaml";
+                    role += "[ADMIN]"
+                elif ctx.author.id in self.bot.Contributor:
+                    decoration += "fix";
+                    role += "[Contributor]"
+                if str(ctx.guild.region) == "japan":
+                    embed.add_field(name="ユーザー情報",
+                                    value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n{role}```",
+                                    inline=False)
+                else:
+                    embed.add_field(name="UserInformation",
+                                    value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n{role}```",
+                                    inline=False)
                 if str(ctx.guild.region) == "japan":
                     embed.add_field(name="ShadowChoice",
-                                value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
-                                    self.bot.database[str(ctx.author.id)]["best_score"],
-                                    self.bot.database[str(ctx.author.id)]["single"]["all_matches"],
-                                    self.bot.database[str(ctx.author.id)]["single"]["win_matches"],
-                                    round(
-                                        self.bot.database[str(ctx.author.id)]["single"]["win_matches"] /
-                                        self.bot.database[str(ctx.author.id)]["single"]["all_matches"] * 100, 2
-                                    ),
-                                    self.bot.database[str(ctx.author.id)]["multi"]["all_matches"],
-                                    self.bot.database[str(ctx.author.id)]["multi"]["win_matches"],
-                                    round(
-                                        self.bot.database[str(ctx.author.id)]["multi"]["win_matches"] /
-                                        self.bot.database[str(ctx.author.id)]["multi"]["all_matches"] * 100, 2
-                                    )))
+                                    value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                            "all_matches"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                            "win_matches"],
+                                        round(
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                                "win_matches"] /
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                                "all_matches"] * 100, 2
+                                        ),
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                            "all_matches"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                            "win_matches"],
+                                        round(
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                                "win_matches"] /
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                                "all_matches"] * 100, 2
+                                        )))
                 else:
                     embed.add_field(name="ShadowChoice",
                                     value="```c\nShoretstAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
-                                        self.bot.database[str(ctx.author.id)]["best_score"],
-                                        self.bot.database[str(ctx.author.id)]["single"]["all_matches"],
-                                        self.bot.database[str(ctx.author.id)]["single"]["win_matches"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                            "all_matches"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                            "win_matches"],
                                         round(
-                                            self.bot.database[str(ctx.author.id)]["single"]["win_matches"] /
-                                            self.bot.database[str(ctx.author.id)]["single"]["all_matches"] * 100, 2
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                                "win_matches"] /
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
+                                                "all_matches"] * 100, 2
                                         ),
-                                        self.bot.database[str(ctx.author.id)]["multi"]["all_matches"],
-                                        self.bot.database[str(ctx.author.id)]["multi"]["win_matches"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                            "all_matches"],
+                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                            "win_matches"],
                                         round(
-                                            self.bot.database[str(ctx.author.id)]["multi"]["win_matches"] /
-                                            self.bot.database[str(ctx.author.id)]["multi"]["all_matches"] * 100, 2
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                                "win_matches"] /
+                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
+                                                "all_matches"] * 100, 2
                                         )))
+                await ctx.send(embed=embed)
             else:
+                target = ctx.message.mentions[0]
                 if str(ctx.guild.region) == "japan":
-                    embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
+                    embed = discord.Embed(title="ステータス")
                 else:
-                    embed.add_field(name="ShadowChoice", value="```You have't played yet.```")
-            await ctx.send(embed=embed)
-        else:
-            target = ctx.message.mentions[0]
-            if str(ctx.guild.region) == "japan":
-                embed = discord.Embed(title="ステータス")
-            else:
-                embed = discord.Embed(title="Status")
-            embed.set_thumbnail(url=target.avatar_url)
-            decoration = ""; role = ""
-            if ctx.author.id in self.bot.ADMIN:
-                decoration += "yaml"; role += "[ADMIN]"
-            elif ctx.author.id in self.bot.Contributor:
-                decoration += "fix"; role += "[Contributor]"
-            if str(ctx.guild.region) == "japan":
-                embed.add_field(name="ユーザー情報", value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```", inline=False)
-            else:
-                embed.add_field(name="UserInformation", value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```", inline=False)
-            if str(target.id) in self.bot.database:
+                    embed = discord.Embed(title="Status")
+                embed.set_thumbnail(url=target.avatar_url)
+                decoration = "";
+                role = ""
+                if target.id in self.bot.ADMIN:
+                    decoration += "yaml";
+                    role += "[ADMIN]"
+                elif target.id in self.bot.Contributor:
+                    decoration += "fix";
+                    role += "[Contributor]"
                 if str(ctx.guild.region) == "japan":
-                    embed.add_field(name="ShadowChoice",
-                                value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
-                                    self.bot.database[str(target.id)]["best_score"],
-                                    self.bot.database[str(target.id)]["single"]["all_matches"],
-                                    self.bot.database[str(target.id)]["single"]["win_matches"], round(
-                                        self.bot.database[str(target.id)]["single"]["win_matches"] /
-                                        self.bot.database[str(target.id)]["single"]["all_matches"] * 100, 2),
-                                    self.bot.database[str(target.id)]["multi"]["all_matches"],
-                                    self.bot.database[str(target.id)]["multi"]["win_matches"], round(
-                                        self.bot.database[str(target.id)]["multi"]["win_matches"] /
-                                        self.bot.database[str(target.id)]["multi"]["all_matches"] * 100, 2)))
+                    embed.add_field(name="ユーザー情報",
+                                    value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```",
+                                    inline=False)
                 else:
-                    embed.add_field(name="ShadowChoice",
-                                    value="```c\nShortestAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
-                                        self.bot.database[str(target.id)]["best_score"],
-                                        self.bot.database[str(target.id)]["single"]["all_matches"],
-                                        self.bot.database[str(target.id)]["single"]["win_matches"], round(
-                                            self.bot.database[str(target.id)]["single"]["win_matches"] /
-                                            self.bot.database[str(target.id)]["single"]["all_matches"] * 100, 2),
-                                        self.bot.database[str(target.id)]["multi"]["all_matches"],
-                                        self.bot.database[str(target.id)]["multi"]["win_matches"], round(
-                                            self.bot.database[str(target.id)]["multi"]["win_matches"] /
-                                            self.bot.database[str(target.id)]["multi"]["all_matches"] * 100, 2)))
-
-            else:
-                if str(ctx.guild.region) == "japan":
-                    embed.add_field(name="ShadowChoice", value="```まだプレイしていません.```")
+                    embed.add_field(name="UserInformation",
+                                    value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```",
+                                    inline=False)
+                if str(target.id) in self.bot.database:
+                    if str(ctx.guild.region) == "japan":
+                        embed.add_field(name="ShadowChoice",
+                                        value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
+                                            self.bot.database[str(target.id)]["shadowchoice"]["best_score"],
+                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"],
+                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"], round(
+                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"] /
+                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"] * 100, 2),
+                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"],
+                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"], round(
+                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"] /
+                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"] * 100, 2)))
+                    else:
+                        embed.add_field(name="ShadowChoice",
+                                        value="```c\nShortestAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
+                                            self.bot.database[str(target.id)]["shadowchoice"]["best_score"],
+                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"],
+                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"], round(
+                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"] /
+                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"] * 100, 2),
+                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"],
+                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"], round(
+                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"] /
+                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"] * 100, 2)))
                 else:
-                    embed.add_field(name="ShadowChoice", value="```You have't played yet.```")
-            await ctx.send(embed=embed)
+                    if str(ctx.guild.region) == "japan":
+                        embed.set_footer(text="このユーザーはまだBOTを使用していません.")
+                    else:
+                        embed.set_footer(text="This user hasn't used the bot yet.")
+                await ctx.send(embed=embed)
+        except:
+            await ctx.send(traceback2.format_exc())
 
     @commands.command(aliases=["sc"])
     async def shadowchoice(self, ctx):
@@ -377,8 +405,6 @@ class Game(commands.Cog):
                     mode = int(msg_list[1])
                     round_time = int(msg_list[2])
             if mode == 1:
-                if str(ctx.author.id) not in self.bot.database:
-                    self.initialize_data(ctx.author.id)
                 for i in range(round_time):
                     if str(ctx.guild.region) == "japan":
                         embed = discord.Embed(title="約5秒お待ちください...")
@@ -431,10 +457,10 @@ class Game(commands.Cog):
                             else:
                                 embed.add_field(name="Result", value=f"```Winner:{puser.display_name}\nTime:{elapsed_time}[s]```")
                             await ctx.send(embed=embed)
-                            if self.bot.database[str(puser.id)]["best_score"] > elapsed_time:
-                                self.bot.database[str(puser.id)]["best_score"] = elapsed_time
+                            if self.bot.database[str(puser.id)]["shadowchoice"]["best_score"] > elapsed_time:
+                                self.bot.database[str(puser.id)]["shadowchoice"]["best_score"] = elapsed_time
                                 await self.send_text(ctx, "BEST_SCORE", arg1=puser.id, arg2=elapsed_time)
-                            self.bot.database[str(puser.id)]["single"]["win_matches"] += 1
+                            self.bot.database[str(puser.id)]["shadowchoice"]["single"]["win_matches"] += 1
                         else:
                             embed = discord.Embed(title=f"Result of Shadow Choice ({i+1}/{round_time})")
                             if str(ctx.guild.region) == "japan":
@@ -442,7 +468,7 @@ class Game(commands.Cog):
                             else:
                                 embed.add_field(name="Result", value=f"```Winner: None\nTime:{elapsed_time}[s]```")
                             await ctx.send(embed=embed)
-                        self.bot.database[str(puser.id)]["single"]["all_matches"] += 1
+                        self.bot.database[str(puser.id)]["shadowchoice"]["single"]["all_matches"] += 1
                         self.save_database()
                         afk = 0
                     except asyncio.TimeoutError:
@@ -495,9 +521,9 @@ class Game(commands.Cog):
                         elif preaction.emoji.id == 718028499163807785:
                             if (puser.id not in go_vote) and (puser.id in members):
                                 go_vote.append(puser.id)
-                                await ctx.send_text(ctx, "VOTE_GO", puser.id, len(go_vote))
+                                await self.send_text(ctx, "VOTE_GO", puser.id, len(go_vote))
                                 if len(go_vote) == 2:
-                                    await ctx.send_text(ctx, "FORCE_START", len(members))
+                                    await self.send_text(ctx, "FORCE_START", len(members))
                                     mode = len(members)
                                     break
                             elif puser.id in go_vote:
@@ -515,7 +541,7 @@ class Game(commands.Cog):
                 await self.send_text(ctx, "START_MATCH")
                 for i in members:
                     if str(i) not in self.bot.database:
-                        self.initialize_data(i)
+                        await self.init_database(ctx, user_id=i)
                 for i in range(round_time):
                     if str(ctx.guild.region) == "japan":
                         embed = discord.Embed(title="約5秒お待ちください...")
@@ -597,10 +623,10 @@ class Game(commands.Cog):
                             embed.add_field(name="Result", value=f"`Winner:`<@{right_ppl}>\n`Member`: {players}\n`Time`:{elapsed_time}[s]")
                         await ctx.send(embed=embed)
                         afk = 0
-                        if self.bot.database[right_ppl]["best_score"] > elapsed_time:
-                            self.bot.database[right_ppl]["best_score"] = elapsed_time
+                        if self.bot.database[right_ppl]["shadowchoice"]["best_score"] > elapsed_time:
+                            self.bot.database[right_ppl]["shadowchoice"]["best_score"] = elapsed_time
                             await self.send_text(ctx, "BEST_SCORE", right_ppl, elapsed_time)
-                        self.bot.database[right_ppl]["multi"]["win_matches"] += 1
+                        self.bot.database[right_ppl]["shadowchoice"]["multi"]["win_matches"] += 1
                     elif end_code == 2:
                         embed = discord.Embed(title=f"Result of Shadow Choice ({i+1}/{round_time})")
                         players = ""
@@ -616,7 +642,7 @@ class Game(commands.Cog):
                             await self.send_text(ctx, "MATCH_TIMEOUT")
                             break
                     for mem in members:
-                        self.bot.database[str(mem)]["multi"]["all_matches"] += 1
+                        self.bot.database[str(mem)]["shadowchoice"]["multi"]["all_matches"] += 1
                     self.save_database()
         except:
             await ctx.send(traceback2.format_exc())
