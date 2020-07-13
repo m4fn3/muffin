@@ -269,183 +269,183 @@ class Music(commands.Cog):
             if code == "AUTO_MODE_ON":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(f":warning:`オート再生モードが有効なので曲を追加できません.オフにするには`{self.bot.PREFIX}auto off`を使用してください.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(
                         f":warning:`You can't add music because auto mode turn on. To turn off auto mode, please use`{self.bot.PREFIX}auto off")
             elif code == "WRONG_URL":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`誤った形式のURLです.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Sorry Wrong URL.`")
             elif code == "UNKNOWN_ERROR":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`不明なエラーが発生しました.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Unknown error has occured.`")
             elif code == "NOT_SUPPORTED":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":warning:`このURLはサポートされていません.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":warning:`Sorry This URL is not suporrted.`")
             elif code == "NO_APPROPRIATE":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":warning:`該当する曲がありませんでした.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":warning:`There are no appropriate song.`")
             elif code == "NOT_ENOUGH":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":warning:`十分な検索結果がありませんでした.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":warning:`There are not enough results.`")
             elif code == "FAILED_CONNECT":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":warning:`ボイスチャンネルに接続できませんでした.権限等を確認してください.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":warning:`Connecting failed.Please check permission etc.`")
             elif code == "ALREADY_CONNECTED":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":warning:`すでにボイスチャンネルに接続しています.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":warning:`Already connected to VC.`")
             elif code == "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`動画の読み込み中にエラーが発生しました.この動画は著作権の問題があるため日本では再生できません.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(
                         ":warning:`Something went wrong when playing music.This video cannot be played due to copyright issues in Japan.`")
             elif code == "PROCESS_TIMEOUT":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`一定時間内に選ばれなかったのでプロセスを終了しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`process timeouted`")
             elif code == "INVALID_NUMBER":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`無効な番号です`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Invalid number`")
             elif code == "YOUR_ACCOUNT_BANNED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
                     raise commands.CommandError("Your Account Banned")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(
                         ":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
                     raise commands.CommandError("Your Account Banned")
             elif code == "JOIN_VC_BEFORE_PLAY":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`まずボイスチャンネルに参加してください!`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Please enter voice channel before playing music`")
             elif code == "WRONG_COMMAND":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`コマンドが間違っています.構文が正しいことを確認してください!`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Wrong command.Please check your arguments are valid!`")
             elif code == "SKIPPED":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":white_check_mark: `スキップしました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":white_check_mark: `Skipped`")
             elif code == "CONNECTED_TO_VC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`ボイスチャンネルに接続しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Connected to voice channel`")
             elif code == "MOVED_VC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`ボイスチャンネルを移動しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Moved to voice channel`")
             elif code == "NOT_PLAYING_MUSIC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`BOTは音楽を再生していません`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`BOT is not playing music`")
             elif code == "DISCONNECTED_FROM_VC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`ボイスチャンネルから切断しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Disconnected from voice channel`")
             elif code == "CLEARED_MUSIC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`予約された曲を全て削除しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Removed all reserved music`")
             elif code == "WRONG_INDEX":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":warning:`指定したインデックスに対応する音楽がありません`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":warning:`There is no music to specified index`")
             elif code == "VALUE_LESS_THAN_0":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(":warning:`0未満の値を指定することはできません`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(":warning:`You can't specify a value less than 0`")
             elif code == "YOU_CANT_REMOVE_CURRENTLY_MUSIC":
                 if lang == LanguageCode.JAPANESE:
                     return await ctx.send(f":warning:`現在再生中の音楽を削除する場合は`{self.bot.PREFIX}skip`を使用してください`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     return await ctx.send(
                         f":warning:`To remove music that is currently playing please use `{self.bot.PREFIX}skip")
             elif code == "VOLUME_CHANGED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(f":white_check_mark:`{arg1}%に音量を変更しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(f":white_check_mark:`Changed volume to {arg1}%`")
             elif code == "REPEAT_OFF":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`repeat機能をオフにしました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Turn off repeat mode`")
             elif code == "REPEAT_ON":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`repeat機能をオンにしました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Turn on repeat mode`")
             elif code == "LOOP_OFF":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`loop機能をオフにしました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Turn off loop mode`")
             elif code == "LOOP_ON":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`loop機能をオンにしました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Turn on loop mode`")
             elif code == "RESUMED_MUSIC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`音楽の再生を再開しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Resumed playing music`")
             elif code == "ALREADY_RESUMED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`既に再開しています`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Already resumed`")
             elif code == "PAUSED_MUSIC":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`音楽の再生を一時停止しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Paused playing music`")
             elif code == "ALREADY_PAUSED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`既に一時停止されています`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Already paused`")
             elif code == "AUTO_ENABLED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(f":white_check_mark:`オート再生モードをオンにしました.検索ワード「{arg1}」`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(f":white_check_mark:`Turn on auto mode. Search query「{arg1}」`")
             elif code == "AUTO_ALREADY_OFF":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`オート再生モードは既にオフにです`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Already auto mode off`")
             elif code == "AUTO_OFF":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":white_check_mark:`オート再生モードをオフにしました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":white_check_mark:`Turn off auto mode`")
             elif code == "MUSIC_ADDED":
                 if lang == LanguageCode.JAPANESE:
@@ -456,7 +456,7 @@ class Music(commands.Cog):
                     embed.add_field(name="アップロード", value=arg1['publish'])
                     embed.add_field(name="動画時間", value=arg1['duration'])
                     embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0x93ffab)
                     embed.set_author(name="Music added")
                     embed.set_thumbnail(url=arg1["thumbnail"])
@@ -474,7 +474,7 @@ class Music(commands.Cog):
                     embed.add_field(name="アップロード", value=arg1['publish'])
                     embed.add_field(name="動画時間", value=arg1['duration'])
                     embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed = discord.Embed(title=arg1["title"] + "\n etc... {}songs".format(str(arg2)),
                                           url=arg1["url"], color=0x93ffab)
                     embed.set_author(name="Music added")
@@ -493,7 +493,7 @@ class Music(commands.Cog):
                     embed.add_field(name="アップロード", value=arg1['publish'])
                     embed.add_field(name="動画時間", value=arg1['duration'])
                     embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0xff82b2)
                     embed.set_author(name="Now playing")
                     embed.set_thumbnail(url=arg1["thumbnail"])
@@ -512,7 +512,7 @@ class Music(commands.Cog):
                     embed.add_field(name="アップロード", value=arg1['publish'])
                     embed.add_field(name="動画時間", value=arg1['duration'])
                     embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed.set_author(name="Music deleted")
                     embed.set_thumbnail(url=arg1["thumbnail"])
                     embed.add_field(name="Channel", value=arg1['channel'])
@@ -523,36 +523,36 @@ class Music(commands.Cog):
             elif code == "DISCONNECTED_BECAUSE_ALL_USERS_LEFT":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`すべてのユーザーが接続を切ったためボイスチャンネルから切断しました`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Disconnected from voice channel because all users left`")
             elif code == "ABNORMAL_SITUATION_DETECTED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`異常な状況が検知されたため,情報をクリアしました.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:`Information was cleared because an abnormal situation was detected.`")
             elif code == "SOMETHING_WENT_WRONG_WITH_TITLE":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(f":warning:`曲の再生中に問題が発生しました.他の物を試してください.\n曲名:{arg1}`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(
                         f":warning:`Something went wrong when playing music.Please try another one.\nMusicName:{arg1}`")
             elif code == "OPERATION_DENIED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(
                         ":warning:`曲の再生準備中にコマンドが実行されたため、操作が拒否されました.再生準備が完了したあとに再度試してください.\n( muffinが入力中... となっている場合は曲の再生準備中です.)`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(
                         ":warning:`The operation was rejected because a command was executed while preparing next song. Please try again after the song is ready to play.\n( muffin is typing... If so, the song is preparing.)`")
             elif code == "TOO_MANY_LOAD_ERRORS":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`5回以上曲の再生に失敗したため,情報をクリアしました.他の曲を試してください.それでも解決しない場合はBOT管理者までご連絡ください.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(
                         ":warning:️`The information cleared because it failed to play the song more than 5 times. Please try another song. If that doesn't work, please contact the BOT creator.`")
             elif code == "FORCE_DISCONNECTED":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`更新のためにBOT管理者が強制的に切断しました.`")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:️`BOT admin forcibly disconnected for update.`")
         except:
             await ctx.send(traceback2.format_ext())

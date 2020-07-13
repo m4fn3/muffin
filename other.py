@@ -96,86 +96,252 @@ class Other(commands.Cog):
         if code == "INVALID_STRING":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`不正な文字列です.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(":warning:`Invalid string.`")
         elif code == "TRANS_OVER_2000":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`文字列が2000文字を超えるため翻訳結果を表示できませんでした.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(":warning:️`The translation result could not be displayed because the character string exceeds 2000 characters.")
         elif code == "WRONG_LANG_CODE":
             if lang == LanguageCode.JAPANESE:
                 return await ctx.send(f":warning:`言語コードが間違っています. `{self.bot.PREFIX}tr_lg` で対応可能な言語コード一覧を確認できます.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 return await ctx.send(f":warning:`Wrong lanuage code. Please send `{self.bot.PREFIX}tr_lg` to see list of avaiable language codes.`")
         elif code == "INVALID_ID":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`{arg1}は間違ったユーザーIDです.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`{arg1} is invalid`")
         elif code == "PLS_SPECIFY_WITH_ID_OR_MENTION":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`メンションまたはユーザーIDで情報を表示するユーザーを指定してください.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(":warning:️`Please specify the user to display information by mention or user ID.`")
         elif code == "INVALID_LINK":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`{arg1}は間違った招待リンクです.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`{arg1} is invalid invitation link.`")
         elif code == "INVALID_MESSAGE":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`{arg1}は無効なメッセージリンクです.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`{arg1} is invalid message.`")
         elif code == "CANNOT_GET_CUZ_ANOTHER_SERVER":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`他のサーバーのメッセージであるため,取得できません.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`Cannot get because it is a message from another server.`")
         elif code == "YOUR_ACCOUNT_BANNED":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")
                 raise commands.CommandError("Your Account Banned")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(
                     ":warning:`You cannnot use because you are banned.\nFor objection please use Official Server.`")
                 raise commands.CommandError("Your Account Banned")
         elif code == "WRONG_HEX_CODE":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`間違った16進数カラーコードです.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`Wrong hexadecimal color code.`")
         elif code == "WRONG_RGB":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`間違ったRGBカラーコードです.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`Wrong RGB color code.`")
         elif code == "WRONG_COLOR_NAME":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`サポートされていないカラーネームです.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`Not supported color name.`")
         elif code == "WRONG_COLOR_TYPE":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f":warning:`間違ったカラータイプです. hex | rgb | name のいずれかを使用してください`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:️` Wrong color type. Use one of hex | rgb | name`")
         elif code == "UNKNOWN_COLOR_TYPE":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:間違ったカラータイプです.hexで16進数, rgbでRGB, nameで色名で指定できます.")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(":warning:Wrong color type. hex is hexadecimal, rgb is RGB, name is a color name.")
         elif code == "WRONG_COMMAND":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`コマンドが間違っています.構文が正しいことを確認してください!`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(":warning:`Wrong command.Please check your arguments are valid!`")
         elif code == "UNKNOWN_ERROR":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`不明なエラーが発生しました.`")
-            else:
+            elif lang == LanguageCode.ENGLISH:
                 await ctx.send(":warning:`Unknown error has occurred.`")
+        elif code == "HELP":
+            if lang == LanguageCode.JAPANESE:
+                embed = discord.Embed(title="使い方", color=0xffff99, url=self.info["WEB_COMMAND_URL_JA"])
+                embed.add_field(name="公式サイトで詳しいコマンドの説明を確認してください!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_JA"]), inline=False)
+                embed.add_field(name="各種類のコマンドの一覧を表示するには:",
+                                value="```yaml\n{0}help music ... 音楽コマンド一覧\n{0}help game ... ゲームコマンド一覧\n{0}help other ... その他のコマンド一覧\n```".format(
+                                    self.bot.PREFIX), inline=False)
+                embed.add_field(name="さらにmuffinについて知るには:",
+                                value="```fix\n{0}invite ... BOTの招待URLを送信します.\n{0}info ... BOTの情報を表示します.\n```".format(
+                                    self.bot.PREFIX), inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"],
+                                                                                       self.info["SERVER_URL"],
+                                                                                       self.info["WEB_URL_JA"]))
+            elif lang == LanguageCode.ENGLISH:
+                embed = discord.Embed(title="Usage", color=0xffff99, url=self.info["WEB_COMMAND_URL"])
+                embed.add_field(name="Please check commands details on Official WebSite!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL"]), inline=False)
+                embed.add_field(name="To see each type of Commands:",
+                                value="```yaml\n{0}help music ... MusicCommands\n{0}help game ... GameCommands\n{0}help other ... OtherCommands\n```".format(
+                                    self.bot.PREFIX), inline=False)
+                embed.add_field(name="Know more about muffin:",
+                                value="```fix\n{0}invite ... Send Invitation link.\n{0}info ... Show BOT information.\n```".format(
+                                    self.bot.PREFIX), inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(
+                                    self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]),
+                                inline=False)
+            await ctx.send(embed=embed)
+        elif code == "HELP_MUSIC":
+            if lang == LanguageCode.JAPANESE:
+                embed = discord.Embed(title="使い方 - 音楽コマンド", color=0xff99ff, url=self.info["WEB_COMMAND_URL_MUSIC_JA"])
+                embed.add_field(name="使い方の例などは公式サイトで確認できます!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_MUSIC_JA"]), inline=False)
+                embed.add_field(name="{}join".format(self.info["PREFIX"]), value="BOTをボイスチャンネルに接続します", inline=False)
+                embed.add_field(name="{}auto [name]".format(self.info["PREFIX"]), value="指定した曲に関連する曲を連続再生します.",
+                                inline=False)
+                embed.add_field(name="{}play [name or URL]".format(self.info["PREFIX"]), value="曲名またはURLで音楽を再生します",
+                                inline=False)
+                embed.add_field(name="{}search [name]".format(self.info["PREFIX"]),
+                                value="曲名で曲を検索します.リストが表示された後対応する番号を送信することで再生できます", inline=False)
+                embed.add_field(name="{}queue".format(self.info["PREFIX"]), value="予約された曲を表示します", inline=False)
+                embed.add_field(name="{}disconnect".format(self.info["PREFIX"]), value="BOTをボイスチャンネルから切断します",
+                                inline=False)
+                embed.add_field(name="{}loop".format(self.info["PREFIX"]), value="予約されている曲を繰り返します", inline=False)
+                embed.add_field(name="{}repeat".format(self.info["PREFIX"]), value="現在再生している曲を繰り返します", inline=False)
+                embed.add_field(name="{}pause".format(self.info["PREFIX"]), value="音楽の再生を一時停止します", inline=False)
+                embed.add_field(name="{}resume".format(self.info["PREFIX"]), value="音楽の再生を再開します", inline=False)
+                embed.add_field(name="{}skip".format(self.info["PREFIX"]), value="現在流している音楽をスキップします", inline=False)
+                embed.add_field(name="{}remove [index]".format(self.info["PREFIX"]), value="指定したインデックス番目にある曲を削除します",
+                                inline=False)
+                embed.add_field(name="{}clear".format(self.info["PREFIX"]), value="予約されている曲を全て削除します", inline=False)
+                embed.add_field(name="{}volume [%]".format(self.info["PREFIX"]), value="音量を変更します", inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"],
+                                                                                       self.info["SERVER_URL"],
+                                                                                       self.info["WEB_URL_JA"]),
+                                inline=False)
+            elif lang == LanguageCode.ENGLISH:
+                embed = discord.Embed(title="Usage - MusicCommands", color=0xff99ff,
+                                      url=self.info["WEB_COMMAND_URL_MUSIC"])
+                embed.add_field(name="You can see examples of command on official website!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_MUSIC"]), inline=False)
+                embed.add_field(name="{}join".format(self.info["PREFIX"]), value="Connect bot to voice channel",
+                                inline=False)
+                embed.add_field(name="{}auto [name]".format(self.info["PREFIX"]), value="Play related music Continuity",
+                                inline=False)
+                embed.add_field(name="{}play [name or URL]".format(self.info["PREFIX"]),
+                                value="Play music with url or name", inline=False)
+                embed.add_field(name="{}search [name]".format(self.info["PREFIX"]),
+                                value="Search music with name. Then list of songs will appear so please send number.",
+                                inline=False)
+                embed.add_field(name="{}queue".format(self.info["PREFIX"]), value="Show queue of server", inline=False)
+                embed.add_field(name="{}disconnect".format(self.info["PREFIX"]),
+                                value="Disconnect bot from voice channel", inline=False)
+                embed.add_field(name="{}loop".format(self.info["PREFIX"]), value="Loop all music in queue",
+                                inline=False)
+                embed.add_field(name="{}repeat".format(self.info["PREFIX"]),
+                                value="Repeat music that is currently playing", inline=False)
+                embed.add_field(name="{}pause".format(self.info["PREFIX"]), value="Pause playing music", inline=False)
+                embed.add_field(name="{}resume".format(self.info["PREFIX"]), value="Resume playing music", inline=False)
+                embed.add_field(name="{}skip".format(self.info["PREFIX"]), value="Skip music currently that is playing",
+                                inline=False)
+                embed.add_field(name="{}remove [index]".format(self.info["PREFIX"]).format(self.info["PREFIX"]),
+                                value="Remove music with index", inline=False)
+                embed.add_field(name="{}clear".format(self.info["PREFIX"]), value="Remove all music in queue",
+                                inline=False)
+                embed.add_field(name="{}volume [%]".format(self.info["PREFIX"]), value="Change volume of music",
+                                inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(
+                                    self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
+            await ctx.send(embed=embed)
+        elif code == "HELP_GAME":
+            if lang == LanguageCode.JAPANESE:
+                embed = discord.Embed(title="使い方 - ゲームコマンド", color=0x99ffff, url=self.info["WEB_COMMAND_URL_GAME_JA"])
+                embed.add_field(name="使い方の例などは公式サイトで確認できます!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_GAME_JA"]), inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}rule", value="ShadowChoiceのルールを表示します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}status [@ユーザー]",
+                                value="ステータスを表示します.メンションしなかった場合,自分のステータスが表示されます.", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}shadowchoice [人数] [試合数]",
+                                value="試合を開始します.人数,試合数を指定しなかった場合,1人の1戦で開始されます.", inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"],
+                                                                                       self.info["SERVER_URL"],
+                                                                                       self.info["WEB_URL_JA"]),
+                                inline=False)
+            elif lang == LanguageCode.ENGLISH:
+                embed = discord.Embed(title="Usage - GameCommands", color=0x99ffff,
+                                      url=self.info["WEB_COMMAND_URL_GAME"])
+                embed.add_field(name="You can see examples of command on official website!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_GAME"]), inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}rule", value="Show rule of ShadowChoice", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}status [@user]",
+                                value="Show status.If you do not mention, your status will be displayed.", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}shadowchoice [player count] [rounds]",
+                                value="Start match.If you leave empty, it will starts with singlemode 1round.",
+                                inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(
+                                    self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
+            await ctx.send(embed=embed)
+        elif code == "HELP_OTHER":
+            if lang == LanguageCode.JAPANESE:
+                embed = discord.Embed(title="使い方 - その他のコマンド", color=0x99ffff, url=self.info["WEB_COMMAND_URL_OTHER_JA"])
+                embed.add_field(name="使い方の例などは公式サイトで確認できます!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_OTHER_JA"]), inline=False)
+                embed.add_field(name="{}help".format(self.info["PREFIX"]), value="このメッセージを表示します", inline=False)
+                embed.add_field(name="{}info".format(self.info["PREFIX"]), value="BOTに関する情報を表示します", inline=False)
+                embed.add_field(name="{}feedback [内容]".format(self.info["PREFIX"]), value="フィードバックを送信します", inline=False)
+                embed.add_field(name="{}tr [言語コード] [文章]".format(self.info["PREFIX"]), value="テキストを翻訳します", inline=False)
+                embed.add_field(name="{}check [u(ユーザー)/m(メッセージ)/i(招待)] [ID/URL/メンション等]".format(self.info["PREFIX"]),
+                                value="ユーザーIDやメッセージURL,招待URLから詳細情報を取得します.", inline=False)
+                embed.add_field(name="{}lang".format(self.info["PREFIX"]), value="言語コード一覧を表示します", inline=False)
+                embed.add_field(name="{}invite".format(self.info["PREFIX"]), value="BOTを招待するURLを送信します", inline=False)
+                embed.add_field(name="{}ping".format(self.info["PREFIX"]), value="BOTの反応速度を計測します", inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"],
+                                                                                       self.info["SERVER_URL"],
+                                                                                       self.info["WEB_URL_JA"]),
+                                inline=False)
+            elif lang == LanguageCode.ENGLISH:
+                embed = discord.Embed(title="Usage - OtherCommands", color=0x99ffff,
+                                      url=self.info["WEB_COMMAND_URL_OTHER"])
+                embed.add_field(name="You can see examples of command on official website!",
+                                value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_OTHER"]), inline=False)
+                embed.add_field(name="{}help".format(self.info["PREFIX"]), value="Send this message", inline=False)
+                embed.add_field(name="{}info".format(self.info["PREFIX"]), value="Show informations about this bot",
+                                inline=False)
+                embed.add_field(name="{}feedback [text]".format(self.info["PREFIX"]), value="Send feedback.",
+                                inline=False)
+                embed.add_field(name="{}tr [lang] [text]".format(self.info["PREFIX"]), value="Translate text",
+                                inline=False)
+                embed.add_field(name="{}check [u (user)/m (message)/i (invitation)] [ID/URL/mention etc.]",
+                                value="Get detailed information from UserID,MessageURL,InvitationURL etc.",
+                                inline=False)
+                embed.add_field(name="{}lang".format(self.info["PREFIX"]), value="Show list of language codes",
+                                inline=False)
+                embed.add_field(name="{}invite".format(self.info["PREFIX"]), value="Send invitation url", inline=False)
+                embed.add_field(name="{}ping".format(self.info["PREFIX"]), value="Show ping of this bot", inline=False)
+                embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
+                                value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(
+                                    self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
+            await ctx.send(embed=embed)
 
     async def report_error(self, ctx, name, message):
         """
@@ -257,117 +423,22 @@ class Other(commands.Cog):
             embed.set_footer(text="This URL available.")
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["h"])
+    @commands.group(aliases=["h"])
     async def help(self, ctx):
-        try:
-            cmd = ctx.message.content.split()
-            if len(cmd) == 1:
-                if str(ctx.guild.region) == "japan":
-                    embed = discord.Embed(title="使い方", color=0xffff99, url=self.info["WEB_COMMAND_URL_JA"])
-                    embed.add_field(name="公式サイトで詳しいコマンドの説明を確認してください!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_JA"]), inline=False)
-                    embed.add_field(name="各種類のコマンドの一覧を表示するには:", value="```yaml\n{0}help music ... 音楽コマンド一覧\n{0}help game ... ゲームコマンド一覧\n{0}help other ... その他のコマンド一覧\n```".format(self.bot.PREFIX), inline=False)
-                    embed.add_field(name="さらにmuffinについて知るには:", value="```fix\n{0}invite ... BOTの招待URLを送信します.\n{0}info ... BOTの情報を表示します.\n```".format(self.bot.PREFIX), inline=False)
-                    embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]))
-                    await ctx.send(embed=embed)
-                else:
-                    embed = discord.Embed(title="Usage", color=0xffff99, url=self.info["WEB_COMMAND_URL"])
-                    embed.add_field(name="Please check commands details on Official WebSite!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL"]), inline=False)
-                    embed.add_field(name="To see each type of Commands:", value="```yaml\n{0}help music ... MusicCommands\n{0}help game ... GameCommands\n{0}help other ... OtherCommands\n```".format(self.bot.PREFIX), inline=False)
-                    embed.add_field(name="Know more about muffin:", value="```fix\n{0}invite ... Send Invitation link.\n{0}info ... Show BOT information.\n```".format(self.bot.PREFIX), inline=False)
-                    embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]), inline=False)
-                    await ctx.send(embed=embed)
-            elif len(cmd) == 2:
-                if cmd[1].startswith("m") or cmd[1].startswith("M"):
-                    if str(ctx.guild.region) == "japan":
-                        embed=discord.Embed(title="使い方 - 音楽コマンド", color=0xff99ff, url=self.info["WEB_COMMAND_URL_MUSIC_JA"])
-                        embed.add_field(name="使い方の例などは公式サイトで確認できます!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_MUSIC_JA"]), inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}join", value="BOTをボイスチャンネルに接続します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}auto [name]", value="指定した曲に関連する曲を連続再生します.", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}play [name or URL]", value="曲名またはURLで音楽を再生します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}search [name]", value="曲名で曲を検索します.リストが表示された後対応する番号を送信することで再生できます", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}queue", value="予約された曲を表示します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}disconnect", value="BOTをボイスチャンネルから切断します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}loop", value="予約されている曲を繰り返します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}repeat", value="現在再生している曲を繰り返します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}pause", value="音楽の再生を一時停止します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}resume", value="音楽の再生を再開します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}skip", value="現在流している音楽をスキップします", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}remove [index]", value="指定したインデックス番目にある曲を削除します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}clear", value="予約されている曲を全て削除します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}volume [%]", value="音量を変更します", inline=False)
-                        embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]), inline=False)
-                    else:
-                        embed=discord.Embed(title="Usage - MusicCommands", color=0xff99ff, url=self.info["WEB_COMMAND_URL_MUSIC"])
-                        embed.add_field(name="You can see examples of command on official website!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_MUSIC"]), inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}join", value="Connect bot to voice channel", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}auto [name]", value="Play related music Continuity", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}play [name or URL]", value="Play music with url or name", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}search [name]", value="Search music with name. Then list of songs will appear so please send number.", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}queue", value="Show queue of server", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}disconnect", value="Disconnect bot from voice channel", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}loop", value="Loop all music in queue", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}repeat", value="Repeat music that is currently playing", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}pause", value="Pause playing music", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}resume", value="Resume playing music", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}skip", value="Skip music currently that is playing", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}remove [index]", value="Remove music with index", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}clear", value="Remove all music in queue", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}volume [%]", value="Change volume of music", inline=False)
-                        embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
-                    await ctx.send(embed=embed)
-                elif cmd[1].startswith("g") or cmd[1].startswith("G"):
-                    if str(ctx.guild.region) == "japan":
-                        await ctx.send("Game機能は現在β版であり、不安定である可能性があります.\n最新情報は公式サイト、公式サーバーで確認できます.")
-                        # embed=discord.Embed(title="使い方 - ゲームコマンド", color=0x99ffff, url=self.info["WEB_COMMAND_URL_GAME_JA"])
-                        # embed.add_field(name="使い方の例などは公式サイトで確認できます!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_GAME_JA"]), inline=False)
-                        # embed.add_field(name=f"{self.bot.PREFIX}rule", value="ShadowChoiceのルールを表示します", inline=False)
-                        # embed.add_field(name=f"{self.bot.PREFIX}status [@ユーザー]", value="ステータスを表示します.メンションしなかった場合,自分のステータスが表示されます.", inline=False)
-                        # embed.add_field(name=f"{self.bot.PREFIX}shadowchoice [人数] [試合数]", value="試合を開始します.人数,試合数を指定しなかった場合,1人の1戦で開始されます.", inline=False)
-                        # embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]), inline=False)
-                    else:
-                        await ctx.send("Game is currently in beta version and may be unstable.\nThe latest information can be found on the official website and official server.")
-                        # embed=discord.Embed(title="Usage - GameCommands", color=0x99ffff, url=self.info["WEB_COMMAND_URL_GAME"])
-                        # embed.add_field(name="You can see examples of command on official website!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_GAME"]), inline=False)
-                        # embed.add_field(name=f"{self.bot.PREFIX}rule", value="Show rule of ShadowChoice", inline=False)
-                        # embed.add_field(name=f"{self.bot.PREFIX}status [@user]", value="Show status.If you do not mention, your status will be displayed.", inline=False)
-                        # embed.add_field(name=f"{self.bot.PREFIX}shadowchoice [player count] [rounds]", value="Start match.If you leave empty, it will starts with singlemode 1round.", inline=False)
-                        # embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
-                    # await ctx.send(embed=embed)
-                elif cmd[1].startswith("o") or cmd[1].startswith("O"):
-                    if str(ctx.guild.region) == "japan":
-                        embed = discord.Embed(title="使い方 - その他のコマンド", color=0x99ffff, url=self.info["WEB_COMMAND_URL_OTHER_JA"])
-                        embed.add_field(name=f"使い方の例などは公式サイトで確認できます!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_OTHER_JA"]), inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}help", value="このメッセージを表示します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}info", value="BOTに関する情報を表示します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}feedback [内容]", value="フィードバックを送信します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}tr [言語コード] [文章]", value="テキストを翻訳します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}check [u(ユーザー)/m(メッセージ)/i(招待)] [ID/URL/メンション等]", value="ユーザーIDやメッセージURL,招待URLから詳細情報を取得します.", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}color [hex(16進数)/rgb(RGB)/name(色名)] [16進数カラーコード/r g b/色名]", value="指定された色の情報を表示します.")
-                        embed.add_field(name=f"{self.bot.PREFIX}trans_lang", value="言語コード一覧を表示します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}invite", value="BOTを招待するURLを送信します", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}ping", value="BOTの反応速度を計測します", inline=False)
-                        embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL_JA"]), inline=False)
-                    else:
-                        embed=discord.Embed(title="Usage - OtherCommands", color=0x99ffff, url=self.info["WEB_COMMAND_URL_OTHER"])
-                        embed.add_field(name="You can see examples of command on official website!", value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_OTHER"]), inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}help", value="Send this message", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}info", value="Show informations about this bot", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}feedback [text]", value="Send feedback.", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}tr [lang] [text]", value="Translate text", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}check [u (user)/m (message)/i (invitation)] [ID/URL/mention etc.]", value="Get detailed information from UserID,MessageURL,InvitationURL etc.", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}color [hex(demical)/rgb(RGB)/name(color name)] [demical color code/r g b/color name]", value="Show information of specified color.")
-                        embed.add_field(name=f"{self.bot.PREFIX}trans_lang", value="Show list of language codes", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}invite", value="Send invitation url", inline=False)
-                        embed.add_field(name=f"{self.bot.PREFIX}ping", value="Show ping of this bot", inline=False)
-                        embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
-                    await ctx.send(embed=embed)
-            else:
-                if str(ctx.guild.region) == "japan":
-                    await ctx.send(":warning:`コマンドが間違っています`")
-                else:
-                    await ctx.send(":warning:`Wrong command.`")
-        except:
-            await ctx.send(traceback2.format_exc())
+        if ctx.invoked_subcommand is None:
+            await self.send_text(ctx, "HELP")
+
+    @help.command(name="music", aliases=["Music", "m", "M"])
+    async def help_music(self, ctx):
+        await self.send_text(ctx, "HELP_MUSIC")
+
+    @help.command(name="game", aliases=["Game", "g", "G"])
+    async def help_game(self, ctx):
+        await self.send_text(ctx, "HELP_GAME")
+
+    @help.command(name="other", aliases=["Other", "o", "O"])
+    async def help_other(self, ctx):
+        await self.send_text(ctx, "HELP_OTHER")
 
     @commands.command(aliases=['inv'])
     async def invite(self, ctx):
