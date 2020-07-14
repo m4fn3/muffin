@@ -255,17 +255,8 @@ class Music(commands.Cog):
         :return: msg_obj(必要な場合のみ)
         """
         try:
-            lang: LanguageCode
-            if self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.CHANNEL:
-                if str(ctx.guild.region) == "japan":
-                    lang = LanguageCode.JAPANESE
-                else:
-                    lang = LanguageCode.ENGLISH
-            elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.JAPANESE:
-                lang = LanguageCode.JAPANESE
-            elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.ENGLISH:
-                lang = LanguageCode.ENGLISH
-
+            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+            embed: discord.Embed
             if code == "AUTO_MODE_ON":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(f":warning:`オート再生モードが有効なので曲を追加できません.オフにするには`{self.bot.PREFIX}auto off`を使用してください.`")
@@ -1060,9 +1051,10 @@ class Music(commands.Cog):
             return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif ctx.guild.id not in self.bot.playlist:
             return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        if str(ctx.guild.region) == "japan":
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+        if lang == LanguageCode.JAPANESE:
             embed = discord.Embed(title="キュー", color=0xff22ff, url=self.info["WEB_URL_JA"])
-        else:
+        elif lang == LanguageCode.ENGLISH:
             embed = discord.Embed(title="Queue", color=0xff22ff, url=self.info["WEB_URL"])
         count = 0
         if len(self.bot.playlist[ctx.guild.id]) > 10:
@@ -1070,7 +1062,7 @@ class Music(commands.Cog):
         else:
             count = len(self.bot.playlist[ctx.guild.id])
         chk = True
-        if str(ctx.guild.region) == "japan":
+        if lang == LanguageCode.JAPANESE:
             for i in range(count):
                 if chk:
                     embed.add_field(name="再生中:", value="[{}]({}) | `{}` | `{}からのリクエスト`".format(
@@ -1083,7 +1075,7 @@ class Music(commands.Cog):
                         self.bot.playlist[ctx.guild.id][i]["duration"], self.bot.playlist[ctx.guild.id][i]["user"]),
                                     inline=False)
                 chk = False
-        else:
+        elif lang == LanguageCode.ENGLISH:
             for i in range(count):
                 if chk:
                     embed.add_field(name="Now Playing:", value="[{}]({}) | `{}` | `Requested by {}`".format(
@@ -1110,10 +1102,10 @@ class Music(commands.Cog):
         else:
             modes += "repeat: `off` | "
         modes += "volume: `{}%`".format(self.bot.voice_status[ctx.guild.id]["volume"])
-        if str(ctx.guild.region) == "japan":
+        if lang == LanguageCode.JAPANESE:
             embed.add_field(name="モード:", value=modes, inline=False)
             embed.add_field(name="合計:", value="{}曲.".format(str(len(self.bot.playlist[ctx.guild.id]))), inline=False)
-        else:
+        elif lang == LanguageCode.ENGLISH:
             embed.add_field(name="Modes:", value=modes, inline=False)
             embed.add_field(name="Total:", value="{} songs in queue.".format(str(len(self.bot.playlist[ctx.guild.id]))),
                             inline=False)
@@ -1172,17 +1164,18 @@ class Music(commands.Cog):
             res = r[1]
             if len(res["items"]) == 0:
                 return await self.send_text(ctx, "NO_APPROPRIATE")
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
         embed = discord.Embed(title="Search", color=0xaaaaaa)
         for i in range(1, len(res["items"]) + 1):
             embed.add_field(name=str(i) + ":", value=res['items'][i - 1]['snippet']['title'], inline=False)
-        if str(ctx.guild.region) == "japan":
+        if lang == LanguageCode.JAPANESE:
             embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="番号を入力して曲を指定します.\n一定時間経過するとタイムアウトします.", inline=False)
-        else:
+        elif lang == LanguageCode.ENGLISH:
             embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
                             value="Type number to select music.\nIt will time out after a certain period of time",
                             inline=False)
         await ctx.send(embed=embed)
-        user = ctx.message.author.display_name;
+        user = ctx.message.author.display_name
         ix = 0
         rx = await self.wait_search_index(ctx)
         if rx[0] == 0:

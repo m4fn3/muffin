@@ -46,18 +46,8 @@ class Setting(commands.Cog):
         self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
-        lang: LanguageCode
-
-        if self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.CHANNEL:
-            if str(ctx.guild.region) == "japan":
-                lang = LanguageCode.JAPANESE
-            else:
-                lang = LanguageCode.ENGLISH
-        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.JAPANESE:
-            lang = LanguageCode.JAPANESE
-        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.ENGLISH:
-            lang = LanguageCode.ENGLISH
-
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+        embed: discord.Embed
         if code == "YOUR_ACCOUNT_BANNED":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`あなたはBANされているため,使用できません.\n異議申し立ては公式サーバーにてお願いします.`")

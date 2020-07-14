@@ -23,19 +23,6 @@ class Other(commands.Cog):
         with open("./DATABASE.json", 'w') as F:
             json.dump(self.bot.database, F, indent=2)
 
-    def get_language(self, user_id, region):
-        lang: LanguageCode
-        if self.bot.database[str(user_id)]["language"] == LanguageCode.CHANNEL:
-            if str(region) == "japan":
-                lang = LanguageCode.JAPANESE
-            else:
-                lang = LanguageCode.ENGLISH
-        elif self.bot.database[str(user_id)]["language"] == LanguageCode.JAPANESE:
-            lang = LanguageCode.JAPANESE
-        elif self.bot.database[str(user_id)]["language"] == LanguageCode.ENGLISH:
-            lang = LanguageCode.ENGLISH
-        return lang
-
     def hex_to_rgb(self, hex_code):
         hlen = len(hex_code)
         return tuple(int(hex_code[i:i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
@@ -94,18 +81,7 @@ class Other(commands.Cog):
             raise commands.CommandError("Your Account Banned")
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
-        lang: LanguageCode
-
-        if self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.CHANNEL:
-            if str(ctx.guild.region) == "japan":
-                lang = LanguageCode.JAPANESE
-            else:
-                lang = LanguageCode.ENGLISH
-        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.JAPANESE:
-            lang = LanguageCode.JAPANESE
-        elif self.bot.database[str(ctx.author.id)]["language"] == LanguageCode.ENGLISH:
-            lang = LanguageCode.ENGLISH
-
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
         embed: discord.Embed
         if code == "INVALID_STRING":
             if lang == LanguageCode.JAPANESE:
@@ -371,7 +347,7 @@ class Other(commands.Cog):
             user = await self.bot.fetch_user(user_id)
         except discord.errors.NotFound:
             return await self.send_text(ctx, "INVALID_ID", user_id)
-        lang = self.get_language(ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
         embed = discord.Embed(title=str(user), color=0x66cdaa)
         embed.add_field(name="ID", value=user.id)
         embed.set_thumbnail(url=user.avatar_url)
@@ -406,7 +382,7 @@ class Other(commands.Cog):
             invite = await self.bot.fetch_invite(url=invite_code)
         except discord.errors.NotFound:
             return await self.send_text(ctx, "INVALID_LINK", invite_code)
-        lang = self.get_language(ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
         embed = discord.Embed(title=invite_code, url=invite.url, color=0x98fb98)
         embed.set_author(name=invite.guild.name, icon_url=invite.guild.icon_url)
         embed.set_thumbnail(url=invite.guild.icon_url)
@@ -465,7 +441,7 @@ class Other(commands.Cog):
         h, m = divmod(m, 60)
         d = td.days
         embed: discord.Embed
-        lang = self.get_language(ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
         if lang == LanguageCode.JAPANESE:
             embed = discord.Embed(title="情報", color=0x86f9c5, url=self.info["WEB_URL_JA"])
             embed.set_thumbnail(url=self.bot.user.avatar_url)
@@ -519,7 +495,7 @@ class Other(commands.Cog):
 
     @commands.command(aliases=["f", "fb"])
     async def feedback(self, ctx, *, text):
-        lang = self.get_language(ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
         channel = self.bot.get_channel(self.info["ERROR_CHANNEL"])
         embed = discord.Embed(title="お問い合わせ", description="サーバー:{0.name}({0.id})\nチャンネル:{1.name}({1.id})\nユーザー:{2}({2.id})".format(ctx.guild, ctx.channel, ctx.author))
         embed.add_field(name="内容:", value=text, inline=False)
