@@ -806,10 +806,12 @@ class Music(commands.Cog):
                     self.bot.playlist[ctx.guild.id][0]["time"] = time.time()
                 except:
                     await msg_obj.delete()
-                    return  #await self.clean_all(ctx, report=True) - 再生準備中に強制切断された場合に発生
+                    self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.EMPTY
+                    return
                 if ctx.voice_client is None:
                     await msg_obj.delete()
-                    return  #await self.clean_all(ctx, report=True) - 再生準備中に強制切断された場合に発生
+                    self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.EMPTY
+                    return
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
                                                                                                self.bot.loop).result())
                 ctx.voice_client.source.volume = self.bot.voice_status[ctx.guild.id]["volume"] / 100
@@ -840,14 +842,17 @@ class Music(commands.Cog):
                 res = {}
                 if r[0] == 0:  # リクエスト処理中にエラーが発生
                     await self.send_text(ctx, "UNKNOWN_ERROR")
+                    self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.EMPTY
                     return await self.report_error(ctx, "play_related_music", f"{r[1]}\n{pprint.pformat(r[2])}")
                 elif r[0] == 1:  # リクエスト成功 r[1]
                     res = r[1]
                     if len(res["items"]) == 0:
+                        self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.EMPTY
                         return await self.send_text(ctx, "NO_APPROPRIATE")
                 index = random.randrange(len(res["items"]))
                 res_d = await self.get_duration_from_youtube_api(res['items'][index]['id']['videoId'], ctx)
                 if res_d[0] == 0:
+                    self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.EMPTY
                     return
                 info = {"url": f"https://www.youtube.com/watch?v={res['items'][index]['id']['videoId']}",
                         "title": res['items'][index]['snippet']['title'],
