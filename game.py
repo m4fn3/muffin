@@ -116,29 +116,29 @@ class Game(commands.Cog):
                 await ctx.send(f"{self.info['SCwarning']} `This room will be closed because there was no response twice in a row.`")
         elif code == "ON_JOIN":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}>さんが参加しました.`")
+                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>`さんが参加しました.`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> joined.`")
+                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>` joined.`")
         elif code == "ALREADY_JOIN":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは既に参加しています.`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>`さんは既に参加しています.`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> already joined.`")
+                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>` already joined.`")
         elif code == "ON_CANCEL":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}>さんの参加をキャンセルしました.`")
+                await ctx.send(f"{self.info['SCbatu']}<@{arg1}>`さんの参加をキャンセルしました.`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}> canceled.`")
+                await ctx.send(f"{self.info['SCbatu']}<@{arg1}>` canceled.`")
         elif code == "NOT_JOINED":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは参加していません.`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>`さんは参加していません.`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> didn't join.`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>` didn't join.`")
         elif code == "VOTE_GO":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}>さんが強制的にスタートに投票しました.({arg2}/2)`")
+                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>`さんが強制的にスタートに投票しました.({arg2}/2)`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> voted for forcibly start. ({arg2}/2)`")
+                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>` voted for forcibly start. ({arg2}/2)`")
         elif code == "FORCE_START":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f"{self.info['SCcheck']} `2人が強制的にスタートに投票したため{arg1}人モードに変更します.`")
@@ -146,14 +146,14 @@ class Game(commands.Cog):
                 await ctx.send(f"{self.info['SCcheck']} `Change to {arg1} person mode because 2 people vote for force start.`")
         elif code == "ALREADY_VOTED":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは既に強制的にスタートに投票しています.({arg2}/2)`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>`さんは既に強制的にスタートに投票しています.({arg2}/2)`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> already voted for force start.({arg2}/2)`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>` already voted for force start.({arg2}/2)`")
         elif code == "NOT_JOINED_VOTE":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さんは参加していないので投票できません!`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>`さんは参加していないので投票できません!`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> can't vote because not joined match.`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>` can't vote because not joined match.`")
         elif code == "SESSION_ENDED":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f"{self.info['SCwarning']} `一定時間反応がなかったためセッションを終了しました.`")
@@ -166,19 +166,19 @@ class Game(commands.Cog):
                 await ctx.send(f"{self.info['SCcheck']} `The game has started because the number of people has reached the limit!`")
         elif code == "CORRECT_ANSWER":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}>さん!あなたは正解しました!`")
+                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>`さん!あなたは正解しました!`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCmaru']}`<@{arg1}> You got correct answer!`")
+                await ctx.send(f"{self.info['SCmaru']}<@{arg1}>` You got correct answer!`")
         elif code == "INCORRECT_ANSWER":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}>さん!あなたは間違いました!\nこの試合であなたはこれ以上回答できません!\n次のラウンドをお待ちください.`")
+                await ctx.send(f"{self.info['SCbatu']}<@{arg1}>`さん!あなたは間違いました!\nこの試合であなたはこれ以上回答できません!\n次のラウンドをお待ちください.`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCbatu']}`<@{arg1}> You got incorrect answer!\nYou can't answer any more in this match!\nPlease wait for the next round.`")
+                await ctx.send(f"{self.info['SCbatu']}<@{arg1}>` You got incorrect answer!\nYou can't answer any more in this match!\nPlease wait for the next round.`")
         elif code == "ALREADY_INCORRECT":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}>さん!あなたはすでに間違っているためこれ以上回答できません!\n次のラウンドをお待ちください.`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}>`さん!あなたはすでに間違っているためこれ以上回答できません!\n次のラウンドをお待ちください.`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCwarning']}`<@{arg1}> You can't answer anymore because you are already wrong!\nPlease wait for the next round.`")
+                await ctx.send(f"{self.info['SCwarning']}<@{arg1}> `You can't answer anymore because you are already wrong!\nPlease wait for the next round.`")
 
     async def report_error(self, ctx, name, message):
         """
@@ -224,56 +224,51 @@ class Game(commands.Cog):
 
     @commands.command(aliases=["r"])
     async def rule(self, ctx):
-        if str(ctx.guild.region) == "japan":
-            embed = discord.Embed(title="Rule Of Shadow Choice (1/3)")
-            embed.set_image(url=f"{self.info['PICT_URL']}Tehon.jpg")
-            embed.add_field(name="基本",
-                            value="```これらは重要な5つのアイテムです.\n今から説明する2つのルールにあったアイテムをこの中から選ぶことになります.\nこれらは問題の下部にリアクションとして表示されます.\nまた各問題の右上にも表示されるので適宜参照してください.\n(注意)色鉛筆は2色を持ちます.オレンジ色と黄色は同じ1つの色(黄色)とみなします.\nではその二つのルールを説明します!```")
+        embed = discord.Embed(title="Rule Of Shadow Choice (1/3)")
+        embed.set_image(url=f"{self.info['PICT_URL']}Tehon.jpg")
+        embed.add_field(name="基本", value="```これらは重要な5つのアイテムです.\n今から説明する2つのルールにあったアイテムをこの中から選ぶことになります.\nこれらは問題の下部にリアクションとして表示されます.\nまた各問題の右上にも表示されるので適宜参照してください.\n(注意)色鉛筆は2色を持ちます.オレンジ色と黄色は同じ1つの色(黄色)とみなします.\nではその二つのルールを説明します!```")
         await ctx.send(embed=embed)
         embed = discord.Embed(title="Rule Of Shadow Choice (2/3)")
         embed.set_image(url=f"{self.info['PICT_URL']}Tehon.jpg")
         embed.set_image(url=f"{self.info['PICT_URL']}/main/1.jpg")
-        embed.add_field(name="ルール1",
-                        value="```表示された絵の中に上で示した５つのうちのどれかが同じ色で入っている場合それが正解です!\nすかさずそのアイテムのリアクションをおしましょう.```",
-                        inline=False)
+        embed.add_field(name="ルール1", value="```表示された絵の中に上で示した５つのうちのどれかが同じ色で入っている場合それが正解です!\nすかさずそのアイテムのリアクションをおしましょう.```", inline=False)
         embed.add_field(name="例1", value="```この場合絵の中に名刺が同じ色(紫)でうつっているので紫の名刺のリアクションが正解です.```", inline=False)
         await ctx.send(embed=embed)
         embed = discord.Embed(title="Rule Of Shadow Choice (3/3)")
         embed.set_image(url=f"{self.info['PICT_URL']}Tehon.jpg")
         embed.set_image(url=f"{self.info['PICT_URL']}/main/11.jpg")
-        embed.add_field(name="ルール2", value="```カードの中に正しい色で写っているモノがなければ(ルール1を満たすものがなければ)、\n色も種類も絵に映っていないアイテムをとりましょう.```",
-                        inline=False)
-        embed.add_field(name="例2",
-                        value="```この場合絵の中に正しい色でうつっているものはないので,色も種類も絵に写っていないものを探します.\nはさみ,緑,黄,えんぴつがだめなので,'黄'のノート,赤い'はさみ','緑'のメジャー,青の'鉛筆'はダメです.\nよって残った紫のメジャーが正解です.```",
-                        inline=False)
+        embed.add_field(name="ルール2", value="```カードの中に正しい色で写っているモノがなければ(ルール1を満たすものがなければ)、\n色も種類も絵に映っていないアイテムをとりましょう.```", inline=False)
+        embed.add_field(name="例2", value="```この場合絵の中に正しい色でうつっているものはないので,色も種類も絵に写っていないものを探します.\nはさみ,緑,黄,えんぴつがだめなので,'黄'のノート,赤い'はさみ','緑'のメジャー,青の'鉛筆'はダメです.\nよって残った紫のメジャーが正解です.```", inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["st"])
     async def status(self, ctx):
         try:
+            embed: discord.Embed
+            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
             if ctx.message.mentions == []:
-                if str(ctx.guild.region) == "japan":
+                if lang == LanguageCode.JAPANESE:
                     embed = discord.Embed(title="ステータス")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed = discord.Embed(title="Status")
                 embed.set_thumbnail(url=ctx.author.avatar_url)
-                decoration = "";
+                decoration = ""
                 role = ""
                 if ctx.author.id in self.bot.ADMIN:
-                    decoration += "yaml";
+                    decoration += "yaml"
                     role += "[ADMIN]"
                 elif ctx.author.id in self.bot.Contributor:
-                    decoration += "fix";
+                    decoration += "fix"
                     role += "[Contributor]"
-                if str(ctx.guild.region) == "japan":
+                if lang == LanguageCode.JAPANESE:
                     embed.add_field(name="ユーザー情報",
                                     value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n{role}```",
                                     inline=False)
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed.add_field(name="UserInformation",
                                     value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n{role}```",
                                     inline=False)
-                if str(ctx.guild.region) == "japan":
+                if lang == LanguageCode.JAPANESE:
                     embed.add_field(name="ShadowChoice",
                                     value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
                                         self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"],
@@ -297,7 +292,7 @@ class Game(commands.Cog):
                                             self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
                                                 "all_matches"] * 100, 2
                                         )))
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed.add_field(name="ShadowChoice",
                                     value="```c\nShoretstAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
                                         self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"],
@@ -324,29 +319,29 @@ class Game(commands.Cog):
                 await ctx.send(embed=embed)
             else:
                 target = ctx.message.mentions[0]
-                if str(ctx.guild.region) == "japan":
+                if lang == LanguageCode.JAPANESE:
                     embed = discord.Embed(title="ステータス")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed = discord.Embed(title="Status")
                 embed.set_thumbnail(url=target.avatar_url)
-                decoration = "";
+                decoration = ""
                 role = ""
                 if target.id in self.bot.ADMIN:
-                    decoration += "yaml";
+                    decoration += "yaml"
                     role += "[ADMIN]"
                 elif target.id in self.bot.Contributor:
-                    decoration += "fix";
+                    decoration += "fix"
                     role += "[Contributor]"
-                if str(ctx.guild.region) == "japan":
+                if lang == LanguageCode.JAPANESE:
                     embed.add_field(name="ユーザー情報",
                                     value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```",
                                     inline=False)
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed.add_field(name="UserInformation",
                                     value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```",
                                     inline=False)
                 if str(target.id) in self.bot.database:
-                    if str(ctx.guild.region) == "japan":
+                    if lang == LanguageCode.JAPANESE:
                         embed.add_field(name="ShadowChoice",
                                         value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
                                             self.bot.database[str(target.id)]["shadowchoice"]["best_score"],
@@ -358,7 +353,7 @@ class Game(commands.Cog):
                                             self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"], round(
                                                 self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"] /
                                                 self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"] * 100, 2)))
-                    else:
+                    elif lang == LanguageCode.ENGLISH:
                         embed.add_field(name="ShadowChoice",
                                         value="```c\nShortestAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
                                             self.bot.database[str(target.id)]["shadowchoice"]["best_score"],
@@ -371,9 +366,9 @@ class Game(commands.Cog):
                                                 self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"] /
                                                 self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"] * 100, 2)))
                 else:
-                    if str(ctx.guild.region) == "japan":
+                    if lang == LanguageCode.JAPANESE:
                         embed.set_footer(text="このユーザーはまだBOTを使用していません.")
-                    else:
+                    elif lang == LanguageCode.ENGLISH:
                         embed.set_footer(text="This user hasn't used the bot yet.")
                 await ctx.send(embed=embed)
         except:
@@ -407,12 +402,13 @@ class Game(commands.Cog):
                 else:
                     mode = int(msg_list[1])
                     round_time = int(msg_list[2])
+            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
             if mode == 1:
                 for i in range(round_time):
-                    if str(ctx.guild.region) == "japan":
+                    if lang == LanguageCode.JAPANESE:
                         embed = discord.Embed(title="約5秒お待ちください...")
                         embed.add_field(name="お待ちください", value="`約5秒後に開始されます!`")
-                    else:
+                    elif lang == LanguageCode.ENGLISH:
                         embed = discord.Embed(title="Please wait about 5 seconds...")
                         embed.add_field(name="Please wait", value="`It will start in about 5 seconds!`")
                     org_msg = await ctx.send(embed=embed)
@@ -431,9 +427,9 @@ class Game(commands.Cog):
                     embed = discord.Embed(title=f"Question of Shadow Choice ({i+1}/{round_time})")
                     embed.set_thumbnail(url=f"{self.info['PICT_URL']}Tehon.jpg")
                     embed.set_image(url=f"{self.info['PICT_URL']}/main/{num}.jpg")
-                    if str(ctx.guild.region) == "japan":
+                    if lang == LanguageCode.JAPANESE:
                         embed.add_field(name="問題", value="下のリアクションを押して回答してください!")
-                    else:
+                    elif lang == LanguageCode.ENGLISH:
                         embed.add_field(name="Question", value="Please press the reaction below to answer!")
                     await org_msg.edit(embed=embed)
                     pstart = time.time()
@@ -448,16 +444,16 @@ class Game(commands.Cog):
                             is_right = 0
                         elapsed_time = round(elapsed_time, 2)
                         embed = discord.Embed(title=f"Question of Shadow Choice ({i+1}/{round_time})")
-                        if str(ctx.guild.region) == "japan":
+                        if lang == LanguageCode.JAPANESE:
                             embed.add_field(name="終了済", value="試合はすでに終了しています.")
-                        else:
+                        elif lang == LanguageCode.ENGLISH:
                             embed.add_field(name="Ended", value="The match has already ended.")
                         await org_msg.edit(embed=embed)
                         if is_right == 1:
                             embed = discord.Embed(title=f"Result of Shadow Choice ({i+1}/{round_time})")
-                            if str(ctx.guild.region) == "japan":
+                            if lang == LanguageCode.JAPANESE:
                                 embed.add_field(name="結果発表", value=f"```正解者:{puser.display_name}\n計測時間:{elapsed_time}[s]```")
-                            else:
+                            elif lang == LanguageCode.ENGLISH:
                                 embed.add_field(name="Result", value=f"```Winner:{puser.display_name}\nTime:{elapsed_time}[s]```")
                             await ctx.send(embed=embed)
                             if self.bot.database[str(puser.id)]["shadowchoice"]["best_score"] > elapsed_time:
@@ -466,9 +462,9 @@ class Game(commands.Cog):
                             self.bot.database[str(puser.id)]["shadowchoice"]["single"]["win_matches"] += 1
                         else:
                             embed = discord.Embed(title=f"Result of Shadow Choice ({i+1}/{round_time})")
-                            if str(ctx.guild.region) == "japan":
+                            if lang == LanguageCode.JAPANESE:
                                 embed.add_field(name="結果発表", value=f"```正解者:なし\n計測時間:{elapsed_time}[s]```")
-                            else:
+                            elif lang == LanguageCode.ENGLISH:
                                 embed.add_field(name="Result", value=f"```Winner: None\nTime:{elapsed_time}[s]```")
                             await ctx.send(embed=embed)
                         self.bot.database[str(puser.id)]["shadowchoice"]["single"]["all_matches"] += 1
@@ -479,9 +475,9 @@ class Game(commands.Cog):
                         elapsed_time = round(elapsed_time, 2)
                         await self.send_text(ctx, "NO_ONE_RESPOND")
                         embed = discord.Embed(title="Result of Shadow Choice")
-                        if str(ctx.guild.region) == "japan":
+                        if lang == LanguageCode.JAPANESE:
                             embed.add_field(name="結果発表", value=f"```正解者:なし\n時間:{elapsed_time}[s]```")
-                        else:
+                        elif lang == LanguageCode.ENGLISH:
                             embed.add_field(name="Result", value=f"```Winner: None\nTime:{elapsed_time}[s]```")
                         await org_msg.edit(embed=embed)
                         afk += 1
@@ -493,9 +489,9 @@ class Game(commands.Cog):
                 members = []
                 go_vote = []
                 ch = ctx.message.channel
-                if str(ctx.guild.region) == "japan":
+                if lang == LanguageCode.JAPANESE:
                     embed.add_field(name="参加画面", value=f"```diff\n以下のリアクションを押して参加してください!\n+ 参加\n- 参加をキャンセル\n定員に達し次第ゲームが開始されます\n定員人数:{mode}人```")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed.add_field(name="参加画面", value=f"```diff\nPlease press the reaction below to answer!\n+ Join\n- Cancel\nThe game will start as soon as the capacity is reached\nCapacity:{mode}```")
                 join_msg = await ctx.send(embed=embed)
 
@@ -536,9 +532,9 @@ class Game(commands.Cog):
                     except asyncio.TimeoutError:
                         return await self.send_text(ctx, "SESSION_ENDED")
                 embed = discord.Embed(title="Join to match of Shadow choice")
-                if str(ctx.guild.region) == "japan":
+                if lang == LanguageCode.JAPANESE:
                     embed.add_field(name="参加できません", value="試合はすでに開始されています.")
-                else:
+                elif lang == LanguageCode.ENGLISH:
                     embed.add_field(name="cannot join", value="The match already started.")
                 await join_msg.edit(embed=embed)
                 await self.send_text(ctx, "START_MATCH")
@@ -546,10 +542,10 @@ class Game(commands.Cog):
                     if str(i) not in self.bot.database:
                         await self.init_database(ctx, user_id=i)
                 for i in range(round_time):
-                    if str(ctx.guild.region) == "japan":
+                    if lang == LanguageCode.JAPANESE:
                         embed = discord.Embed(title="約5秒お待ちください...")
                         embed.add_field(name="お待ちください", value="`約5秒後に開始されます!`")
-                    else:
+                    elif lang == LanguageCode.ENGLISH:
                         embed = discord.Embed(title="Please wait about 5 seconds...")
                         embed.add_field(name="Please wait", value="`It will start in about 5 seconds!`")
                     org_msg = await ctx.send(embed=embed)
@@ -572,9 +568,9 @@ class Game(commands.Cog):
                     embed = discord.Embed(title=f"Question of Shadow Choice ({i+1}/{round_time})")
                     embed.set_thumbnail(url=f"{self.info['PICT_URL']}Tehon.jpg")
                     embed.set_image(url=f"{self.info['PICT_URL']}/main/{num}.jpg")
-                    if str(ctx.guild.region) == "japan":
+                    if lang == LanguageCode.JAPANESE:
                         embed.add_field(name="問題", value="下のリアクションを押して回答してください!")
-                    else:
+                    elif lang == LanguageCode.ENGLISH:
                         embed.add_field(name="Question", value="Please press the reaction below to answer!")
                     await org_msg.edit(embed=embed)
                     pstart = time.time()
@@ -598,9 +594,9 @@ class Game(commands.Cog):
                             await self.send_text(ctx, "SESSION_ENDED")
                             break
                     embed = discord.Embed(title=f"Question of Shadow Choice ({i+1}/{round_time})")
-                    if str(ctx.guild.region) == "japan":
+                    if lang == LanguageCode.JAPANESE:
                         embed.add_field(name="終了済", value="試合はすでに終了しています.")
-                    else:
+                    elif lang == LanguageCode.ENGLISH:
                         embed.add_field(name="Ended", value="The match has already ended.")
                     await org_msg.edit(embed=embed)
                     if end_code == 0:
@@ -608,9 +604,9 @@ class Game(commands.Cog):
                         players = ""
                         for mem in members:
                             players += f"\n<@{mem}>"
-                        if str(ctx.guild.region) == "japan":
+                        if lang == LanguageCode.JAPANESE:
                             embed.add_field(name="結果発表", value=f"`正解者はいませんでした、、、`\n`参加者:`{players}")
-                        else:
+                        elif lang == LanguageCode.ENGLISH:
                             embed.add_field(name="Result", value=f"`Winner:` None\n`Member`: {players}")
                         await ctx.send(embed=embed)
                         afk = 0
@@ -620,9 +616,9 @@ class Game(commands.Cog):
                         players = ""
                         for mem in members:
                             players += f"\n<@{mem}>"
-                        if str(ctx.guild.region) == "japan":
+                        if lang == LanguageCode.JAPANESE:
                             embed.add_field(name="結果発表", value=f"`正解者:`<@{right_ppl}>\n`参加者:`{players}\n`正解者の計測時間:`{elapsed_time}[s]")
-                        else:
+                        elif lang == LanguageCode.ENGLISH:
                             embed.add_field(name="Result", value=f"`Winner:`<@{right_ppl}>\n`Member`: {players}\n`Time`:{elapsed_time}[s]")
                         await ctx.send(embed=embed)
                         afk = 0
@@ -635,9 +631,9 @@ class Game(commands.Cog):
                         players = ""
                         for mem in members:
                             players += f"\n<@{mem}>"
-                        if str(ctx.guild.region) == "japan":
+                        if lang == LanguageCode.JAPANESE:
                             embed.add_field(name="結果発表", value=f"`全員どこかへ行ってしまったようです、、、`\n`参加者:`{players}")
-                        else:
+                        elif lang == LanguageCode.ENGLISH:
                             embed.add_field(name="Result", value=f"`It seems that everyone has gone somewhere...`\n`Member:`{players}")
                         await ctx.send(embed=embed)
                         afk += 1

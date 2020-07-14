@@ -53,13 +53,9 @@ class Dev(commands.Cog):
                 "play_message": True
             }
         }
-        embed = discord.Embed(title=f"Welcome to muffin {len(self.bot.database)}th user!",
-                              description=f"<:muffin:731764451073720361> https://mafu.cf/\n<:help:731757723422556201>{self.bot.PREFIX}help")
-        embed.add_field(name="Languages",
-                        value=":flag_jp:日本語 ... {0}lang ja\n:flag_us:English ... {0}lang en".format(self.bot.PREFIX))
-        embed.add_field(name="Support",
-                        value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}",
-                        inline=False)
+        embed = discord.Embed(title=f"Welcome to muffin {len(self.bot.database)}th user!", description=f"<:muffin:731764451073720361> https://mafu.cf/\n<:help:731757723422556201>{self.bot.PREFIX}help")
+        embed.add_field(name="Languages", value=":flag_jp:日本語 ... {0}lang ja\n:flag_us:English ... {0}lang en".format(self.bot.PREFIX))
+        embed.add_field(name="Support", value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}", inline=False)
         await ctx.send(embed=embed)
         await ctx.send(ctx.author.mention)
         self.save_database()
