@@ -70,6 +70,16 @@ class Setting(commands.Cog):
                 await ctx.send(f":warning:`言語が間違っています.対応言語は`{self.bot.PREFIX}lang_list`で確認できます.`")
             elif lang == LanguageCode.ENGLISH:
                 await ctx.send(f":warning:`Wrong language.To check supported language, type `{self.bot.PREFIX}lang_list")
+        elif code == "MUSICINFO_ON":
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(":white_check_mark:`音楽の再生メッセージをオンにしました.`")
+            elif lang == LanguageCode.ENGLISH:
+                await ctx.send(":white_check_mark:`Turned on the music play message.`")
+        elif code == "MUSICINFO_OFF":
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(":white_check_mark:`音楽の再生メッセージをオフにしました.`")
+            elif lang == LanguageCode.ENGLISH:
+                await ctx.send(":white_check_mark:`Turned off the music play message.`")
 
     async def report_error(self, ctx, name, message):
         """
@@ -129,6 +139,16 @@ class Setting(commands.Cog):
             await ctx.send(":white_check_mark:`Changed language to [English]!`")
         else:
             await self.send_text(ctx, "WRONG_LANGUAGE")
+        self.save_database()
+
+    @commands.command(aliases=["mi"])
+    async def musicinfo(self, ctx):
+        if self.bot.database[str(ctx.author.id)]["music"]["play_message"]:
+            self.bot.database[str(ctx.author.id)]["music"]["play_message"] = False
+            await self.send_text(ctx, "MUSICINFO_OFF")
+        else:
+            self.bot.database[str(ctx.author.id)]["music"]["play_message"] = True
+            await self.send_text(ctx, "MUSICINFO_ON")
         self.save_database()
 
 

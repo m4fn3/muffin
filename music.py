@@ -476,24 +476,27 @@ class Music(commands.Cog):
                     embed.add_field(name="Requested by", value=f"    {arg1['user']}")
                 await ctx.send(embed=embed)
             elif code == "MUSIC_PLAY_NOW":
-                if lang == LanguageCode.JAPANESE:
-                    embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0xff82b2)
-                    embed.set_author(name="再生中")
-                    embed.set_thumbnail(url=arg1["thumbnail"])
-                    embed.add_field(name="チャンネル", value=arg1['channel'])
-                    embed.add_field(name="アップロード", value=arg1['publish'])
-                    embed.add_field(name="動画時間", value=arg1['duration'])
-                    embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
-                elif lang == LanguageCode.ENGLISH:
-                    embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0xff82b2)
-                    embed.set_author(name="Now playing")
-                    embed.set_thumbnail(url=arg1["thumbnail"])
-                    embed.add_field(name="Channel", value=arg1['channel'])
-                    embed.add_field(name="Upload", value=arg1['publish'])
-                    embed.add_field(name="Duration", value=arg1['duration'])
-                    embed.add_field(name="Requested by", value=f"    {arg1['user']}")
-                msg_obj = await ctx.send(embed=embed)
-                return msg_obj
+                if self.bot.database[str(arg1['user'].id)]["music"]["play_message"]:
+                    if lang == LanguageCode.JAPANESE:
+                        embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0xff82b2)
+                        embed.set_author(name="再生中")
+                        embed.set_thumbnail(url=arg1["thumbnail"])
+                        embed.add_field(name="チャンネル", value=arg1['channel'])
+                        embed.add_field(name="アップロード", value=arg1['publish'])
+                        embed.add_field(name="動画時間", value=arg1['duration'])
+                        embed.add_field(name="リクエスト", value=f"    {arg1['user']}")
+                    elif lang == LanguageCode.ENGLISH:
+                        embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0xff82b2)
+                        embed.set_author(name="Now playing")
+                        embed.set_thumbnail(url=arg1["thumbnail"])
+                        embed.add_field(name="Channel", value=arg1['channel'])
+                        embed.add_field(name="Upload", value=arg1['publish'])
+                        embed.add_field(name="Duration", value=arg1['duration'])
+                        embed.add_field(name="Requested by", value=f"    {arg1['user']}")
+                    msg_obj = await ctx.send(embed=embed)
+                    return msg_obj
+                else:
+                    return None
             elif code == "MUSIC_REMOVED":
                 embed = discord.Embed(title=arg1["title"], url=arg1["url"], color=0xff9872)
                 if lang == LanguageCode.JAPANESE:
@@ -546,7 +549,7 @@ class Music(commands.Cog):
                 elif lang == LanguageCode.ENGLISH:
                     await ctx.send(":warning:️`BOT admin forcibly disconnected for update.`")
         except:
-            await ctx.send(traceback2.format_ext())
+            await ctx.send(traceback2.format_exc())
 
     async def report_error(self, ctx, name, message):
         """
@@ -737,7 +740,8 @@ class Music(commands.Cog):
                 played_time = time.time() - self.bot.playlist[ctx.guild.id][0]["time"]
                 if played_time < 5:  # 再生時間が5秒以内だった場合
                     msg_obj = self.bot.playlist[ctx.guild.id][0]["msg_obj"]
-                    await msg_obj.delete()
+                    if msg_obj is not None:
+                        await msg_obj.delete()
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WITH_TITLE", self.bot.playlist[ctx.guild.id][0]["title"])
                     code = self.count_load_error(ctx.guild.id)
                     if code == 0:
@@ -851,7 +855,7 @@ class Music(commands.Cog):
                         "thumbnail": res['items'][index]['snippet']['thumbnails']['high']['url'],
                         "publish": self.parse_day(res['items'][index]['snippet']['publishedAt']),
                         "channel": res['items'][index]['snippet']['channelTitle'],
-                        "user": ctx.author.display_name,
+                        "user": ctx.author,
                         "duration": res_d[1]
                         }
                 self.bot.playlist[ctx.guild.id].append(info)
@@ -1128,7 +1132,7 @@ class Music(commands.Cog):
                 return await self.send_text(ctx, "OPERATION_DENIED")
             if self.bot.voice_status[ctx.guild.id]["auto"]:
                 return await self.send_text(ctx, "AUTO_MODE_ON")
-            user = ctx.author.display_name
+            user = ctx.author
             code = await self.process_music(ctx, url, user)
             if code == 0:
                 return
@@ -1175,7 +1179,7 @@ class Music(commands.Cog):
                             value="Type number to select music.\nIt will time out after a certain period of time",
                             inline=False)
         await ctx.send(embed=embed)
-        user = ctx.message.author.display_name
+        user = ctx.message.author
         ix = 0
         rx = await self.wait_search_index(ctx)
         if rx[0] == 0:
@@ -1220,7 +1224,7 @@ class Music(commands.Cog):
                     self.bot.voice_status[ctx.guild.id]["auto"] = False
                     await self.send_text(ctx, "AUTO_OFF")
                 return
-            user = ctx.author.display_name
+            user = ctx.author
             code = await self.process_music(ctx, url, user, is_auto=True)
             if code == 0:
                 return
