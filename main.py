@@ -18,11 +18,8 @@ class Muffin(commands.Bot):
 
         self.remove_command("help")
 
-        self.load_extension("developer")
-        self.load_extension("music")
-        self.load_extension("game")
-        self.load_extension("other")
-        self.load_extension("setting")
+        for cog in info["COG"]:
+            self.load_extension(cog)
 
         self.uptime = time.time()
         self.playlist = {}

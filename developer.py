@@ -281,8 +281,7 @@ class Dev(commands.Cog):
 
     @system.command(aliases=["rl"])
     async def reload(self, ctx, text):
-        EXTENSION_LIST = ["developer", "music", "game", "other"]
-        if text in EXTENSION_LIST:
+        if text in self.info["COG"]:
             try:
                 if text == "music":
                     music = self.bot.get_cog("Music")
@@ -298,8 +297,7 @@ class Dev(commands.Cog):
 
     @system.command(aliases=["l"])
     async def load(self, ctx, text):
-        EXTENSION_LIST = ["developer", "music", "game", "other"]
-        if text in EXTENSION_LIST:
+        if text in self.info["COG"]:
             try:
                 self.bot.load_extension(text)
             except:
@@ -311,8 +309,7 @@ class Dev(commands.Cog):
 
     @system.command(aliases=["u"])
     async def unload(self, ctx, text):
-        EXTENSION_LIST = ["developer", "music", "game", "other"]
-        if text in EXTENSION_LIST:
+        if text in self.info["COG"]:
             try:
                 music = self.bot.get_cog("Music")
                 await music.leave_all(ctx)
