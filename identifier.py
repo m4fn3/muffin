@@ -15,6 +15,20 @@ def get_language(lang_id, region):
     return lang
 
 
+def get_language_name(lang_id, region):
+    lang: str
+    if lang_id == LanguageCode.CHANNEL:
+        if str(region) == "japan":
+            lang = "サーバーの地域"
+        else:
+            lang = "ServerRegion"
+    elif lang_id == LanguageCode.JAPANESE:
+        lang = "日本語"
+    elif lang_id == LanguageCode.ENGLISH:
+        lang = "English"
+    return lang
+
+
 class MusicStatus(IntEnum):
     EMPTY = 0
     PLAYING = 1

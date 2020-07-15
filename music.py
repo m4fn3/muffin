@@ -1043,7 +1043,7 @@ class Music(commands.Cog):
         elif code == 4:  # 処理拒否
             await self.send_text(ctx, "OPERATION_DENIED")
 
-    @commands.command(aliases=['dc', 'dis'])
+    @commands.command(aliases=['dc', 'dis', 'lv', 'leave'])
     async def disconnect(self, ctx):
         """
         VCから切断
@@ -1109,18 +1109,9 @@ class Music(commands.Cog):
                                     inline=False)
                 chk = False
         modes = ""
-        if self.bot.voice_status[ctx.guild.id]["auto"]:
-            modes += "auto: `on` | "
-        else:
-            modes += "auto: `off` | "
-        if self.bot.voice_status[ctx.guild.id]["loop"]:
-            modes += "loop: `on` | "
-        else:
-            modes += "loop: `off` | "
-        if self.bot.voice_status[ctx.guild.id]["repeat"]:
-            modes += "repeat: `on` | "
-        else:
-            modes += "repeat: `off` | "
+        modes += "auto: `on` | " if self.bot.voice_status[ctx.guild.id]["auto"] else "auto: `off` | "
+        modes += "loop: `on` | " if self.bot.voice_status[ctx.guild.id]["loop"] else "loop: `off` | "
+        modes += "repeat: `on` | " if self.bot.voice_status[ctx.guild.id]["repeat"] else "repeat: `off` | "
         modes += "volume: `{}%`".format(self.bot.voice_status[ctx.guild.id]["volume"])
         if lang == LanguageCode.JAPANESE:
             embed.add_field(name="モード:", value=modes, inline=False)

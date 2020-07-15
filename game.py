@@ -260,14 +260,15 @@ class Game(commands.Cog):
                 elif ctx.author.id in self.bot.Contributor:
                     decoration += "fix"
                     role += "[Contributor]"
+                lang_name = get_language_name(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
                 if lang == LanguageCode.JAPANESE:
-                    embed.add_field(name="ユーザー情報",
-                                    value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n{role}```",
-                                    inline=False)
+                    embed.add_field(name="ユーザー情報", value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n言語:{lang_name}\n{role}```", inline=False)
+                    play_message = "オン" if self.bot.database[str(ctx.author.id)]["music"]["play_message"] else "オフ"
+                    embed.add_field(name="音楽", value=f"```音楽再生通知メッセージ:{play_message}```", inline=False)
                 elif lang == LanguageCode.ENGLISH:
-                    embed.add_field(name="UserInformation",
-                                    value=f"```{decoration}\nユーザー:{ctx.author}\nユーザーID:{ctx.author.id}\n{role}```",
-                                    inline=False)
+                    embed.add_field(name="UserInformation", value=f"```{decoration}\nUser:{ctx.author}\nUserID:{ctx.author.id}\nLanguage:{lang_name}\n{role}```", inline=False)
+                    play_message = "on" if self.bot.database[str(ctx.author.id)]["music"]["play_message"] else "off"
+                    embed.add_field(name="Music", value=f"```MusicPlayInfo:{play_message}```", inline=False)
                 if lang == LanguageCode.JAPANESE:
                     embed.add_field(name="ShadowChoice",
                                     value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
@@ -294,7 +295,7 @@ class Game(commands.Cog):
                                         )))
                 elif lang == LanguageCode.ENGLISH:
                     embed.add_field(name="ShadowChoice",
-                                    value="```c\nShoretstAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
+                                    value="```c\nShortestAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
                                         self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"],
                                         self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
                                             "all_matches"],
