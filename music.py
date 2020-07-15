@@ -245,7 +245,7 @@ class Music(commands.Cog):
             await self.send_text(ctx, "UNKNOWN_ERROR")
             await self.report_error(ctx, "clean_all", traceback2.format_exc())
 
-    async def send_text(self, ctx, code, arg1=None, arg2=None):
+    async def send_text(self, ctx, code, arg1=None, arg2=None, force_region=False):
         """
         言語問題を自動的に解決してメッセージを送信
         :param ctx: Context
@@ -255,7 +255,10 @@ class Music(commands.Cog):
         :return: msg_obj(必要な場合のみ)
         """
         try:
-            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+            if force_region:
+                lang = get_language(LanguageCode.CHANNEL.value, ctx.guild.region)
+            else:
+                lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
             embed: discord.Embed
             if code == "AUTO_MODE_ON":
                 if lang == LanguageCode.JAPANESE:
@@ -988,6 +991,14 @@ class Music(commands.Cog):
         if before.channel is not None:
             mem = before.channel.members
             if len(mem) == 1 and mem[0].id == self.bot.user.id:
+                if before.channel.id in self.bot.wait_leave:  # 既に待機中
+                    return
+                else:
+                    self.bot.wait_leave.append(before.channel.id)
+                await asyncio.sleep(180)
+                vc = await self.bot.fetch_channel(before.channel.id)
+                if len(vc.members) != 1:  # 3分待機中に再参加
+                    return
                 ch = self.bot.get_channel(self.bot.voice_status[before.channel.guild.id]["channel"])
                 self.bot.voice_disconnected.append(ch.guild.id)
                 if ch.guild.voice_client is None:
@@ -1009,7 +1020,8 @@ class Music(commands.Cog):
                     "status": 0,
                     "load_error": 0,
                 }
-                await self.send_text(ch, "DISCONNECTED_BECAUSE_ALL_USERS_LEFT")
+                self.bot.wait_leave.remove(before.channel.id)
+                await self.send_text(ch, "DISCONNECTED_BECAUSE_ALL_USERS_LEFT", force_region=True)
 
     @commands.command(aliases=["j"])
     async def join(self, ctx):
@@ -1059,7 +1071,7 @@ class Music(commands.Cog):
             return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
         elif ctx.guild.id not in self.bot.playlist:
             return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
-        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
         if lang == LanguageCode.JAPANESE:
             embed = discord.Embed(title="キュー", color=0xff22ff, url=self.info["WEB_URL_JA"])
         elif lang == LanguageCode.ENGLISH:
@@ -1172,7 +1184,7 @@ class Music(commands.Cog):
             res = r[1]
             if len(res["items"]) == 0:
                 return await self.send_text(ctx, "NO_APPROPRIATE")
-        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
         embed = discord.Embed(title="Search", color=0xaaaaaa)
         for i in range(1, len(res["items"]) + 1):
             embed.add_field(name=str(i) + ":", value=res['items'][i - 1]['snippet']['title'], inline=False)

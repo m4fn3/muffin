@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 
-def get_language(lang_id, user_id, region):
+def get_language(lang_id, region):
     lang: LanguageCode
     if lang_id == LanguageCode.CHANNEL:
         if str(region) == "japan":

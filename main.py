@@ -26,6 +26,7 @@ class Muffin(commands.Bot):
         self.voice_status = {}
         self.voice_disconnected = []
         self.music_skipped = []
+        self.wait_leave = []
         with open("./ROLE.json") as F:
             roles = json.load(F)
         self.ADMIN = roles["ADMIN"]

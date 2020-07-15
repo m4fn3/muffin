@@ -54,7 +54,7 @@ class Game(commands.Cog):
         self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
-        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
         embed: discord.Embed
         if code == "YOUR_ACCOUNT_BANNED":
             if lang == LanguageCode.JAPANESE:
@@ -245,7 +245,7 @@ class Game(commands.Cog):
     async def status(self, ctx):
         try:
             embed: discord.Embed
-            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
             if ctx.message.mentions == []:
                 if lang == LanguageCode.JAPANESE:
                     embed = discord.Embed(title="ステータス")
@@ -402,7 +402,7 @@ class Game(commands.Cog):
                 else:
                     mode = int(msg_list[1])
                     round_time = int(msg_list[2])
-            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
             if mode == 1:
                 for i in range(round_time):
                     if lang == LanguageCode.JAPANESE:

@@ -46,7 +46,7 @@ class Setting(commands.Cog):
         self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
-        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.author.id, ctx.guild.region)
+        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
         embed: discord.Embed
         if code == "YOUR_ACCOUNT_BANNED":
             if lang == LanguageCode.JAPANESE:
