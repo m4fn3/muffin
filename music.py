@@ -780,6 +780,8 @@ class Music(commands.Cog):
         try:
             if ctx.guild.id in self.bot.voice_disconnected:
                 return
+            elif ctx.voice_client is None:
+                return
             # 処理中の場合
             if ctx.guild.id in self.bot.voice_status:
                 if self.bot.voice_status[ctx.guild.id]["status"] != MusicStatus.LOADING:
@@ -824,6 +826,8 @@ class Music(commands.Cog):
         """
         try:
             if ctx.guild.id in self.bot.voice_disconnected:
+                return
+            elif ctx.voice_client is None:
                 return
             # 処理中の場合
             if ctx.guild.id in self.bot.voice_status:
