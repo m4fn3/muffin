@@ -316,7 +316,6 @@ class Game(commands.Cog):
                         embed.add_field(name="ShadowChoice", value=f"```c\n最短正答時間:{best_score}\nシングルスコア:\n  全試合数:{single_all}\n  勝利試合数:{single_win}\n  勝率:{single_per}%\nマルチスコア:\n  全試合数:{multi_all}\n  勝利試合数:{multi_win}\n  勝率:{multi_per}%```")
                     elif lang == LanguageCode.ENGLISH:
                         embed.add_field(name="ShadowChoice", value=f"```c\nShortestAnswerTime:{best_score}\nSingleScore:\n  Total:{single_all}\n  Win:{single_win}\n  WinRate:{single_per}%\nMultiScore:\n  Total:{multi_all}\n  Win:{multi_win}\n  WinRate:{multi_per}%```")
-                    await ctx.send(embed=embed)
                 else:
                     if lang == LanguageCode.JAPANESE:
                         embed.set_footer(text="このユーザーはまだBOTを使用していません.")
