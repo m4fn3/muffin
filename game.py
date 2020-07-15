@@ -269,54 +269,17 @@ class Game(commands.Cog):
                     embed.add_field(name="UserInformation", value=f"```{decoration}\nUser:{ctx.author}\nUserID:{ctx.author.id}\nLanguage:{lang_name}\n{role}```", inline=False)
                     play_message = "on" if self.bot.database[str(ctx.author.id)]["music"]["play_message"] else "off"
                     embed.add_field(name="Music", value=f"```MusicPlayInfo:{play_message}```", inline=False)
+                best_score = self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"]
+                single_all = self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"]["all_matches"]
+                single_win = self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"]["win_matches"]
+                single_per = 00.00 if single_all == 0 else round(single_win / single_all * 100, 2)
+                multi_all = self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"]["all_matches"]
+                multi_win = self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"]["win_matches"]
+                multi_per = 00.00 if multi_all == 0 else round(multi_all / multi_win * 100, 2)
                 if lang == LanguageCode.JAPANESE:
-                    embed.add_field(name="ShadowChoice",
-                                    value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"],
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                            "all_matches"],
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                            "win_matches"],
-                                        round(
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                                "win_matches"] /
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                                "all_matches"] * 100, 2
-                                        ),
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                            "all_matches"],
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                            "win_matches"],
-                                        round(
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                                "win_matches"] /
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                                "all_matches"] * 100, 2
-                                        )))
+                    embed.add_field(name="ShadowChoice", value=f"```c\n最短正答時間:{best_score}\nシングルスコア:\n  全試合数:{single_all}\n  勝利試合数:{single_win}\n  勝率:{single_per}%\nマルチスコア:\n  全試合数:{multi_all}\n  勝利試合数:{multi_win}\n  勝率:{multi_per}%```")
                 elif lang == LanguageCode.ENGLISH:
-                    embed.add_field(name="ShadowChoice",
-                                    value="```c\nShortestAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["best_score"],
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                            "all_matches"],
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                            "win_matches"],
-                                        round(
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                                "win_matches"] /
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["single"][
-                                                "all_matches"] * 100, 2
-                                        ),
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                            "all_matches"],
-                                        self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                            "win_matches"],
-                                        round(
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                                "win_matches"] /
-                                            self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"][
-                                                "all_matches"] * 100, 2
-                                        )))
+                    embed.add_field(name="ShadowChoice", value=f"```c\nShortestAnswerTime:{best_score}\nSingleScore:\n  Total:{single_all}\n  Win:{single_win}\n  WinRate:{single_per}%\nMultiScore:\n  Total:{multi_all}\n  Win:{multi_win}\n  WinRate:{multi_per}%```")
                 await ctx.send(embed=embed)
             else:
                 target = ctx.message.mentions[0]
@@ -342,30 +305,18 @@ class Game(commands.Cog):
                                     value=f"```{decoration}\nユーザー:{target}\nユーザーID:{target.id}\n{role}```",
                                     inline=False)
                 if str(target.id) in self.bot.database:
+                    best_score = self.bot.database[str(target.id)]["shadowchoice"]["best_score"]
+                    single_all = self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"]
+                    single_win = self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"]
+                    single_per = 00.00 if single_all == 0 else round(single_win / single_all * 100, 2)
+                    multi_all = self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"]
+                    multi_win = self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"]
+                    multi_per = 00.00 if multi_all == 0 else round(multi_win / multi_all * 100, 2)
                     if lang == LanguageCode.JAPANESE:
-                        embed.add_field(name="ShadowChoice",
-                                        value="```c\n最短正答時間:{}\nシングルスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%\nマルチスコア:\n  全試合数:{}\n  勝利試合数:{}\n  勝率:{}%```".format(
-                                            self.bot.database[str(target.id)]["shadowchoice"]["best_score"],
-                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"],
-                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"], round(
-                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"] /
-                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"] * 100, 2),
-                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"],
-                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"], round(
-                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"] /
-                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"] * 100, 2)))
+                        embed.add_field(name="ShadowChoice", value=f"```c\n最短正答時間:{best_score}\nシングルスコア:\n  全試合数:{single_all}\n  勝利試合数:{single_win}\n  勝率:{single_per}%\nマルチスコア:\n  全試合数:{multi_all}\n  勝利試合数:{multi_win}\n  勝率:{multi_per}%```")
                     elif lang == LanguageCode.ENGLISH:
-                        embed.add_field(name="ShadowChoice",
-                                        value="```c\nShortestAnswerTime:{}\nSingleScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%\nMultiScore:\n  Total:{}\n  Win:{}\n  WinRate:{}%```".format(
-                                            self.bot.database[str(target.id)]["shadowchoice"]["best_score"],
-                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"],
-                                            self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"], round(
-                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["win_matches"] /
-                                                self.bot.database[str(target.id)]["shadowchoice"]["single"]["all_matches"] * 100, 2),
-                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"],
-                                            self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"], round(
-                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["win_matches"] /
-                                                self.bot.database[str(target.id)]["shadowchoice"]["multi"]["all_matches"] * 100, 2)))
+                        embed.add_field(name="ShadowChoice", value=f"```c\nShortestAnswerTime:{best_score}\nSingleScore:\n  Total:{single_all}\n  Win:{single_win}\n  WinRate:{single_per}%\nMultiScore:\n  Total:{multi_all}\n  Win:{multi_win}\n  WinRate:{multi_per}%```")
+                    await ctx.send(embed=embed)
                 else:
                     if lang == LanguageCode.JAPANESE:
                         embed.set_footer(text="このユーザーはまだBOTを使用していません.")
