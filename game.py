@@ -101,9 +101,9 @@ class Game(commands.Cog):
                 await ctx.send(f"{self.info['SCbatu']} `You got incorrect answer!`")
         elif code == "BEST_SCORE":
             if lang == LanguageCode.JAPANESE:
-                await ctx.send(f"{self.info['SCcongr']} `<@{arg1}>さん!ベストスコア更新!\nあなたのスコア:{arg2}[s]`")
+                await ctx.send(f"{self.info['SCcongr']} <@{arg1}>`さん!ベストスコア更新!\nあなたのスコア:{arg2}[s]`")
             elif lang == LanguageCode.ENGLISH:
-                await ctx.send(f"{self.info['SCcongr']} `<@{arg1}>! Your best score updated!\nScore:{arg2}[s]`")
+                await ctx.send(f"{self.info['SCcongr']} <@{arg1}>`! Your best score updated!\nScore:{arg2}[s]`")
         elif code == "NO_ONE_RESPOND":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(f"{self.info['SCwarning']}`回答できた人がいなかったため,この問題を終了します.`")
@@ -275,7 +275,7 @@ class Game(commands.Cog):
                 single_per = 00.00 if single_all == 0 else round(single_win / single_all * 100, 2)
                 multi_all = self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"]["all_matches"]
                 multi_win = self.bot.database[str(ctx.author.id)]["shadowchoice"]["multi"]["win_matches"]
-                multi_per = 00.00 if multi_all == 0 else round(multi_all / multi_win * 100, 2)
+                multi_per = 00.00 if multi_all == 0 else round(multi_win / multi_all * 100, 2)
                 if lang == LanguageCode.JAPANESE:
                     embed.add_field(name="ShadowChoice", value=f"```c\n最短正答時間:{best_score}\nシングルスコア:\n  全試合数:{single_all}\n  勝利試合数:{single_win}\n  勝率:{single_per}%\nマルチスコア:\n  全試合数:{multi_all}\n  勝利試合数:{multi_win}\n  勝率:{multi_per}%```")
                 elif lang == LanguageCode.ENGLISH:
