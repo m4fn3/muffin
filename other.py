@@ -167,7 +167,7 @@ class Other(commands.Cog):
                 embed.add_field(name="公式サイトで詳しいコマンドの説明を確認してください!",
                                 value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_JA"]), inline=False)
                 embed.add_field(name="各種類のコマンドの一覧を表示するには:",
-                                value="```yaml\n{0}help music ... 音楽コマンド一覧\n{0}help game ... ゲームコマンド一覧\n{0}help other ... その他のコマンド一覧\n```".format(
+                                value="```yaml\n{0}help music ... 音楽コマンド一覧\n{0}help game ... ゲームコマンド一覧\n{0}help setting ... 個人設定コマンド\n{0}help other ... その他のコマンド一覧```".format(
                                     self.bot.PREFIX), inline=False)
                 embed.add_field(name="さらにmuffinについて知るには:",
                                 value="```fix\n{0}invite ... BOTの招待URLを送信します.\n{0}info ... BOTの情報を表示します.\n```".format(
@@ -181,7 +181,7 @@ class Other(commands.Cog):
                 embed.add_field(name="Please check commands details on Official WebSite!",
                                 value="[{0}]({0})".format(self.info["WEB_COMMAND_URL"]), inline=False)
                 embed.add_field(name="To see each type of Commands:",
-                                value="```yaml\n{0}help music ... MusicCommands\n{0}help game ... GameCommands\n{0}help other ... OtherCommands\n```".format(
+                                value="```yaml\n{0}help music ... MusicCommands\n{0}help game ... GameCommands\n{0}help setting ... SettingCommands\n{0}help other ... OtherCommands\n```".format(
                                     self.bot.PREFIX), inline=False)
                 embed.add_field(name="Know more about muffin:",
                                 value="```fix\n{0}invite ... Send Invitation link.\n{0}info ... Show BOT information.\n```".format(
@@ -196,25 +196,25 @@ class Other(commands.Cog):
                 embed = discord.Embed(title="使い方 - 音楽コマンド", color=0xff99ff, url=self.info["WEB_COMMAND_URL_MUSIC_JA"])
                 embed.add_field(name="使い方の例などは公式サイトで確認できます!",
                                 value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_MUSIC_JA"]), inline=False)
-                embed.add_field(name="{}join".format(self.info["PREFIX"]), value="BOTをボイスチャンネルに接続します", inline=False)
-                embed.add_field(name="{}auto [name]".format(self.info["PREFIX"]), value="指定した曲に関連する曲を連続再生します.",
+                embed.add_field(name=f"{self.bot.PREFIX}join", value="BOTをボイスチャンネルに接続します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}auto [name]", value="指定した曲に関連する曲を連続再生します.",
                                 inline=False)
-                embed.add_field(name="{}play [name or URL]".format(self.info["PREFIX"]), value="曲名またはURLで音楽を再生します",
+                embed.add_field(name=f"{self.bot.PREFIX}play [name or URL]", value="曲名またはURLで音楽を再生します",
                                 inline=False)
-                embed.add_field(name="{}search [name]".format(self.info["PREFIX"]),
+                embed.add_field(name=f"{self.bot.PREFIX}search [name]",
                                 value="曲名で曲を検索します.リストが表示された後対応する番号を送信することで再生できます", inline=False)
-                embed.add_field(name="{}queue".format(self.info["PREFIX"]), value="予約された曲を表示します", inline=False)
-                embed.add_field(name="{}disconnect".format(self.info["PREFIX"]), value="BOTをボイスチャンネルから切断します",
+                embed.add_field(name=f"{self.bot.PREFIX}queue", value="予約された曲を表示します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}disconnect", value="BOTをボイスチャンネルから切断します",
                                 inline=False)
-                embed.add_field(name="{}loop".format(self.info["PREFIX"]), value="予約されている曲を繰り返します", inline=False)
-                embed.add_field(name="{}repeat".format(self.info["PREFIX"]), value="現在再生している曲を繰り返します", inline=False)
-                embed.add_field(name="{}pause".format(self.info["PREFIX"]), value="音楽の再生を一時停止します", inline=False)
-                embed.add_field(name="{}resume".format(self.info["PREFIX"]), value="音楽の再生を再開します", inline=False)
-                embed.add_field(name="{}skip".format(self.info["PREFIX"]), value="現在流している音楽をスキップします", inline=False)
-                embed.add_field(name="{}remove [index]".format(self.info["PREFIX"]), value="指定したインデックス番目にある曲を削除します",
+                embed.add_field(name=f"{self.bot.PREFIX}loop", value="予約されている曲を繰り返します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}repeat", value="現在再生している曲を繰り返します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}pause", value="音楽の再生を一時停止します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}resume", value="音楽の再生を再開します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}skip", value="現在流している音楽をスキップします", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}remove [index]", value="指定したインデックス番目にある曲を削除します",
                                 inline=False)
-                embed.add_field(name="{}clear".format(self.info["PREFIX"]), value="予約されている曲を全て削除します", inline=False)
-                embed.add_field(name="{}volume [%]".format(self.info["PREFIX"]), value="音量を変更します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}clear", value="予約されている曲を全て削除します", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}volume [%]", value="音量を変更します", inline=False)
                 embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
                                 value="作成者: {} | [公式鯖リンク]({}) | [公式ウェブサイト]({})".format(self.info["AUTHOR"],
                                                                                        self.info["SERVER_URL"],
@@ -225,31 +225,31 @@ class Other(commands.Cog):
                                       url=self.info["WEB_COMMAND_URL_MUSIC"])
                 embed.add_field(name="You can see examples of command on official website!",
                                 value="[{0}]({0})".format(self.info["WEB_COMMAND_URL_MUSIC"]), inline=False)
-                embed.add_field(name="{}join".format(self.info["PREFIX"]), value="Connect bot to voice channel",
+                embed.add_field(name=f"{self.bot.PREFIX}join", value="Connect bot to voice channel",
                                 inline=False)
-                embed.add_field(name="{}auto [name]".format(self.info["PREFIX"]), value="Play related music Continuity",
+                embed.add_field(name=f"{self.bot.PREFIX}auto [name]", value="Play related music Continuity",
                                 inline=False)
-                embed.add_field(name="{}play [name or URL]".format(self.info["PREFIX"]),
+                embed.add_field(name=f"{self.bot.PREFIX}play [name or URL]",
                                 value="Play music with url or name", inline=False)
-                embed.add_field(name="{}search [name]".format(self.info["PREFIX"]),
+                embed.add_field(name=f"{self.bot.PREFIX}search [name]",
                                 value="Search music with name. Then list of songs will appear so please send number.",
                                 inline=False)
-                embed.add_field(name="{}queue".format(self.info["PREFIX"]), value="Show queue of server", inline=False)
-                embed.add_field(name="{}disconnect".format(self.info["PREFIX"]),
+                embed.add_field(name=f"{self.bot.PREFIX}queue", value="Show queue of server", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}disconnect",
                                 value="Disconnect bot from voice channel", inline=False)
-                embed.add_field(name="{}loop".format(self.info["PREFIX"]), value="Loop all music in queue",
+                embed.add_field(name=f"{self.bot.PREFIX}loop", value="Loop all music in queue",
                                 inline=False)
-                embed.add_field(name="{}repeat".format(self.info["PREFIX"]),
+                embed.add_field(name=f"{self.bot.PREFIX}repeat",
                                 value="Repeat music that is currently playing", inline=False)
-                embed.add_field(name="{}pause".format(self.info["PREFIX"]), value="Pause playing music", inline=False)
-                embed.add_field(name="{}resume".format(self.info["PREFIX"]), value="Resume playing music", inline=False)
-                embed.add_field(name="{}skip".format(self.info["PREFIX"]), value="Skip music currently that is playing",
+                embed.add_field(name=f"{self.bot.PREFIX}pause", value="Pause playing music", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}resume", value="Resume playing music", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}skip", value="Skip music currently that is playing",
                                 inline=False)
-                embed.add_field(name="{}remove [index]".format(self.info["PREFIX"]).format(self.info["PREFIX"]),
+                embed.add_field(name=f"{self.bot.PREFIX}remove [index]",
                                 value="Remove music with index", inline=False)
-                embed.add_field(name="{}clear".format(self.info["PREFIX"]), value="Remove all music in queue",
+                embed.add_field(name=f"{self.bot.PREFIX}clear", value="Remove all music in queue",
                                 inline=False)
-                embed.add_field(name="{}volume [%]".format(self.info["PREFIX"]), value="Change volume of music",
+                embed.add_field(name=f"{self.bot.PREFIX}volume [%]", value="Change volume of music",
                                 inline=False)
                 embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿",
                                 value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format(
@@ -296,6 +296,18 @@ class Other(commands.Cog):
                 embed.add_field(name=f"{self.bot.PREFIX}invite", value="Send invitation url", inline=False)
                 embed.add_field(name=f"{self.bot.PREFIX}ping", value="Show ping of this bot", inline=False)
                 embed.add_field(name="＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿", value="Author: {} | [OfficialServer]({}) | [OfficialWebSite]({})".format( self.info["AUTHOR"], self.info["SERVER_URL"], self.info["WEB_URL"]), inline=False)
+            await ctx.send(embed=embed)
+        elif code == "HELP_SETTING":
+            if lang == LanguageCode.JAPANESE:
+                embed = discord.Embed(title="使い方 - 個人設定", color=0x93ffab)
+                embed.add_field(name=f"{self.bot.PREFIX}lang [言語]", value="BOTの表示言語を変更します.対応言語:日本語,英語", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}musicinfo", value="音楽の再生メッセージを表示するかどうか設定します.", inline=False)
+                embed.set_footer(text=f"これらの設定内容を確認するには: {self.bot.PREFIX}status")
+            elif lang == LanguageCode.ENGLISH:
+                embed = discord.Embed(title="Usage - Setting", color=0x93ffab)
+                embed.add_field(name=f"{self.bot.PREFIX}lang [lang]", value="Change the BOT's message language. Supported language:English, Japanese", inline=False)
+                embed.add_field(name=f"{self.bot.PREFIX}musicinfo", value="Set whether to display the music playing message.", inline=False)
+                embed.set_footer(text=f"To check current setting: {self.bot.PREFIX}status")
             await ctx.send(embed=embed)
         elif code == "INVITE":
             if lang == LanguageCode.JAPANESE:
@@ -420,6 +432,10 @@ class Other(commands.Cog):
     @help.command(name="other", aliases=["Other", "o", "O"])
     async def help_other(self, ctx):
         await self.send_text(ctx, "HELP_OTHER")
+
+    @help.command(name="setting", aliases=["Setting", "s", "S"])
+    async def help_setting(self, ctx):
+        await self.send_text(ctx, "HELP_SETTING")
 
     @commands.command(aliases=['inv'])
     async def invite(self, ctx):
