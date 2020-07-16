@@ -61,7 +61,7 @@ class Dev(commands.Cog):
         self.save_database()
 
     async def update_status(self):
-        game = discord.Game("{}help | {}servers | v{} \n [ http://mafu.cf/ ]".format(self.bot.PREFIX, str(len(self.bot.guilds)), self.info["VERSION"]))
+        game = discord.Game("{}help | {}servers\n[ http://mafu.cf/ ]".format(self.bot.PREFIX, str(len(self.bot.guilds))))
         await self.bot.change_presence(status=discord.Status.idle, activity=game)
 
     async def cog_before_invoke(self, ctx):
