@@ -12,10 +12,6 @@ class Setting(commands.Cog):
             info = json.load(F)
         self.info = info
 
-    def save_database(self):
-        with open("./DATABASE.json", 'w') as F:
-            json.dump(self.bot.database, F, indent=2)
-
     async def init_database(self, ctx):
         self.bot.database[str(ctx.author.id)] = {
             "language": 0,
@@ -43,7 +39,6 @@ class Setting(commands.Cog):
                         inline=False)
         await ctx.send(embed=embed)
         await ctx.send(ctx.author.mention)
-        self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
         lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
@@ -139,7 +134,6 @@ class Setting(commands.Cog):
             await ctx.send(":white_check_mark:`Changed language to [English]!`")
         else:
             await self.send_text(ctx, "WRONG_LANGUAGE")
-        self.save_database()
 
     @commands.command(aliases=["mi"])
     async def musicinfo(self, ctx):
@@ -149,7 +143,6 @@ class Setting(commands.Cog):
         else:
             self.bot.database[str(ctx.author.id)]["music"]["play_message"] = True
             await self.send_text(ctx, "MUSICINFO_ON")
-        self.save_database()
 
 
 def setup(bot):

@@ -282,8 +282,7 @@ class Dev(commands.Cog):
                 if text == "music":
                     music = self.bot.get_cog("Music")
                     await music.leave_all(ctx)
-                self.bot.unload_extension(text)
-                self.bot.load_extension(text)
+                self.bot.reload_extension(text)
             except:
                 await ctx.send(f"{text}の再読み込みに失敗しました\n{traceback2.format_exc()}.")
             else:
@@ -322,6 +321,7 @@ class Dev(commands.Cog):
         music = self.bot.get_cog("Music")
         await music.leave_all(ctx)
         self.save_roles()
+        self.save_database()
         await ctx.send(":closed_lock_with_key:BOTを再起動します.")
         python = sys.executable
         os.execl(python, python, * sys.argv)
@@ -331,6 +331,7 @@ class Dev(commands.Cog):
         music = self.bot.get_cog("Music")
         await music.leave_all(ctx)
         self.save_roles()
+        self.save_database()
         await ctx.send(":closed_lock_with_key:BOTを停止します.")
         sys.exit()
 

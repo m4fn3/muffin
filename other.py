@@ -19,9 +19,6 @@ class Other(commands.Cog):
         self.message_match2 = "(?P<message>[0-9]{18}"
         self.color_match = "(?P<color>[0-9a-fA-F]{6})"
 
-    def save_database(self):
-        with open("./DATABASE.json", 'w') as F:
-            json.dump(self.bot.database, F, indent=2)
 
     def hex_to_rgb(self, hex_code):
         hlen = len(hex_code)
@@ -54,7 +51,6 @@ class Other(commands.Cog):
                         inline=False)
         await ctx.send(embed=embed)
         await ctx.send(ctx.author.mention)
-        self.save_database()
 
     async def cog_command_error(self, ctx, error):
         """

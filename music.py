@@ -72,10 +72,6 @@ class Music(commands.Cog):
         with open("./TOKEN.json", 'w') as F:
             json.dump(tokens, F, indent=2)
 
-    def save_database(self):
-        with open("./DATABASE.json", 'w') as F:
-            json.dump(self.bot.database, F, indent=2)
-
     def parse_youtube_url(self, url, no_playlist=False):
         """
         URLまたは曲名を認識
@@ -215,7 +211,6 @@ class Music(commands.Cog):
                         inline=False)
         await ctx.send(embed=embed)
         await ctx.send(ctx.author.mention)
-        self.save_database()
 
     async def clean_all(self, ctx, report=False):
         try:

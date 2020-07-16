@@ -1,5 +1,5 @@
 # import
-from discord.ext import commands
+from discord.ext import commands, tasks
 import time, json, logging
 
 # define
@@ -36,6 +36,7 @@ class Muffin(commands.Bot):
             database = json.load(F)
         self.database = database
         self.PREFIX = info["PREFIX"]
+        self.save_database.start()
 
     async def on_ready(self):
         print(f"Logged in to {bot.user}")
@@ -50,6 +51,11 @@ class Muffin(commands.Bot):
             raise commands.CommandError("Not Available On DM")
         else:
             await self.process_commands(message)
+
+    @tasks.loop(seconds=30.0)
+    async def save_database(self):
+        with open("./DATABASE.json", 'w') as db:
+            json.dump(self.database, db, indent=2)
 
 
 if __name__ == '__main__':

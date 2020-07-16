@@ -18,10 +18,6 @@ class Game(commands.Cog):
             correct = json.load(F)
         self.correct = correct
 
-    def save_database(self):
-        with open("./DATABASE.json", 'w') as F:
-            json.dump(self.bot.database, F, indent=2)
-
     async def init_database(self, ctx, user_id=None):
         if user_id is None:
             user_id = ctx.author.id
@@ -51,7 +47,6 @@ class Game(commands.Cog):
                         inline=False)
         await ctx.send(embed=embed)
         await ctx.send(f"<@{user_id}>")
-        self.save_database()
 
     async def send_text(self, ctx, code, arg1=None, arg2=None):
         lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
@@ -419,7 +414,6 @@ class Game(commands.Cog):
                                 embed.add_field(name="Result", value=f"```Winner: None\nTime:{elapsed_time}[s]```")
                             await ctx.send(embed=embed)
                         self.bot.database[str(puser.id)]["shadowchoice"]["single"]["all_matches"] += 1
-                        self.save_database()
                         afk = 0
                     except asyncio.TimeoutError:
                         elapsed_time = time.time() - pstart
@@ -593,7 +587,6 @@ class Game(commands.Cog):
                             break
                     for mem in members:
                         self.bot.database[str(mem)]["shadowchoice"]["multi"]["all_matches"] += 1
-                    self.save_database()
         except:
             await ctx.send(traceback2.format_exc())
 
