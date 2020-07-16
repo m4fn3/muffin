@@ -763,6 +763,31 @@ class Music(commands.Cog):
                         self.bot.playlist[ctx.guild.id].pop(0)
             if error == 0:
                 self.bot.voice_status[ctx.guild.id]["load_error"] = 0
+            if ctx.voice_client.channel.id in self.bot.wait_leave:
+                ch = self.bot.get_channel(self.bot.voice_status[ctx.guild.id]["channel"])
+                vc_id = ctx.voice_client.channel.id
+                self.bot.voice_disconnected.append(ctx.guild.id)
+                if ctx.voice_client is None:
+                    pass
+                elif ctx.voice_client.source is not None:
+                    ctx.voice_client.source.cleanup()
+                    await ctx.voice_client.disconnect()
+                else:
+                    await ctx.voice_client.disconnect()
+                await asyncio.sleep(1)
+                self.bot.voice_disconnected.remove(ctx.guild.id)
+                self.bot.playlist[ctx.guild.id] = []
+                self.bot.voice_status[ctx.guild.id] = {
+                    "loop": False,
+                    "repeat": False,
+                    "auto": False,
+                    "volume": 100,
+                    "channel": ch.id,
+                    "status": 0,
+                    "load_error": 0,
+                }
+                self.bot.wait_leave.remove(vc_id)
+                await self.send_text(ch, "DISCONNECTED_BECAUSE_ALL_USERS_LEFT", force_region=True)
             if self.bot.voice_status[ctx.guild.id]["auto"]:
                 await self.play_related_music(ctx)
             elif self.bot.playlist[ctx.guild.id] != []:
