@@ -35,6 +35,10 @@ class Muffin(commands.Bot):
         with open("./DATABASE.json") as F:
             database = json.load(F)
         self.database = database
+        with open("./GLOBAL_CHAT.json") as F:
+            global_chat = json.load(F)
+        self.global_chat = global_chat
+        self.global_chat_log = {}
         self.PREFIX = info["PREFIX"]
         self.save_database.start()
 
@@ -49,6 +53,9 @@ class Muffin(commands.Bot):
         elif message.guild is None:
             await message.channel.send("muffin is __Only__ available on Servers!\nTo get started: http://mafu.cf/\nTo invite Bot: http://mafu.cf/muffin")
             raise commands.CommandError("Not Available On DM")
+        elif message.channel.id in self.global_chat["general"]:
+            global_chat_cog = self.get_cog("GlobalChat")
+            await global_chat_cog.on_global_message(message)
         else:
             await self.process_commands(message)
 

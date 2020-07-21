@@ -1,6 +1,7 @@
 # import
 from discord.ext import commands
-import ast, asyncio, datetime, discord, io, json, os, psutil, subprocess, sys, time, traceback2
+from contextlib import redirect_stdout
+import ast, asyncio, datetime, discord, io, json, os, psutil, subprocess, sys, textwrap, time, traceback2
 
 
 # class
@@ -11,6 +12,7 @@ class Dev(commands.Cog):
         with open("./INFO.json") as F:
             info = json.load(F)
         self.info = info
+        self._last_result = None
 
     def save_roles(self):
         roles = {
@@ -25,15 +27,14 @@ class Dev(commands.Cog):
         with open("./DATABASE.json", 'w') as F:
             json.dump(self.bot.database, F, indent=2)
 
-    def execute_returns(self, body):
-        if isinstance(body[-1], ast.Expr):
-            body[-1] = ast.Return(body[-1].value)
-            ast.fix_missing_locations(body[-1])
-        if isinstance(body[-1], ast.If):
-            execute_returns(body[-1].body)
-            execute_returns(body[-1].orelse)
-        if isinstance(body[-1], ast.With):
-            execute_returns(body[-1].body)
+    def cleanup_code(self, content):
+        """Automatically removes code blocks from the code."""
+        # remove ```py\n```
+        if content.startswith('```') and content.endswith('```'):
+            return '\n'.join(content.split('\n')[1:-1])
+
+        # remove `foo`
+        return content.strip('` \n')
 
     async def init_database(self, ctx):
         self.bot.database[str(ctx.author.id)] = {
@@ -336,28 +337,51 @@ class Dev(commands.Cog):
         sys.exit()
 
     @commands.command()
-    async def exe(self, ctx, *, cmd):
+    async def exe(self, ctx, *, body: str):
+        """Evaluates a code"""
+
+        env = {
+            'bot': self.bot,
+            'ctx': ctx,
+            'channel': ctx.channel,
+            'author': ctx.author,
+            'guild': ctx.guild,
+            'message': ctx.message,
+            '_': self._last_result
+        }
+
+        env.update(globals())
+
+        body = self.cleanup_code(body)
+        stdout = io.StringIO()
+
+        to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
+
         try:
-            fn_name = "_eval_expr"
-            cmd = cmd.strip("` ")
-            cmd = "\n".join(f"    {i}" for i in cmd.splitlines())
-            body = f"async def {fn_name}():\n{cmd}"
-            parsed = ast.parse(body)
-            body = parsed.body[0].body
-            self.execute_returns(body)
-            env = {
-                'bot': ctx.bot,
-                'discord': discord,
-                'commands': commands,
-                'ctx': ctx,
-                '__import__': __import__
-            }
-            exec(compile(parsed, filename="<ast>", mode="exec"), env)
-            result = (await eval(f"{fn_name}()", env))
-            await ctx.message.add_reaction("✅")
-        except:
-            await ctx.message.add_reaction("🚫")
-            await ctx.send(f"{traceback2.format_exc()}")
+            exec(to_compile, env)
+        except Exception as e:
+            return await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
+
+        func = env['func']
+        try:
+            with redirect_stdout(stdout):
+                ret = await func()
+        except Exception as e:
+            value = stdout.getvalue()
+            await ctx.send(f'```py\n{value}{traceback2.format_exc()}\n```')
+        else:
+            value = stdout.getvalue()
+            try:
+                await ctx.message.add_reaction('\u2705')
+            except:
+                pass
+
+            if ret is None:
+                if value:
+                    await ctx.send(f'```py\n{value}\n```')
+            else:
+                self._last_result = ret
+                await ctx.send(f'```py\n{value}{ret}\n```')
 
     @commands.command(aliases=["pr"])
     async def process(self, ctx):

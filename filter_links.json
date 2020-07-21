@@ -1,0 +1,4 @@
+{
+  "white_list": ["twitter.com"],
+  "black_list": ["xvideos.com", "discord.gg", "discord.com/invite/"]
+}
