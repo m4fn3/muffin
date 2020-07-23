@@ -11,31 +11,45 @@ class GlobalChat(commands.Cog):
             info = json.load(F)
         self.info = info
         self.channel_match = "\<\#(?P<channel_id>[0-9]{18})\>"
-        self.filter, self.filter_list = self.get_filter()
-        self.black_link_filter, self.black_link_list, self.white_link_filter, self.white_link_list = self.get_link_filter()
-        self.save_link_list.start()
+        self.filter = ""
+        self.filter_list = []
+        self.black_link_filter = ""
+        self.black_link_list = []
+        self.white_link_filter = ""
+        self.white_link_list = []
+        self.init_filter()
 
-    def get_filter(self):
+    def init_filter(self):
         binary_dict: str
         with open("./filter_words.txt") as F:
             binary_dict = F.read()
         decoded_dict = ''.join(chr(int(x, 2)) for x in binary_dict.split())
         filter_dict = json.loads(decoded_dict)
-        filter_list = filter_dict["words"]
-        filter_text = "|".join(filter_list)
-        return filter_text, filter_list
-
-    def get_link_filter(self):
+        self.filter_list = filter_dict["words"]
         link_dict: dict
         with open("./filter_links.json") as F:
             link_dict = json.load(F)
-        print(link_dict)
-        black_link_list = link_dict["black_list"]
-        black_link_filter = "|".join(black_link_list)
-        white_link_list = link_dict["white_list"]
-        white_link_filter = "|".join(white_link_list)
-        print(black_link_filter, black_link_list, white_link_filter, white_link_list)
-        return black_link_filter, black_link_list, white_link_filter, white_link_list
+        self.black_link_list = link_dict["black_list"]
+        self.white_link_list = link_dict["white_list"]
+        self.update_filter()
+
+    def save_filter(self):
+        link_dict = {
+            "white_list": self.white_link_list,
+            "black_list": self.black_link_list
+        }
+        with open("./filter_links.json", "w") as F:
+            json.dump(link_dict, F, indent=2)
+        filter_str = json.dumps(self.filter_list)
+        filter_binary = ' '.join(format(ord(letter), 'b') for letter in filter_str)
+        with open("./filter_words.txt", "w") as F:
+            F.write(filter_binary)
+        self.update_filter()
+
+    def update_filter(self):
+        self.black_link_filter = "|".join(self.black_link_list)
+        self.white_link_filter = "|".join(self.white_link_list)
+        self.filter = "|".join(self.filter_list)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
@@ -118,11 +132,74 @@ class GlobalChat(commands.Cog):
         except:
             await ctx.send(traceback2.format_exc())
 
-    @tasks.loop(seconds=30.0)
-    async def save_link_list(self):
-        pass
-        #with open("./link_list.json", 'w') as db:
-        #    json.dump(self.link_list, db, indent=2)
+    @commands.group()
+    async def word(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("word <add|remove|show> <text>")
+
+    @word.command(name="add", aliases=["a"])
+    async def word_add(self, ctx, *, text):
+        if text not in self.filter_list:
+            self.filter_list.append(text)
+            self.save_filter()
+            await ctx.send(f"{text} を単語リストに追加しました.")
+        else:
+            await ctx.send(f"{text} はすでに単語リストに登録されています.")
+
+    @word.command(name="delete", aliases=["remove", "d", "r"])
+    async def word_delete(self, ctx, *, text):
+        if text in self.filter_list:
+            self.filter_list.remove(text)
+            self.save_filter()
+            await ctx.send(f"{text} を単語リストから削除しました.")
+        else:
+            await ctx.send(f"{text} は単語リストに登録されていません.")
+
+    @commands.group()
+    async def whitelist(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("whitelist <add|remove|show> <text>")
+
+    @whitelist.command(name="add", aliases=["a"])
+    async def whitelist_add(self, ctx, *, text):
+        if text not in self.white_link_list:
+            self.white_link_list.append(text)
+            self.save_filter()
+            await ctx.send(f"{text} をURLホワイトリストリストに追加しました.")
+        else:
+            await ctx.send(f"{text} はすでにURLホワイトリストに登録されています.")
+
+    @whitelist.command(name="delete", aliases=["remove", "d", "r"])
+    async def whitelist_delete(self, ctx, *, text):
+        if text in self.white_link_list:
+            self.white_link_list.remove(text)
+            self.save_filter()
+            await ctx.send(f"{text} をURLホワイトリストから削除しました.")
+        else:
+            await ctx.send(f"{text} はURLホワイトリストに登録されていません.")
+
+    @commands.group()
+    async def blacklist(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.send("blacklist <add|remove|show> <text>")
+
+    @blacklist.command(name="add", aliases=["a"])
+    async def blacklist_add(self, ctx, *, text):
+        if text not in self.black_link_list:
+            self.black_link_list.append(text)
+            self.save_filter()
+            await ctx.send(f"{text} をURLブラックリストに追加しました.")
+        else:
+            await ctx.send(f"{text} はすでにURLブラックリストに登録されています.")
+
+    @blacklist.command(name="delete", aliases=["remove", "d", "r"])
+    async def blacklist_delete(self, ctx, *, text):
+        if text in self.black_link_list:
+            self.black_link_list.remove(text)
+            self.save_filter()
+            await ctx.send(f"{text} をURLブラックリストから削除しました.")
+        else:
+            await ctx.send(f"{text} はURLブラックリストに登録されていません.")
 
 
 def setup(bot):

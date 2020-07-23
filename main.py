@@ -63,6 +63,8 @@ class Muffin(commands.Bot):
     async def save_database(self):
         with open("./DATABASE.json", 'w') as db:
             json.dump(self.database, db, indent=2)
+        with open("./GLOBAL_CHAT.json", "w") as gb:
+            json.dump(self.global_chat, gb, indent=2)
 
 
 if __name__ == '__main__':
