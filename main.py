@@ -41,7 +41,10 @@ class Muffin(commands.Bot):
             if self.user.id == 644065524879196193:
                 await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
             if not discord.opus.is_loaded():
-                discord.opus.load_opus("heroku-buildpack-libopus")
+                try:
+                    discord.opus.load_opus("heroku-buildpack-libopus")
+                except:
+                    pass
             database_channel = self.get_channel(736538898116902925)
             database_msg = await database_channel.fetch_message(database_channel.last_message_id)
             database_file = database_msg.attachments[0]
