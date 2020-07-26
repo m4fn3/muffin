@@ -803,6 +803,7 @@ class Music(commands.Cog):
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
+                    await ctx.send(traceback2.format_exc())
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
@@ -875,6 +876,7 @@ class Music(commands.Cog):
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
+                    await ctx.send(traceback2.format_exc())
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
