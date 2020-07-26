@@ -28,6 +28,13 @@ class Muffin(commands.Bot):
         self.global_chat_log = {}
         self.PREFIX = info["PREFIX"]
 
+        self.ADMIN = []
+        self.BAN = []
+        self.Contributor = []
+        self.database = {}
+        self.global_chat = {}
+        self.api_index = 1
+
     async def on_ready(self):
         print(f"Logged in to {bot.user}")
         if self.user.id == 644065524879196193:
