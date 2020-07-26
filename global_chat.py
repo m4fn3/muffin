@@ -12,7 +12,7 @@ class GlobalChat(commands.Cog):
         self.info = info
         self.channel_match = "\<\#(?P<channel_id>[0-9]{18})\>"
         self.filter = ""
-        self.filter_list = []
+        self.filter_list = None
         self.black_link_filter = ""
         self.black_link_list = []
         self.white_link_filter = ""
@@ -25,7 +25,7 @@ class GlobalChat(commands.Cog):
             binary_dict = F.read()
         decoded_dict = ''.join(chr(int(x, 2)) for x in binary_dict.split())
         filter_dict = json.loads(decoded_dict)
-        self.filter_list = filter_dict["words"]
+        self.filter_list = filter_dict
         link_dict: dict
         with open("./filter_links.json") as F:
             link_dict = json.load(F)

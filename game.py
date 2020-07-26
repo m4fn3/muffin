@@ -11,9 +11,6 @@ class Game(commands.Cog):
         with open("./INFO.json") as F:
             info = json.load(F)
         self.info = info
-        with open("./DATABASE.json") as F:
-            database = json.load(F)
-        self.bot.database = database
         with open("./correct.json") as F:
             correct = json.load(F)
         self.correct = correct

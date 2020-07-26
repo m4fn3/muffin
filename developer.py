@@ -14,19 +14,6 @@ class Dev(commands.Cog):
         self.info = info
         self._last_result = None
 
-    def save_roles(self):
-        roles = {
-            "ADMIN": self.bot.ADMIN,
-            "Contributor": self.bot.Contributor,
-            "BAN": self.bot.BAN
-        }
-        with open("./ROLE.json", 'w') as F:
-            json.dump(roles, F, indent=2)
-
-    def save_database(self):
-        with open("./DATABASE.json", 'w') as F:
-            json.dump(self.bot.database, F, indent=2)
-
     def cleanup_code(self, content):
         """Automatically removes code blocks from the code."""
         # remove ```py\n```
@@ -35,6 +22,21 @@ class Dev(commands.Cog):
 
         # remove `foo`
         return content.strip('` \n')
+
+    async def save_database(self):
+        db_dict = {
+            "user": self.bot.database,
+            "role": {
+                "ADMIN": self.bot.ADMIN,
+                "BAN": self.bot.BAN,
+                "Contributor": self.bot.Contributor
+            },
+            "global_chat": self.bot.global_chat,
+            "music": self.bot.api_index
+        }
+        database_channel = self.bot.get_channel(736538898116902925)
+        db_bytes = json.dumps(db_dict, indent=2)
+        await database_channel.send(file=discord.File(fp=io.StringIO(db_bytes), filename="database.json"))
 
     async def init_database(self, ctx):
         self.bot.database[str(ctx.author.id)] = {
@@ -59,7 +61,6 @@ class Dev(commands.Cog):
         embed.add_field(name="Support", value=f"<:discord:731764171607375905> http://discord.gg/RbzSSrw\n{self.info['AUTHOR']}", inline=False)
         await ctx.send(embed=embed)
         await ctx.send(ctx.author.mention)
-        self.save_database()
 
     async def update_status(self):
         game = discord.Game("{}help | {}servers\n[ http://mafu.cf/ ]".format(self.bot.PREFIX, str(len(self.bot.guilds))))
@@ -170,7 +171,7 @@ class Dev(commands.Cog):
             else:
                 self.bot.database.pop(str(target.id))
                 await ctx.send(f"<@{target.id}>さんをデータベースから削除されました.")
-        self.save_database()
+        await self.save_database()
 
     @commands.group()
     async def admin(self, ctx):
@@ -185,7 +186,7 @@ class Dev(commands.Cog):
             else:
                 self.bot.ADMIN.append(target.id)
                 await ctx.send(f"<@{target.id}>さんが管理者になりました.")
-        self.save_roles()
+        await self.save_database()
 
     @admin.command(name="delete", aliases=["remove"])
     async def delete_admin(self, ctx, *, text):
@@ -195,7 +196,7 @@ class Dev(commands.Cog):
             else:
                 self.bot.ADMIN.remove(target.id)
                 await ctx.send(f"<@{target.id}>さんが管理者から削除されました.")
-        self.save_roles()
+        await self.save_database()
 
     @admin.command(name="list")
     async def list_admin(self, ctx):
@@ -203,7 +204,7 @@ class Dev(commands.Cog):
         for user in self.bot.ADMIN:
             text += "\n{0} ({0.id})".format(self.bot.get_user(user))
         await ctx.send(text)
-        self.save_roles()
+        await self.save_database()
 
     @commands.group()
     async def ban(self, ctx):
@@ -218,7 +219,7 @@ class Dev(commands.Cog):
             else:
                 self.bot.BAN.append(target.id)
                 await ctx.send(f"<@{target.id}>がBANされました.")
-        self.save_roles()
+        await self.save_database()
 
     @ban.command(name="delete", aliases=["remove"])
     async def delete_ban(self, ctx, *, text):
@@ -228,7 +229,7 @@ class Dev(commands.Cog):
             else:
                 self.bot.BAN.remove(target.id)
                 await ctx.send(f"<@{target.id}>さんがBANを解除されました.")
-        self.save_roles()
+        await self.save_database()
 
     @ban.command(name="list")
     async def list_ban(self, ctx):
@@ -236,7 +237,7 @@ class Dev(commands.Cog):
         for user in self.bot.BAN:
             text += "\n{0} ({0.id})".format(self.bot.get_user(user))
         await ctx.send(text)
-        self.save_roles()
+        await self.save_database()
 
     @commands.group(aliases=["con"])
     async def contributor(self, ctx):
@@ -251,7 +252,7 @@ class Dev(commands.Cog):
             else:
                 self.bot.Contributor.append(target.id)
                 await ctx.send(f"<@{target.id}>が貢献者になりました.")
-        self.save_roles()
+        await self.save_database()
 
     @contributor.command(name="delete", aliases=["remove"])
     async def delete_con(self, ctx, *, text):
@@ -261,7 +262,7 @@ class Dev(commands.Cog):
             else:
                 self.bot.Contributor.remove(target.id)
                 await ctx.send(f"<@{target.id}>さんが貢献者ではなくなりました.")
-        self.save_roles()
+        await self.save_database()
 
     @contributor.command(name="list")
     async def list_con(self, ctx):
@@ -269,7 +270,7 @@ class Dev(commands.Cog):
         for user in self.bot.Contributor:
             text += "\n{0} ({0.id})".format(self.bot.get_user(user))
         await ctx.send(text)
-        self.save_roles()
+        await self.save_database()
 
     @commands.group(aliases=["sys"])
     async def system(self, ctx):
@@ -321,8 +322,7 @@ class Dev(commands.Cog):
     async def restart(self, ctx):
         music = self.bot.get_cog("Music")
         await music.leave_all(ctx)
-        self.save_roles()
-        self.save_database()
+        await self.save_database()
         await ctx.send(":closed_lock_with_key:BOTを再起動します.")
         python = sys.executable
         os.execl(python, python, * sys.argv)
@@ -331,8 +331,7 @@ class Dev(commands.Cog):
     async def quit(self, ctx):
         music = self.bot.get_cog("Music")
         await music.leave_all(ctx)
-        self.save_roles()
-        self.save_database()
+        await self.save_database()
         await ctx.send(":closed_lock_with_key:BOTを停止します.")
         sys.exit()
 

@@ -55,22 +55,18 @@ class Music(commands.Cog):
         self.video_match = re.compile('[a-zA-Z0-9_-]{11}')
         self.youtube_url = ("https://youtu.be/", "https://youtube.com/", "https://m.youtube.com/", "https://www.youtube.com/", "http://youtu.be/", "http://youtube.com/", "http://m.youtube.com/", "http://www.youtube.com/")
         youtube_dl.utils.bug_reports_message = lambda: ''
-        with open("./TOKEN.json") as F:
-            tokens = json.load(F)
-        self.YOUTUBE_API = tokens["YOUTUBE_API"]
-        self.API_INDEX = tokens["API_INDEX"]
-
-    def save_tokens(self):
-        """
-        YOUTUBE_APIを保存
-        :return:
-        """
-        with open("./TOKEN.json") as F:
-            tokens = json.load(F)
-        tokens["API_INDEX"] = self.API_INDEX
-        tokens["YOUTUBE_API"] = self.YOUTUBE_API
-        with open("./TOKEN.json", 'w') as F:
-            json.dump(tokens, F, indent=2)
+        self.YOUTUBE_API = {
+            "1": os.getenv("YT1"),
+            "2": os.getenv("YT2"),
+            "3": os.getenv("YT3"),
+            "4": os.getenv("YT4"),
+            "5": os.getenv("YT5"),
+            "6": os.getenv("YT6"),
+            "7": os.getenv("YT7"),
+            "8": os.getenv("YT8"),
+            "9": os.getenv("YT9"),
+            "10": os.getenv("YT10"),
+        }
 
     def parse_youtube_url(self, url, no_playlist=False):
         """
@@ -131,6 +127,21 @@ class Music(commands.Cog):
             return 1
         else:
             return 0
+
+    async def save_database(self):
+        db_dict = {
+            "user": self.bot.database,
+            "role": {
+                "ADMIN": self.bot.ADMIN,
+                "BAN": self.bot.BAN,
+                "Contributor": self.bot.Contributor
+            },
+            "global_chat": self.bot.global_chat,
+            "music": self.bot.api_index
+        }
+        database_channel = self.bot.get_channel(736538898116902925)
+        db_bytes = json.dumps(db_dict, indent=2)
+        await database_channel.send(file=discord.File(fp=io.StringIO(db_bytes), filename="database.json"))
 
     async def init_voice_status_data(self, ctx):
         """
@@ -575,19 +586,19 @@ class Music(commands.Cog):
         :return: レスポンスデータ
         """
         async with aiohttp.ClientSession() as session:
-            async with session.get(url + self.YOUTUBE_API[str(self.API_INDEX)]) as r:
+            async with session.get(url + self.YOUTUBE_API[str(self.bot.api_index)]) as r:
                 response = await r.json()
                 if r.status == 200:
                     return [1, response]
                 elif r.status == 403:
-                    if int(self.API_INDEX) != 10:
-                        self.API_INDEX += 1
+                    if int(self.bot.api_index) != 10:
+                        self.bot.api_index += 1
                     else:
-                        self.API_INDEX = 1
-                    self.save_tokens()
-                    await self.report_error(ctx, "get_youtube_api_request", f"API_INDEXを{self.API_INDEX}に変更しました")
+                        self.bot.api_index = 1
+                    await self.save_database()
+                    await self.report_error(ctx, "get_youtube_api_request", f"API_INDEXを{self.bot.api_index}に変更しました")
                     async with aiohttp.ClientSession() as session2:
-                        async with session2.get(url + self.YOUTUBE_API[str(self.API_INDEX)]) as r2:
+                        async with session2.get(url + self.YOUTUBE_API[str(self.bot.api_index)]) as r2:
                             response2 = await r2.json()
                             if r2.status == 200:
                                 return [1, response2]
