@@ -59,7 +59,7 @@ class Muffin(commands.Bot):
 
     async def on_message(self, message):
         if message.author.bot:
-            raise commands.CommandError("From Bot")
+            pass#raise commands.CommandError("From Bot")
         elif message.guild is None:
             await message.channel.send("muffin is __Only__ available on Servers!\nTo get started: http://mafu.cf/\nTo invite Bot: http://mafu.cf/muffin")
             raise commands.CommandError("Not Available On DM")
