@@ -1,5 +1,5 @@
 from discord.ext import commands, tasks
-import discord, time, json, logging, os, io
+import discord, time, json, logging, os, io, traceback2
 
 TOKEN = os.getenv("TOKEN")
 with open("./INFO.json") as F:
@@ -36,21 +36,24 @@ class Muffin(commands.Bot):
         self.api_index = 1
 
     async def on_ready(self):
-        print(f"Logged in to {bot.user}")
-        if self.user.id == 644065524879196193:
-            await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
-        database_channel = self.get_channel(736538898116902925)
-        database_msg = await database_channel.fetch_message(database_channel.last_message_id)
-        database_file = database_msg.attachments[0]
-        db_byte = await database_file.read()
-        db_dict = json.loads(db_byte)
-        self.ADMIN = db_dict["role"]["ADMIN"]
-        self.BAN = db_dict["role"]["BAN"]
-        self.Contributor = db_dict["role"]["Contributor"]
-        self.database = db_dict["user"]
-        self.global_chat = db_dict["global_chat"]
-        self.api_index = db_dict["music"]
-        self.save_database.start()
+        try:
+            print(f"Logged in to {bot.user}")
+            if self.user.id == 644065524879196193:
+                await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
+            database_channel = self.get_channel(736538898116902925)
+            database_msg = await database_channel.fetch_message(database_channel.last_message_id)
+            database_file = database_msg.attachments[0]
+            db_byte = await database_file.read()
+            db_dict = json.loads(db_byte)
+            self.ADMIN = db_dict["role"]["ADMIN"]
+            self.BAN = db_dict["role"]["BAN"]
+            self.Contributor = db_dict["role"]["Contributor"]
+            self.database = db_dict["user"]
+            self.global_chat = db_dict["global_chat"]
+            self.api_index = db_dict["music"]
+            self.save_database.start()
+        except:
+            print(traceback2.format_exc())
 
     async def on_message(self, message):
         if message.author.bot:
