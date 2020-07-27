@@ -93,7 +93,6 @@ class Muffin(commands.Bot):
         await database_channel.send(file=discord.File(fp=io.StringIO(db_bytes), filename="database.json"))
         music = self.get_cog("Music")
         await music.leave_all()
-        sys.exit()
 
     @tasks.loop(seconds=30.0)
     async def save_database(self):
