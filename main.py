@@ -61,11 +61,12 @@ class Muffin(commands.Bot):
             print(traceback2.format_exc())
 
     async def on_message(self, message):
-        if message.author.bot:
-            pass#raise commands.CommandError("From Bot")
+        if not self.is_ready():
+            return
+        elif message.author.bot:
+            return
         elif message.guild is None:
-            await message.channel.send("muffin is __Only__ available on Servers!\nTo get started: http://mafu.cf/\nTo invite Bot: http://mafu.cf/muffin")
-            raise commands.CommandError("Not Available On DM")
+            return await message.channel.send("muffin is __Only__ available on Servers!\nTo get started: http://mafu.cf/\nTo invite Bot: http://mafu.cf/muffin")
         #elif message.channel.id in self.global_chat["general"]:
         #    global_chat_cog = self.get_cog("GlobalChat")
         #    await global_chat_cog.on_global_message(message)
