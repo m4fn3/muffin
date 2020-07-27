@@ -67,8 +67,6 @@ class Dev(commands.Cog):
         await self.bot.change_presence(status=discord.Status.idle, activity=game)
 
     async def cog_before_invoke(self, ctx):
-        if str(ctx.author.id) not in self.bot.database:
-            await self.init_database(ctx)
         if ctx.author.id not in self.bot.ADMIN:
             raise commands.CommandError("Developer-Admin-Error")
 
