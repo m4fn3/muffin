@@ -819,8 +819,7 @@ class Music(commands.Cog):
                     await msg_obj.delete()
                     self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.EMPTY
                     return
-                ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
-                                                                                               self.bot.loop).result())
+                ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx), self.bot.loop).result())
                 ctx.voice_client.source.volume = self.bot.voice_status[ctx.guild.id]["volume"] / 100
                 self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.PLAYING
         except:
@@ -1006,7 +1005,7 @@ class Music(commands.Cog):
                 await asyncio.sleep(180)
                 vc = await self.bot.fetch_channel(before.channel.id)
                 if len(vc.members) != 1:  # 3分待機中に再参加
-                    return
+                    return self.bot.wait_leave.remove(before.channel.id)
                 ch = self.bot.get_channel(self.bot.voice_status[before.channel.guild.id]["channel"])
                 self.bot.voice_disconnected.append(ch.guild.id)
                 if ch.guild.voice_client is None:
