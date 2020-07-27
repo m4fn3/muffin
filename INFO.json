@@ -1,5 +1,5 @@
 {
-  "PREFIX" : "+",
+  "PREFIX" : "+>",
   "COG": ["developer", "music", "game", "other", "setting", "global_chat"],
   "INVITE_URL": "https://discord.com/oauth2/authorize?client_id=644065524879196193&scope=bot&permissions=-8&redirect_uri=http%3A%2F%2Fmafu.cf%2F&response_type=code",
   "SERVER_URL": "https://discord.gg/RbzSSrw",

@@ -1,5 +1,7 @@
 from discord.ext import commands, tasks
-import discord, time, json, logging, os, io, traceback2
+import asyncio, discord, time, json, logging, os, io, traceback2, signal, sys
+import nest_asyncio
+nest_asyncio.apply()
 
 TOKEN = os.getenv("TOKEN")
 with open("./INFO.json") as F:
@@ -57,6 +59,8 @@ class Muffin(commands.Bot):
             self.global_chat = db_dict["global_chat"]
             self.api_index = db_dict["music"]
             self.save_database.start()
+            loop = asyncio.get_event_loop()
+            self.loop.add_signal_handler(signal.SIGTERM, lambda: loop.run_until_complete(self.on_sigterm()))
         except:
             print(traceback2.format_exc())
 
@@ -72,6 +76,24 @@ class Muffin(commands.Bot):
         #    await global_chat_cog.on_global_message(message)
         else:
             await self.process_commands(message)
+
+    async def on_sigterm(self):
+        db_dict = {
+            "user": self.database,
+            "role": {
+                "ADMIN": self.ADMIN,
+                "BAN": self.BAN,
+                "Contributor": self.Contributor
+            },
+            "global_chat": self.global_chat,
+            "music": self.api_index
+        }
+        database_channel = self.get_channel(736538898116902925)
+        db_bytes = json.dumps(db_dict, indent=2)
+        await database_channel.send(file=discord.File(fp=io.StringIO(db_bytes), filename="database.json"))
+        music = self.get_cog("Music")
+        await music.leave_all()
+        sys.exit()
 
     @tasks.loop(seconds=30.0)
     async def save_database(self):

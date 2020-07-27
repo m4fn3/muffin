@@ -554,9 +554,9 @@ class Music(commands.Cog):
                         ":warning:️`The information cleared because it failed to play the song more than 5 times. Please try another song. If that doesn't work, please contact the BOT creator.`")
             elif code == "FORCE_DISCONNECTED":
                 if lang == LanguageCode.JAPANESE:
-                    await ctx.send(":warning:`更新のためにBOT管理者が強制的に切断しました.`")
+                    await ctx.send(":warning:`更新のためにホストが強制的に切断しました.数分後に使用可能になります.`")
                 elif lang == LanguageCode.ENGLISH:
-                    await ctx.send(":warning:️`BOT admin forcibly disconnected for update.`")
+                    await ctx.send(":warning:️`BOT admin forcibly disconnected for update.It will be available after a few minutes.`")
         except:
             await ctx.send(traceback2.format_exc())
 
@@ -946,11 +946,11 @@ class Music(commands.Cog):
             await self.send_text(ctx, "INVALID_NUMBER")
             return [0]
 
-    async def leave_all(self, ctx):
+    async def leave_all(self):
         for vc in self.bot.voice_clients:
             self.bot.voice_disconnected.append(vc.guild.id)
             channel = self.bot.get_channel(self.bot.voice_status[vc.guild.id]["channel"])
-            await self.send_text(channel, "FORCE_DISCONNECTED")
+            await self.send_text(channel, "FORCE_DISCONNECTED", force_region=True)
             await vc.disconnect()
 
     async def cog_before_invoke(self, ctx):

@@ -281,7 +281,7 @@ class Dev(commands.Cog):
             try:
                 if text == "music":
                     music = self.bot.get_cog("Music")
-                    await music.leave_all(ctx)
+                    await music.leave_all()
                 self.bot.reload_extension(text)
             except:
                 await ctx.send(f"{text}の再読み込みに失敗しました\n{traceback2.format_exc()}.")
@@ -307,7 +307,7 @@ class Dev(commands.Cog):
         if text in self.info["COG"]:
             try:
                 music = self.bot.get_cog("Music")
-                await music.leave_all(ctx)
+                await music.leave_all()
                 self.bot.unload_extension(text)
             except:
                 await ctx.send(f"{text}の切り離しに失敗しました\n{traceback2.format_exc()}.")
@@ -319,7 +319,7 @@ class Dev(commands.Cog):
     @system.command(aliases=["re"])
     async def restart(self, ctx):
         music = self.bot.get_cog("Music")
-        await music.leave_all(ctx)
+        await music.leave_all()
         await self.save_database()
         await ctx.send(":closed_lock_with_key:BOTを再起動します.")
         python = sys.executable
@@ -328,7 +328,7 @@ class Dev(commands.Cog):
     @system.command(aliases=["q"])
     async def quit(self, ctx):
         music = self.bot.get_cog("Music")
-        await music.leave_all(ctx)
+        await music.leave_all()
         await self.save_database()
         await ctx.send(":closed_lock_with_key:BOTを停止します.")
         sys.exit()
