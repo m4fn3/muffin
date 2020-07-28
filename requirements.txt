@@ -12,4 +12,5 @@ rsa==4.6
 six==1.15.0
 traceback2==1.4.0
 webcolors==1.11.1
-youtube-dl==2020.6.16.1
+youtube-dl==2020.7.28
+
