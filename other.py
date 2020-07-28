@@ -18,7 +18,6 @@ class Other(commands.Cog):
         self.message_match2 = "(?P<message>[0-9]{18}"
         self.color_match = "(?P<color>[0-9a-fA-F]{6})"
 
-
     def hex_to_rgb(self, hex_code):
         hlen = len(hex_code)
         return tuple(int(hex_code[i:i + hlen // 3], 16) for i in range(0, hlen, hlen // 3))
@@ -323,7 +322,7 @@ class Other(commands.Cog):
                 embed = discord.Embed(description=f"```CSS\n[{arg1}]``` ```fix\n{arg2}```", color=0xb6ff01, timestamp=ctx.message.created_at)
             embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
             embed.set_footer(text=f"{ctx.guild.name} | {ctx.channel.name}")
-            await ctx.send(embed=embed)
+            return await ctx.send(embed=embed)
         elif code == "TRANSLATABLE_LANGUAGES":
             if lang == LanguageCode.JAPANESE:
                 embed = discord.Embed(title="言語コード一覧", color=0xbc8f8f, description="```CSS\n[アフリカーンス語] ... af\n[アルバニア語] ... sq\n[アムハラ語] ... am\n[アラビア文字] ... ar\n[アルメニア語] ... hy\n[アゼルバイジャン語] ... az\n[バスク語] ... eu\n[ベラルーシ語] ... be\n[ベンガル文字] ... bn\n[ボスニア語] ... bs\n[ブルガリア語] ... bg\n[カタロニア語] ... ca\n[セブ語] ... ceb\n[中国語(簡体)] ... zh-CN または zh\n[中国語(繁体)] ... zh-TW\n[コルシカ語] ... co\n[クロアチア語] ... hr\n[チェコ語] ... cs\n[デンマーク語] ... da\n[オランダ語] ... nl\n[英語] ... en\n[エスペラント語] ... eo\n[エストニア語] ... et\n[フィンランド語] ... fi\n[フランス語] ... fr\n[フリジア語] ... fy\n[ガリシア語] ... gl\n[グルジア語] ... ka\n[ドイツ語] ... de\n[ギリシャ語] ... el\n[グジャラト語] ... gu\n[クレオール語(ハイチ)] ... ht\n[ハウサ語] ... ha\n[ハワイ語] ... haw\n[ヘブライ語] ... he または iw\n[ヒンディー語] ... hi\n[モン語] ... hmn\n[ハンガリー語] ... hu\n[アイスランド語] ... is\n[イボ語] ... ig\n[インドネシア語] ... id\n[アイルランド語] ... ga\n[イタリア語] ... it\n[日本語] ... ja\n[ジャワ語] ... jv\n[カンナダ語] ... kn\n[カザフ語] ... kk\n[クメール語] ... km\n[キニヤルワンダ語] ... rw\n[韓国語] ... ko\n[クルド語] ... ku\n[キルギス語] ... ky\n[ラオ語] ... lo\n[ラテン語] ... la\n[ラトビア語] ... lv\n[リトアニア語] ... lt\n[ルクセンブルク語] ... lb\n[マケドニア語] ... mk\n[マラガシ語] ... mg\n[マレー語] ... ms\n[マラヤーラム文字] ... ml\n[マルタ語] ... mt\n[マオリ語] ... mi\n[マラーティー語] ... mr\n[モンゴル語] ... mn\n[ミャンマー語(ビルマ語)] ... my\n[ネパール語] ... ne\n[ノルウェー語] ... no\n[ニャンジャ語(チェワ語)] ... ny\n[オリヤ語] ... or\n[パシュト語] ... ps\n[ペルシャ語] ... fa\n[ポーランド語] ... pl\n[ポルトガル語(ポルトガル、ブラジル)] ... pt\n[パンジャブ語] ... pa\n[ルーマニア語] ... ro\n[ロシア語] ... ru\n[サモア語] ... sm\n[スコットランド ゲール語] ... gd\n[セルビア語] ... sr\n[セソト語] ... st\n[ショナ語] ... sn\n[シンド語] ... sd\n[シンハラ語] ... si\n[スロバキア語] ... sk\n[スロベニア語] ... sl\n[ソマリ語] ... so\n[スペイン語] ... es\n[スンダ語] ... su\n[スワヒリ語] ... sw\n[スウェーデン語] ... sv\n[タガログ語(フィリピン語)] ... tl\n[タジク語] ... tg\n[タミル語] ... ta\n[タタール語] ... tt\n[テルグ語] ... te\n[タイ語] ... th\n[トルコ語] ... tr\n[トルクメン語] ... tk\n[ウクライナ語] ... uk\n[ウルドゥー語] ... ur\n[ウイグル語] ... ug\n[ウズベク語] ... uz\n[ベトナム語] ... vi\n[ウェールズ語] ... cy\n[コーサ語] ... xh\n[イディッシュ語] ... yi\n[ヨルバ語] ... yo\n[ズールー語] ... zu```")
@@ -476,6 +475,7 @@ class Other(commands.Cog):
                          "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ny", "or", "ps", "fa", "pl", "pt", "pa", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw", "sv", "tl", "tg", "ta", "tt", "te", "th", "tr", "tk", "uk", "ur", "ug", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]
             if lang not in lang_list:
                 return await self.send_text(ctx, "WRONG_LANG_CODE")
+            res: dict
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"https://script.google.com/macros/s/AKfycbzy2M6VEqREaXdAY0Xa_WayFX3B3HhOGVZN8FzT1lPhiHE9_Wk/exec?text={urllib.parse.quote(text)}&target={lang}") as r:
                     if r.status == 200:
@@ -483,12 +483,27 @@ class Other(commands.Cog):
                             res = await r.json()
                             if len(res["text"]) >= 2048:
                                 return await self.send_text(ctx, "TRANS_OVER_2000")
-                            await self.send_text(ctx, "TRANSLATE_RESULT", arg1=lang, arg2=res["text"])
                         except:
                             await self.send_text(ctx, "INVALID_STRING")
-                            await self.report_error(ctx, name="trans", message=pprint.pformat(r))
+                            return await self.report_error(ctx, name="trans", message=pprint.pformat(r))
                     elif r.status == 400:
-                        await self.send_text(ctx, "INVALID_STRING")
+                        return await self.send_text(ctx, "INVALID_STRING")
+            result_msg = await self.send_text(ctx, "TRANSLATE_RESULT", arg1=lang, arg2=res["text"])
+            await result_msg.add_reaction(self.info["TRCopy"])
+            def check(r, u):
+                return r.message.id == result_msg.id and r.emoji.id == 737605210876411924 and not u.bot
+            try:
+                await self.bot.wait_for('reaction_add', timeout=20.0, check=check)
+            except:
+                pass
+            else:
+                await ctx.send(res["text"])
+            finally:
+                try:
+                    await result_msg.remove_reaction(self.info["TRCopy"], discord.Object(self.bot.user.id))
+                except:
+                    pass
+
         except:
             await ctx.send(traceback2.format_exc())
 

@@ -1,5 +1,5 @@
 from discord.ext import commands, tasks
-import asyncio, discord, time, json, logging, os, io, traceback2, signal, sys
+import asyncio, discord, time, json, logging, os, io, traceback2, signal, platform
 import nest_asyncio
 nest_asyncio.apply()
 
@@ -42,11 +42,14 @@ class Muffin(commands.Bot):
             print(f"Logged in to {bot.user}")
             if self.user.id == 644065524879196193:
                 await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
-            if not discord.opus.is_loaded():
-                try:
-                    discord.opus.load_opus("heroku-buildpack-libopus")
-                except:
-                    pass
+            if platform.system() != "Windows":
+                if not discord.opus.is_loaded():
+                    try:
+                        discord.opus.load_opus("heroku-buildpack-libopus")
+                    except:
+                        pass
+                loop = asyncio.get_event_loop()
+                self.loop.add_signal_handler(signal.SIGTERM, lambda: loop.run_until_complete(self.on_sigterm()))
             database_channel = self.get_channel(736538898116902925)
             database_msg = await database_channel.fetch_message(database_channel.last_message_id)
             database_file = database_msg.attachments[0]
@@ -59,8 +62,6 @@ class Muffin(commands.Bot):
             self.global_chat = db_dict["global_chat"]
             self.api_index = db_dict["music"]
             self.save_database.start()
-            loop = asyncio.get_event_loop()
-            self.loop.add_signal_handler(signal.SIGTERM, lambda: loop.run_until_complete(self.on_sigterm()))
         except:
             print(traceback2.format_exc())
 
