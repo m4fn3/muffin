@@ -128,6 +128,10 @@ class Music(commands.Cog):
         else:
             return 0
 
+    def make_music_np_slider(self, played_time, duration):
+        per_index = int(round(parse_delta_to_seconds(played_time) / parse_delta_to_seconds(duration), 1) * 10)
+        return self.info["SLPlayed"] * (per_index - 1) + self.info["SLPlaying"] + self.info["SLPlay"] * (10 - per_index)
+
     async def save_database(self):
         db_dict = {
             "user": self.bot.database,
@@ -647,7 +651,8 @@ class Music(commands.Cog):
                     "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
                     "channel": res['items'][0]['snippet']['channelTitle'],
                     "user": user,
-                    "duration": self.parse_duration(res['items'][0])
+                    "duration": self.parse_duration(res['items'][0]),
+                    "time_played": MusicElapsedTime()
                 }
                 if is_auto:
                     return info
@@ -686,7 +691,8 @@ class Music(commands.Cog):
                             "publish": self.parse_day(res['items'][i]['snippet']['publishedAt']),
                             "channel": res['items'][i]['snippet']['channelTitle'],
                             "user": user,
-                            "duration": res_d[1][i]
+                            "duration": res_d[1][i],
+                            "time_played": MusicElapsedTime()
                         }
                         self.bot.playlist[ctx.guild.id].append(info)
                     except KeyError:
@@ -718,7 +724,8 @@ class Music(commands.Cog):
                     "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
                     "channel": res['items'][0]['snippet']['channelTitle'],
                     "user": user,
-                    "duration": res_d[1]
+                    "duration": res_d[1],
+                    "time_played": MusicElapsedTime()
                 }
                 if is_auto:
                     return info
@@ -877,7 +884,8 @@ class Music(commands.Cog):
                         "publish": self.parse_day(res['items'][index]['snippet']['publishedAt']),
                         "channel": res['items'][index]['snippet']['channelTitle'],
                         "user": ctx.author,
-                        "duration": res_d[1]
+                        "duration": res_d[1],
+                        "time_played": MusicElapsedTime()
                         }
                 self.bot.playlist[ctx.guild.id].append(info)
                 try:
@@ -1078,7 +1086,39 @@ class Music(commands.Cog):
             await self.clean_all(ctx)
             await self.send_text(ctx, "DISCONNECTED_FROM_VC")
 
-    @commands.command(aliases=['q', 'np', 'nowplaying'])
+    @commands.command(aliases=['np', 'now'])
+    async def now_playing(self, ctx):
+        try:
+            if ctx.voice_client is None:
+                return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+            elif ctx.guild.id not in self.bot.playlist:
+                return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+            elif self.bot.playlist[ctx.guild.id] == []:
+                return await self.send_text(ctx, "NOT_PLAYING_MUSIC")
+            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
+            info = self.bot.playlist[ctx.guild.id][0]
+            slider = self.make_music_np_slider(info['time_played'].get_time(), info["duration"])
+            desc = f"{slider}\n{info['time_played'].get_time()} / {info['duration']}"
+            embed = None
+            if lang == LanguageCode.JAPANESE:
+                embed = discord.Embed(title=info["title"], description=desc, url=info["url"])
+                embed.set_author(name="再生中")
+                embed.set_thumbnail(url=info["thumbnail"])
+                embed.add_field(name="チャンネル", value=info['channel'])
+                embed.add_field(name="アップロード", value=info['publish'])
+                embed.add_field(name="リクエスト", value=f"    {info['user']}")
+            elif lang == LanguageCode.ENGLISH:
+                embed = discord.Embed(title=info["title"], description=desc, url=info["url"])
+                embed.set_author(name="Now playing")
+                embed.set_thumbnail(url=info["thumbnail"])
+                embed.add_field(name="Channel", value=info['channel'])
+                embed.add_field(name="Upload", value=info['publish'])
+                embed.add_field(name="Requested by", value=f"    {info['user']}")
+            await ctx.send(embed=embed)
+        except:
+            await ctx.send(traceback2.format_exc())
+
+    @commands.command(aliases=['q'])
     async def queue(self, ctx):
         """
         キューを表示
@@ -1221,7 +1261,8 @@ class Music(commands.Cog):
                 "publish": self.parse_day(res['items'][ix - 1]['snippet']['publishedAt']),
                 "channel": res['items'][ix - 1]['snippet']['channelTitle'],
                 "user": user,
-                "duration": res_d[1]
+                "duration": res_d[1],
+                "time_played": MusicElapsedTime()
                 }
         self.bot.playlist[ctx.guild.id].append(info)
         await self.send_text(ctx, "MUSIC_ADDED", info)
@@ -1312,6 +1353,7 @@ class Music(commands.Cog):
             await self.send_text(ctx, "ALREADY_PAUSED")
         elif self.bot.voice_status[ctx.guild.id]["status"] == MusicStatus.PLAYING:
             ctx.voice_client.pause()
+            self.bot.playlist[ctx.guild.id][0]['time_played'].pause()
             self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.PAUSED
             await self.send_text(ctx, "PAUSED_MUSIC")
         else:
@@ -1337,6 +1379,7 @@ class Music(commands.Cog):
             await self.send_text(ctx, "ALREADY_RESUMED")
         elif self.bot.voice_status[ctx.guild.id]["status"] == MusicStatus.PAUSED:
             ctx.voice_client.resume()
+            self.bot.playlist[ctx.guild.id][0]['time_played'].resume()
             self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.PLAYING
             await self.send_text(ctx, "RESUMED_MUSIC")
         else:
