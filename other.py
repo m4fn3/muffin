@@ -68,20 +68,31 @@ class Other(commands.Cog):
             await self.report_error(ctx, "on_command_error", str(error))
 
     async def cog_before_invoke(self, ctx):
+        if self.bot.maintenance and ctx.author.id not in self.bot.ADMIN:
+            await self.send_text(ctx, "MAINTENANCE", force_region=True)
+            raise commands.CommandError("MAINTENANCE")
         if str(ctx.author.id) not in self.bot.database:
             await self.init_database(ctx)
         if ctx.author.id in self.bot.BAN:
             await self.send_text(ctx, "YOUR_ACCOUNT_BANNED")
             raise commands.CommandError("Your Account Banned")
 
-    async def send_text(self, ctx, code, arg1=None, arg2=None):
-        lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
+    async def send_text(self, ctx, code, arg1=None, arg2=None, force_region=False):
+        if force_region:
+            lang = get_language(LanguageCode.CHANNEL.value, ctx.guild.region)
+        else:
+            lang = get_language(self.bot.database[str(ctx.author.id)]["language"], ctx.guild.region)
         embed: discord.Embed
         if code == "INVALID_STRING":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`不正な文字列です.`")
             elif lang == LanguageCode.ENGLISH:
                 await ctx.send(":warning:`Invalid string.`")
+        elif code == "MAINTENANCE":
+            if lang == LanguageCode.JAPANESE:
+                await ctx.send(":warning:`現在メンテナンス中です.`")
+            elif lang == LanguageCode.ENGLISH:
+                await ctx.send(":warning:`Currently under maintenance.")
         elif code == "TRANS_OVER_2000":
             if lang == LanguageCode.JAPANESE:
                 await ctx.send(":warning:`文字列が2000文字を超えるため翻訳結果を表示できませんでした.`")

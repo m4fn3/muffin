@@ -19,7 +19,7 @@ class Muffin(commands.Bot):
 
         for cog in info["COG"]:
             self.load_extension(cog)
-
+ 
         self.uptime = time.time()
         self.playlist = {}
         self.voice_status = {}
@@ -29,14 +29,7 @@ class Muffin(commands.Bot):
 
         self.global_chat_log = {}
         self.PREFIX = info["PREFIX"]
-
-        self.ADMIN = []
-        self.BAN = []
-        self.Contributor = []
-        self.database = {}
-        self.global_chat = {}
-        self.api_index = 1
-
+    
     async def on_ready(self):
         try:
             print(f"Logged in to {bot.user}")
@@ -50,17 +43,208 @@ class Muffin(commands.Bot):
                         pass
                 loop = asyncio.get_event_loop()
                 self.loop.add_signal_handler(signal.SIGTERM, lambda: loop.run_until_complete(self.on_sigterm()))
-            database_channel = self.get_channel(736538898116902925)
-            database_msg = await database_channel.fetch_message(database_channel.last_message_id)
-            database_file = database_msg.attachments[0]
-            db_byte = await database_file.read()
-            db_dict = json.loads(db_byte)
+            # database_channel = self.get_channel(736538898116902925)
+            # database_msg = await database_channel.fetch_message(database_channel.last_message_id)
+            # database_file = database_msg.attachments[0]
+            # db_byte = await database_file.read()
+            # db_dict = json.loads(db_byte)
+            db_dict = {
+  "user": {
+    "513136168112750593": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 4.13,
+        "single": {
+          "all_matches": 3,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 2,
+          "win_matches": 1
+        }
+      },
+      "music": {
+        "play_message": False
+      }
+    },
+    "519760564755365888": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 2,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "296145474727968769": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "736481469702209566": {
+      "language": 2,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "719156215422124054": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "585351496523186187": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "709678001280909363": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "662023910857900033": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "682506399326142526": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    },
+    "727775695417114644": {
+      "language": 0,
+      "shadowchoice": {
+        "best_score": 30.0,
+        "single": {
+          "all_matches": 0,
+          "win_matches": 0
+        },
+        "multi": {
+          "all_matches": 0,
+          "win_matches": 0
+        }
+      },
+      "music": {
+        "play_message": True
+      }
+    }
+  },
+  "role": {
+    "ADMIN": [
+      513136168112750593,
+      483894887666941953
+    ],
+    "BAN": [],
+    "Contributor": []
+  },
+  "global_chat": {
+    "general": [],
+    "mute": []
+  },
+  "system": {
+    "api_index": 0,
+    "maintenance": False
+  }
+}
             self.ADMIN = db_dict["role"]["ADMIN"]
             self.BAN = db_dict["role"]["BAN"]
             self.Contributor = db_dict["role"]["Contributor"]
             self.database = db_dict["user"]
             self.global_chat = db_dict["global_chat"]
-            self.api_index = db_dict["music"]
+            self.api_index = db_dict["system"]["api_index"]
+            self.maintenance = db_dict["system"]["maintenance"]
             self.save_database.start()
         except:
             print(traceback2.format_exc())
@@ -105,7 +289,10 @@ class Muffin(commands.Bot):
                 "Contributor": self.Contributor
             },
             "global_chat": self.global_chat,
-            "music": self.api_index
+            "system": {
+                "api_index": self.api_index,
+                "maintenance": self.maintenance
+            }
         }
         database_channel = self.get_channel(736538898116902925)
         db_bytes = json.dumps(db_dict, indent=2)

@@ -32,7 +32,10 @@ class Dev(commands.Cog):
                 "Contributor": self.bot.Contributor
             },
             "global_chat": self.bot.global_chat,
-            "music": self.bot.api_index
+            "system": {
+                "api_index": self.bot.api_index,
+                "maintenance": self.bot.maintenance
+            }
         }
         database_channel = self.bot.get_channel(736538898116902925)
         db_bytes = json.dumps(db_dict, indent=2)
@@ -95,6 +98,30 @@ class Dev(commands.Cog):
     async def apply_status(self, ctx):
         await self.update_status()
         await ctx.send(":white_check_mark:ステータスを更新しました.")
+
+    @commands.group(aliases=["mt"])
+    async def maintenance(self, ctx):
+        if ctx.invoked_subcommand is None:
+            context_msg = "有効" if ctx.bot.maintenance else "無効"
+            await ctx.send(f"メンテナンスモードは{context_msg}です.")
+
+    @maintenance.command(name="on")
+    async def maintenance_on(self, ctx):
+        if self.bot.maintenance:
+            await ctx.send("メンテナンスモードは既に有効です")
+        else:
+            self.bot.maintenance = True
+            await self.save_database()
+            await ctx.send("メンテナンスモードを有効にしました")
+
+    @maintenance.command(name="off")
+    async def maintenance_off(self, ctx):
+        if self.bot.maintenance:
+            self.bot.maintenance = False
+            await self.save_database()
+            await ctx.send("メンテナンスモードを無効にしました")
+        else:
+            await ctx.send("メンテナンスモードはすでに無効です")
 
     @commands.group()
     async def server(self, ctx):

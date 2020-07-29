@@ -137,7 +137,10 @@ class Music(commands.Cog):
                 "Contributor": self.bot.Contributor
             },
             "global_chat": self.bot.global_chat,
-            "music": self.bot.api_index
+            "system": {
+                "api_index": self.bot.api_index,
+                "maintenance": self.bot.maintenance
+            }
         }
         database_channel = self.bot.get_channel(736538898116902925)
         db_bytes = json.dumps(db_dict, indent=2)
@@ -272,6 +275,11 @@ class Music(commands.Cog):
                 elif lang == LanguageCode.ENGLISH:
                     await ctx.send(
                         f":warning:`You can't add music because auto mode turn on. To turn off auto mode, please use`{self.bot.PREFIX}auto off")
+            elif code == "MAINTENANCE":
+                if lang == LanguageCode.JAPANESE:
+                    await ctx.send(":warning:`現在メンテナンス中です.`")
+                elif lang == LanguageCode.ENGLISH:
+                    await ctx.send(":warning:`Currently under maintenance.")
             elif code == "WRONG_URL":
                 if lang == LanguageCode.JAPANESE:
                     await ctx.send(":warning:`誤った形式のURLです.`")
@@ -959,6 +967,9 @@ class Music(commands.Cog):
         :param ctx: Context
         :return:
         """
+        if self.bot.maintenance and ctx.author.id not in self.bot.ADMIN:
+            await self.send_text(ctx, "MAINTENANCE", force_region=True)
+            raise commands.CommandError("MAINTENANCE")
         if str(ctx.author.id) not in self.bot.database:
             await self.init_database(ctx)
         if ctx.author.id in self.bot.BAN:
