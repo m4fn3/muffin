@@ -126,54 +126,7 @@ class Dev(commands.Cog):
     @commands.group()
     async def server(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send("list | join | vc")
-
-    @server.command(name="list")
-    async def list_server(self, ctx):
-        text = "サーバー一覧:"
-        for i in self.bot.guilds:
-            text += f"\n> **{i.name}**\n> ({i.id}) | {len(i.members)}"
-        text += f"\n計: {len(self.bot.guilds)}サーバー"
-        msg_obj = await ctx.send(text)
-        await asyncio.sleep(30)
-        await msg_obj.delete()
-
-    @server.command(name="join")
-    async def join_server(self, ctx, *, server_id):
-        end_code = 0
-        server_obj = None
-        for i in self.bot.guilds:
-            if str(i.id) == server_id:
-                end_code = 1
-                server_obj = i
-                break
-        if end_code == 0:
-            await ctx.send("サーバーが見つかりませんでした")
-        else:
-            try:
-                inv_list = await server_obj.invites()
-            except:
-                await ctx.send("既存のサーバー招待URLを取得する権限がありません.")
-                inv_list = []
-            if len(inv_list) != 0:
-                await ctx.send("既存のサーバー招待URLを作成中です.")
-                await ctx.send("サーバー招待URLをDMに送信します.")
-                await ctx.author.send(inv_list[0])
-            else:
-                await ctx.send("新しいサーバー招待URLを作成中です.")
-                inv_obj = None
-                for text_ch in server_obj.text_channels:
-                    try:
-                        inv_obj = await text_ch.create_invite()
-                    except:
-                        continue
-                    else:
-                        break
-                await ctx.send("サーバー招待URLをDMに送信します.")
-                try:
-                    await ctx.author.send(inv_obj)
-                except:
-                    await ctx.send("サーバー招待URLを作成する権限がありません.")
+            await ctx.send("server vc")
 
     @server.command()
     async def vc(self, ctx):
