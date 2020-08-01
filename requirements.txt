@@ -11,6 +11,7 @@ PyNaCl==1.4.0
 rsa==4.6
 six==1.15.0
 traceback2==1.4.0
+uvloop==0.14.0
 webcolors==1.11.1
 youtube-dl==2020.7.28
 
