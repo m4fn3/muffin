@@ -651,8 +651,7 @@ class Music(commands.Cog):
                     "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
                     "channel": res['items'][0]['snippet']['channelTitle'],
                     "user": user,
-                    "duration": self.parse_duration(res['items'][0]),
-                    "time_played": MusicElapsedTime()
+                    "duration": self.parse_duration(res['items'][0])
                 }
                 if is_auto:
                     return info
@@ -691,8 +690,7 @@ class Music(commands.Cog):
                             "publish": self.parse_day(res['items'][i]['snippet']['publishedAt']),
                             "channel": res['items'][i]['snippet']['channelTitle'],
                             "user": user,
-                            "duration": res_d[1][i],
-                            "time_played": MusicElapsedTime()
+                            "duration": res_d[1][i]
                         }
                         self.bot.playlist[ctx.guild.id].append(info)
                     except KeyError:
@@ -724,8 +722,7 @@ class Music(commands.Cog):
                     "publish": self.parse_day(res['items'][0]['snippet']['publishedAt']),
                     "channel": res['items'][0]['snippet']['channelTitle'],
                     "user": user,
-                    "duration": res_d[1],
-                    "time_played": MusicElapsedTime()
+                    "duration": res_d[1]
                 }
                 if is_auto:
                     return info
@@ -818,7 +815,6 @@ class Music(commands.Cog):
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
-                    await ctx.send(traceback2.format_exc())
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
@@ -835,6 +831,7 @@ class Music(commands.Cog):
                     self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.EMPTY
                     return
                 ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx), self.bot.loop).result())
+                self.bot.playlist[ctx.guild.id][0]["time_played"] = MusicElapsedTime()
                 ctx.voice_client.source.volume = self.bot.voice_status[ctx.guild.id]["volume"] / 100
                 self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.PLAYING
         except:
@@ -884,14 +881,12 @@ class Music(commands.Cog):
                         "publish": self.parse_day(res['items'][index]['snippet']['publishedAt']),
                         "channel": res['items'][index]['snippet']['channelTitle'],
                         "user": ctx.author,
-                        "duration": res_d[1],
-                        "time_played": MusicElapsedTime()
+                        "duration": res_d[1]
                         }
                 self.bot.playlist[ctx.guild.id].append(info)
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
-                    await ctx.send(traceback2.format_exc())
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
@@ -904,8 +899,8 @@ class Music(commands.Cog):
 
                 if ctx.voice_client is None:
                     return await self.clean_all(ctx, report=True)
-                ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx),
-                                                                                               self.bot.loop).result())
+                ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_after(ctx), self.bot.loop).result())
+                self.bot.playlist[ctx.guild.id][0]["time_played"] = MusicElapsedTime()
                 ctx.voice_client.source.volume = self.bot.voice_status[ctx.guild.id]["volume"] / 100
                 self.bot.voice_status[ctx.guild.id]["status"] = MusicStatus.PLAYING
         except:
@@ -1261,8 +1256,7 @@ class Music(commands.Cog):
                 "publish": self.parse_day(res['items'][ix - 1]['snippet']['publishedAt']),
                 "channel": res['items'][ix - 1]['snippet']['channelTitle'],
                 "user": user,
-                "duration": res_d[1],
-                "time_played": MusicElapsedTime()
+                "duration": res_d[1]
                 }
         self.bot.playlist[ctx.guild.id].append(info)
         await self.send_text(ctx, "MUSIC_ADDED", info)

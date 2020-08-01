@@ -1,7 +1,5 @@
 from discord.ext import commands, tasks
 import asyncio, discord, time, json, logging, os, io, traceback2, signal, platform
-import nest_asyncio
-nest_asyncio.apply()
 
 TOKEN = os.getenv("TOKEN")
 with open("./INFO.json") as F:
@@ -36,11 +34,14 @@ class Muffin(commands.Bot):
             if self.user.id == 644065524879196193:
                 await self.get_channel(info["ERROR_CHANNEL"]).send("Logged in")
             if platform.system() != "Windows":
+                import uvloop, nest_asyncio
                 if not discord.opus.is_loaded():
                     try:
                         discord.opus.load_opus("heroku-buildpack-libopus")
                     except:
                         pass
+                nest_asyncio.apply()
+                uvloop.install()
                 loop = asyncio.get_event_loop()
                 self.loop.add_signal_handler(signal.SIGTERM, lambda: loop.run_until_complete(self.on_sigterm()))
             database_channel = self.get_channel(736538898116902925)
