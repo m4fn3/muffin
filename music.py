@@ -40,7 +40,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
 # class
-class Music(commands.Cog):
+class Music(commands.Cog, name="music"):
 
     def __init__(self, bot):
         self.bot = bot  # type: commands.Bot
@@ -815,6 +815,7 @@ class Music(commands.Cog):
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
+                    await self.report_error(ctx, "error", traceback2.format_exc())
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
@@ -887,6 +888,7 @@ class Music(commands.Cog):
                 try:
                     player = await YTDLSource.from_url(info["url"], loop=self.bot.loop, stream=True)
                 except:
+                    await self.report_error(ctx, "error", traceback2.format_exc())
                     await self.send_text(ctx, "SOMETHING_WENT_WRONG_WHEN_LOADING_MUSIC")
                     self.bot.music_skipped.append(ctx.guild.id)
                     return await self.play_after(ctx)
