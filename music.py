@@ -181,6 +181,7 @@ class Music(commands.Cog, name="music"):
                 await ctx.author.voice.channel.connect(timeout=10.0)
                 return 1
             except:  # 接続に失敗
+                await self.report_error(ctx, "接続失敗", traceback2.format_exc())
                 await self.send_text(ctx, "FAILED_CONNECT")
                 return 0
 
@@ -195,6 +196,7 @@ class Music(commands.Cog, name="music"):
                 await ctx.voice_client.move_to(ctx.author.voice.channel)
                 return 2
             except:  # 接続に失敗
+                await self.report_error(ctx, "接続失敗", traceback2.format_exc())
                 await self.send_text(ctx, "FAILED_CONNECT")
                 return 0
 
