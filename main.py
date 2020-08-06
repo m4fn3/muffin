@@ -17,7 +17,7 @@ class Muffin(commands.Bot):
 
         for cog in info["COG"]:
             self.load_extension(cog)
- 
+
         self.uptime = time.time()
         self.playlist = {}
         self.voice_status = {}
@@ -27,7 +27,7 @@ class Muffin(commands.Bot):
 
         self.global_chat_log = {}
         self.PREFIX = info["PREFIX"]
-    
+
     async def on_ready(self):
         try:
             print(f"Logged in to {bot.user}")
@@ -67,7 +67,7 @@ class Muffin(commands.Bot):
             return
         elif message.guild is None:
             return await message.channel.send("muffin is __Only__ available on Servers!\nTo get started: http://mafu.cf/\nTo invite Bot: http://mafu.cf/muffin")
-        #elif message.channel.id in self.global_chat["general"]:
+        # elif message.channel.id in self.global_chat["general"]:
         #    global_chat_cog = self.get_cog("GlobalChat")
         #    await global_chat_cog.on_global_message(message)
         else:
@@ -82,7 +82,10 @@ class Muffin(commands.Bot):
                 "Contributor": self.Contributor
             },
             "global_chat": self.global_chat,
-            "music": self.api_index
+            "system": {
+                "api_index": self.api_index,
+                "maintenance": self.maintenance
+            }
         }
         database_channel = self.get_channel(736538898116902925)
         db_bytes = json.dumps(db_dict, indent=2)
