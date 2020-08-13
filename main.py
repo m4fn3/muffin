@@ -74,6 +74,8 @@ class Muffin(commands.Bot):
             await self.process_commands(message)
 
     async def on_sigterm(self):
+        if not self.is_ready():
+            return
         db_dict = {
             "user": self.database,
             "role": {
