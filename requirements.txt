@@ -3,6 +3,7 @@ async-timeout==3.0.1
 bs4==0.0.1
 discord==1.0.1
 discord.py[voice]==1.4.1
+python-dotenv==0.14.0
 isodate==0.6.0
 nest-asyncio==1.4.0
 parse==1.16.0
