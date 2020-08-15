@@ -1,5 +1,11 @@
 from discord.ext import commands, tasks
 import asyncio, discord, time, json, logging, os, io, traceback2, signal, platform
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 TOKEN = os.getenv("TOKEN")
 with open("./INFO.json") as F:
