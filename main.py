@@ -48,8 +48,8 @@ class Muffin(commands.Bot):
                         pass
                 nest_asyncio.apply()
                 uvloop.install()
-                #loop = asyncio.get_event_loop()
-                #self.loop.add_signal_handler(signal.SIGTERM, lambda: loop.run_until_complete(self.on_sigterm()))
+                loop = asyncio.get_event_loop()
+                self.loop.add_signal_handler(signal.SIGTERM, lambda: loop.run_until_complete(self.on_sigterm()))
             database_channel = self.get_channel(736538898116902925)
             database_msg = await database_channel.fetch_message(database_channel.last_message_id)
             database_file = database_msg.attachments[0]
