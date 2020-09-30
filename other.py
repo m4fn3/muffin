@@ -1,4 +1,4 @@
-# import
+
 from discord.ext import commands
 import aiohttp, asyncio, datetime, discord, io, json, os, pprint, re, sys, time, urllib, traceback2, webcolors
 from identifier import *
