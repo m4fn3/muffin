@@ -1,4 +1,4 @@
-#muffin
+# muffin
 Discord Music Bot
 
 # dependencies
