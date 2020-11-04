@@ -2,7 +2,8 @@ DATABASE.json
 GLOBAL_CHAT.json
 ROLE.json
 TOKEN.json
-__pycache__/
 upload.sh
 .env
 help_command.py
+__pycache__/
+.idea
